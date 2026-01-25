@@ -1,0 +1,202 @@
+{
+  "roomTypes": [
+    "chamber", "alcove", "vault", "crypt", "gallery", "sanctum", 
+    "antechamber", "hall", "passage", "den", "lair", "pit", 
+    "shrine", "cellar", "cave", "grotto", "tomb", "archive"
+  ],
+  "leadIns": [
+    "You enter", "Before you lies", "You step into", "Ahead stretches",
+    "You discover", "Opening before you is", "You find yourself in",
+    "Emerging into", "Through the doorway lies", "Pushing forward into"
+  ],
+  "sensesUnderfoot": [
+    "cracked flagstones shift beneath your feet",
+    "soft earth muffles your steps",
+    "bones crunch underfoot",
+    "slick moss covers the floor",
+    "loose gravel scatters with each step",
+    "ancient tiles lie broken and uneven",
+    "thick dust coats every surface",
+    "shallow water pools on the floor",
+    "dried leaves crackle beneath you",
+    "rough-hewn stone chills your soles"
+  ],
+  "sensesAir": [
+    "a musty dampness hangs in the air",
+    "cold drafts whisper through unseen cracks",
+    "stale air fills your lungs",
+    "a faint acrid smell burns your nostrils",
+    "the scent of decay lingers",
+    "dry dusty air catches in your throat",
+    "a metallic tang permeates the space",
+    "cool air suggests hidden depths nearby",
+    "warm humid air presses against you"
+  ],
+  "sensesSound": [
+    "distant dripping echoes",
+    "an unnatural silence presses in",
+    "faint scratching sounds from the walls",
+    "your breath echoes back at you",
+    "a low hum vibrates through the stone",
+    "whispers seem to dance at the edge of hearing",
+    "creaking sounds from above",
+    "the soft rustle of unseen movement",
+    "water trickles somewhere nearby"
+  ],
+  "sensesLight": [
+    "dim light filters from cracks above",
+    "absolute darkness swallows everything",
+    "phosphorescent fungi cast an eerie glow",
+    "your torchlight barely penetrates the gloom",
+    "strange shadows dance without source",
+    "pale light seeps from the walls themselves",
+    "flickering braziers line the walls",
+    "a single shaft of light pierces the darkness",
+    "bioluminescent lichen traces the ceiling"
+  ],
+  "interactions": [
+    "dominating the space",
+    "crumbling with age",
+    "covered in strange markings",
+    "partially collapsed",
+    "surprisingly intact",
+    "recently disturbed",
+    "webbed with cracks",
+    "slick with moisture",
+    "scorched by ancient fire"
+  ],
+  "anchorFeatures": [
+    "A massive stone altar",
+    "Towering pillars",
+    "A dry fountain",
+    "Collapsed scaffolding",
+    "An iron cage",
+    "Stacked crates and barrels",
+    "A ritual circle",
+    "Broken statuary",
+    "A deep pit",
+    "Thick chains",
+    "A wooden platform",
+    "Ancient machinery",
+    "Piled rubble",
+    "A raised dais",
+    "Ornate sarcophagi"
+  ],
+  "pressures": [
+    "The ceiling groans ominously",
+    "Cracks spread across the floor",
+    "The air grows thin",
+    "Strange symbols pulse with light",
+    "The walls seem to close in",
+    "Noxious fumes seep from vents",
+    "Unstable magic crackles",
+    "The ground trembles faintly",
+    "Shadows move independently"
+  ],
+  "mitigations": [
+    "reveal a safe path",
+    "disable the mechanism",
+    "find stable footing",
+    "dispel the effect",
+    "locate an escape route",
+    "neutralize the danger",
+    "identify the source",
+    "calm the disturbance",
+    "spot the trigger"
+  ],
+  "doorStatuses": [
+    "Open", "Stuck", "Locked", "Jammed", 
+    "Barred", "Trapped", "Sealed", "Collapsed"
+  ],
+  "doorBypassVerbs": {
+    "Stuck": { "stat": "Body", "verbs": ["force", "pry", "shoulder"] },
+    "Locked": { "stat": "Mind", "verbs": ["pick", "bypass", "decode"] },
+    "Jammed": { "stat": "Body", "verbs": ["wrench", "lever", "force"] },
+    "Barred": { "stat": "Body", "verbs": ["break", "lift", "smash"] },
+    "Trapped": { "stat": "Mind", "verbs": ["disarm", "bypass", "disable"] },
+    "Sealed": { "stat": "Mind", "verbs": ["decipher", "unravel", "break"] },
+    "Collapsed": { "stat": "Body", "verbs": ["clear", "dig through", "move"] }
+  },
+  "typeWords": [
+    "Archer", "Brute", "Skirmisher", "Elite", "Shaman", 
+    "Scout", "Defender", "Lurker", "Swarm", "Caster",
+    "Berserker", "Assassin", "Necromancer", "Champion"
+  ],
+  "wordToAbility": {
+    "Archer": "Volley - can attack two targets at once",
+    "Brute": "Crushing Blow - +1d6 damage on successful hit",
+    "Skirmisher": "Hit and Run - can disengage freely after attacking",
+    "Elite": "Swordmaster - reroll one failed attack per round",
+    "Shaman": "Dark Ritual - can heal allies or curse enemies",
+    "Scout": "Alert - party cannot surprise this enemy",
+    "Defender": "Shield Wall - adjacent allies gain +2 Success Threshold",
+    "Lurker": "Ambush - +2d6 damage when attacking from hiding",
+    "Swarm": "Overwhelming Numbers - gains bonus when multiple swarms attack",
+    "Caster": "Arcane Blast - ranged magical attack ignoring armor",
+    "Berserker": "Frenzy - gains +1d6 damage when below half health",
+    "Assassin": "Death Strike - critical hits deal triple damage",
+    "Necromancer": "Raise Dead - can summon 1d4 Swarm minions",
+    "Champion": "Inspiring Presence - all allies gain +1 to checks"
+  },
+  "keywordAbilityInputMax": 3,
+  "difficultyProfiles": {
+    "Easy": {
+      "potencyWeights": { "Competent": 60, "Effective": 30, "Forceful": 10 },
+      "trapDamage": { "min": 1, "max": 2 },
+      "successTiers": { "defeat": 2, "overwhelm": 4 },
+      "baseThresholdRange": { "min": 2, "max": 4 },
+      "threatTypesRange": { "min": 0, "max": 2 },
+      "quantityRange": { "min": 1, "max": 2 },
+      "keywordAbilityChance": 0.1,
+      "bossThresholdBonus": 3,
+      "bossDamageBonus": 1
+    },
+    "Medium": {
+      "potencyWeights": { "Competent": 25, "Effective": 50, "Forceful": 25 },
+      "trapDamage": { "min": 2, "max": 3 },
+      "successTiers": { "defeat": 3, "overwhelm": 6 },
+      "baseThresholdRange": { "min": 3, "max": 5 },
+      "threatTypesRange": { "min": 0, "max": 3 },
+      "quantityRange": { "min": 1, "max": 3 },
+      "keywordAbilityChance": 0.25,
+      "bossThresholdBonus": 4,
+      "bossDamageBonus": 2
+    },
+    "Hard": {
+      "potencyWeights": { "Competent": 10, "Effective": 45, "Forceful": 45 },
+      "trapDamage": { "min": 3, "max": 4 },
+      "successTiers": { "defeat": 4, "overwhelm": 8 },
+      "baseThresholdRange": { "min": 4, "max": 6 },
+      "threatTypesRange": { "min": 1, "max": 3 },
+      "quantityRange": { "min": 2, "max": 4 },
+      "keywordAbilityChance": 0.5,
+      "bossThresholdBonus": 5,
+      "bossDamageBonus": 3
+    },
+    "Deadly": {
+      "potencyWeights": { "Competent": 5, "Effective": 30, "Forceful": 65 },
+      "trapDamage": { "min": 4, "max": 6 },
+      "successTiers": { "defeat": 6, "overwhelm": 10 },
+      "baseThresholdRange": { "min": 5, "max": 8 },
+      "threatTypesRange": { "min": 2, "max": 3 },
+      "quantityRange": { "min": 3, "max": 6 },
+      "keywordAbilityChance": 0.75,
+      "bossThresholdBonus": 6,
+      "bossDamageBonus": 4
+    }
+  },
+  "layouts": {
+    "Rooms": ["A1", "A3", "A4", "E2", "N1", "N2", "NE1", "NE2", "NS2", "S4"],
+    "Halls": ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
+    "Dead Ends": ["D1", "D2", "D3", "D4"]
+  },
+  "layoutExits": {
+    "A": ["N", "E", "S"],
+    "N": ["N"],
+    "E": ["E"],
+    "S": ["S"],
+    "NE": ["N", "E"],
+    "NS": ["N", "S"],
+    "D": []
+  }
+}

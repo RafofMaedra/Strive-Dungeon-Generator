@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strive Dungeon Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0d0d0f;
+            --bg-card: #16161a;
+            --bg-card-hover: #1c1c22;
+            --border: #2a2a35;
+            --text-primary: #e8e6e3;
+            --text-muted: #8b8680;
+            --accent-gold: #c9a227;
+            --accent-gold-dim: #8b7119;
+            --accent-red: #8b2635;
+            --accent-green: #2d5a27;
+            --accent-blue: #1e3a5f;
+            --danger: #6b1e1e;
+            --font-display: 'Cinzel', serif;
+            --font-body: 'Crimson Text', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(ellipse at 20% 0%, rgba(201, 162, 39, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(139, 38, 53, 0.03) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--accent-gold);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 40px rgba(201, 162, 39, 0.3);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            border-radius: 2px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-gold-dim);
+            box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.1);
+        }
+
+        input[type="file"] {
+            padding: 0.5rem;
+        }
+
+        .keyword-abilities {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .keyword-abilities input {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 1rem 1.5rem;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        button:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-gold-dim);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent-gold-dim), var(--accent-gold));
+            color: var(--bg-dark);
+            border-color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        button.primary:hover {
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .current-room {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .room-header {
+            background: linear-gradient(90deg, var(--accent-gold-dim), transparent);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room-number {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+        }
+
+        .room-badge {
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 0.4rem 0.8rem;
+            background: var(--danger);
+            border-radius: 2px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .room-body {
+            padding: 1.5rem;
+        }
+
+        .room-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .meta-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .meta-value {
+            font-size: 0.95rem;
+            color: var(--accent-gold);
+        }
+
+        .room-description {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid var(--accent-gold-dim);
+            font-style: italic;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .exits {
+            margin-bottom: 1.5rem;
+        }
+
+        .exit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .exit-item {
+            padding: 0.75rem 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .exit-direction {
+            font-family: var(--font-display);
+            font-weight: 700;
+            min-width: 60px;
+        }
+
+        .exit-status {
+            flex: 1;
+        }
+
+        .exit-status.open { color: var(--accent-green); }
+        .exit-status.blocked { color: var(--accent-red); }
+
+        .bypass-info {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            width: 100%;
+            margin-top: 0.25rem;
+            padding-left: 70px;
+        }
+
+        .threats {
+            margin-bottom: 1rem;
+        }
+
+        .threat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .threat-block {
+            background: rgba(139, 38, 53, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        .threat-block.boss {
+            background: linear-gradient(135deg, rgba(139, 38, 53, 0.2), rgba(201, 162, 39, 0.1));
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.1);
+        }
+
+        .threat-header {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .threat-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .threat-stat {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+        }
+
+        .threat-abilities {
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(139, 38, 53, 0.3);
+        }
+
+        .ability {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            padding: 0.25rem 0;
+        }
+
+        .ability-name {
+            color: var(--accent-gold);
+        }
+
+        .no-threats {
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            border-radius: 2px;
+        }
+
+        .history-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-header {
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.3);
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .history-item.expanded {
+            background: rgba(201, 162, 39, 0.05);
+        }
+
+        .history-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-room-num {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+        }
+
+        .history-layout {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .history-details {
+            display: none;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .history-item.expanded .history-details {
+            display: block;
+        }
+
+        .history-description {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state p {
+            margin-bottom: 1rem;
+        }
+
+        .data-status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .data-status.loaded {
+            color: var(--accent-green);
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .data-status.default {
+            border-left: 3px solid var(--accent-gold-dim);
+        }
+
+        .error {
+            background: var(--danger);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .potency-competent { color: #6b9b6b; }
+        .potency-effective { color: #9b9b6b; }
+        .potency-forceful { color: #9b6b6b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Strive Dungeon</h1>
+            <p class="subtitle">GM-less Procedural Dungeon Generator</p>
+        </header>
+
+        <div id="dataStatus" class="data-status default">Using default embedded data. Load a custom JSON file to override.</div>
+        <div id="errorDisplay" class="error hidden"></div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="difficulty">Difficulty</label>
+                <select id="difficulty">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                    <option value="Deadly">Deadly</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="dungeonLength">Dungeon Length (rooms)</label>
+                <input type="number" id="dungeonLength" min="6" max="30" value="10">
+            </div>
+            <div class="control-group">
+                <label for="threatKeyword">Threat Keyword</label>
+                <input type="text" id="threatKeyword" placeholder="e.g., Goblin, Undead, Cultist">
+            </div>
+            <div class="control-group full-width">
+                <label>Keyword Abilities (optional, up to 3)</label>
+                <div class="keyword-abilities">
+                    <input type="text" id="keywordAbility1" placeholder="Ability 1">
+                    <input type="text" id="keywordAbility2" placeholder="Ability 2">
+                    <input type="text" id="keywordAbility3" placeholder="Ability 3">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="dataFile">Import Data File</label>
+                <input type="file" id="dataFile" accept=".json">
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="primary" id="startBtn">Start New Dungeon</button>
+            <button id="nextRoomBtn" disabled>Generate Next Room</button>
+            <button id="exportBtn" disabled>Export Dungeon (JSON)</button>
+        </div>
+
+        <div class="main-content">
+            <div class="current-room" id="currentRoomPanel">
+                <div class="empty-state" id="emptyState">
+                    <p>No dungeon started yet.</p>
+                    <p>Configure your settings above and click "Start New Dungeon" to begin.</p>
+                </div>
+                <div id="roomContent" class="hidden"></div>
+            </div>
+
+            <div class="history-panel">
+                <div class="history-header">Room History</div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <p>Rooms will appear here as you explore.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DEFAULT DATA ====================
+        const DEFAULT_DATA = {
+            roomTypes: ["chamber", "alcove", "vault", "crypt", "gallery", "sanctum", "antechamber", "hall", "passage", "den", "lair", "pit", "shrine", "cellar", "cave"],
+            leadIns: ["You enter", "Before you lies", "You step into", "Ahead stretches", "You discover", "Opening before you is", "You find yourself in", "Emerging into", "Through the doorway lies"],
+            sensesUnderfoot: ["cracked flagstones shift beneath your feet", "soft earth muffles your steps", "bones crunch underfoot", "slick moss covers the floor", "loose gravel scatters with each step", "ancient tiles lie broken and uneven", "thick dust coats every surface", "shallow water pools on the floor", "dried leaves crackle beneath you", "rough-hewn stone chills your soles"],
+            sensesAir: ["a musty dampness hangs in the air", "cold drafts whisper through unseen cracks", "stale air fills your lungs", "a faint acrid smell burns your nostrils", "the scent of decay lingers", "dry dusty air catches in your throat", "a metallic tang permeates the space", "cool air suggests hidden depths nearby", "warm humid air presses against you"],
+            sensesSound: ["distant dripping echoes", "an unnatural silence presses in", "faint scratching sounds from the walls", "your breath echoes back at you", "a low hum vibrates through the stone", "whispers seem to dance at the edge of hearing", "creaking sounds from above", "the soft rustle of unseen movement", "water trickles somewhere nearby"],
+            sensesLight: ["dim light filters from cracks above", "absolute darkness swallows everything", "phosphorescent fungi cast an eerie glow", "your torchlight barely penetrates the gloom", "strange shadows dance without source", "pale light seeps from the walls themselves", "flickering braziers line the walls", "a single shaft of light pierces the darkness", "bioluminescent lichen traces the ceiling"],
+            interactions: ["dominating the space", "crumbling with age", "covered in strange markings", "partially collapsed", "surprisingly intact", "recently disturbed", "webbed with cracks", "slick with moisture", "scorched by ancient fire"],
+            anchorFeatures: ["A massive stone altar", "Towering pillars", "A dry fountain", "Collapsed scaffolding", "An iron cage", "Stacked crates and barrels", "A ritual circle", "Broken statuary", "A deep pit", "Thick chains", "A wooden platform", "Ancient machinery", "Piled rubble", "A raised dais", "Ornate sarcophagi"],
+            pressures: ["The ceiling groans ominously", "Cracks spread across the floor", "The air grows thin", "Strange symbols pulse with light", "The walls seem to close in", "Noxious fumes seep from vents", "Unstable magic crackles", "The ground trembles faintly", "Shadows move independently"],
+            mitigations: ["reveal a safe path", "disable the mechanism", "find stable footing", "dispel the effect", "locate an escape route", "neutralize the danger", "identify the source", "calm the disturbance", "spot the trigger"],
+            doorStatuses: ["Open", "Stuck", "Locked", "Jammed", "Barred", "Trapped", "Sealed", "Collapsed"],
+            doorBypassVerbs: {
+                "Stuck": { stat: "Body", verbs: ["force", "pry", "shoulder"] },
+                "Locked": { stat: "Mind", verbs: ["pick", "bypass", "decode"] },
+                "Jammed": { stat: "Body", verbs: ["wrench", "lever", "force"] },
+                "Barred": { stat: "Body", verbs: ["break", "lift", "smash"] },
+                "Trapped": { stat: "Mind", verbs: ["disarm", "bypass", "disable"] },
+                "Sealed": { stat: "Mind", verbs: ["decipher", "unravel", "break"] },
+                "Collapsed": { stat: "Body", verbs: ["clear", "dig through", "move"] }
+            },
+            typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Swarm", "Caster"],
+            wordToAbility: {
+                "Archer": "Volley - can attack two targets at once",
+                "Brute": "Crushing Blow - +1d6 damage on successful hit",
+                "Skirmisher": "Hit and Run - can disengage freely after attacking",
+                "Elite": "Swordmaster - reroll one failed attack per round",
+                "Shaman": "Dark Ritual - can heal allies or curse enemies",
+                "Scout": "Alert - party cannot surprise this enemy",
+                "Defender": "Shield Wall - adjacent allies gain +2 Success Threshold",
+                "Lurker": "Ambush - +2d6 damage when attacking from hiding",
+                "Swarm": "Overwhelming Numbers - gains bonus when multiple swarms attack",
+                "Caster": "Arcane Blast - ranged magical attack ignoring armor"
+            },
+            keywordAbilityInputMax: 3,
+            difficultyProfiles: {
+                "Easy": {
+                    potencyWeights: { "Competent": 60, "Effective": 30, "Forceful": 10 },
+                    trapDamage: { min: 1, max: 2 },
+                    successTiers: { defeat: 2, overwhelm: 4 },
+                    baseThresholdRange: { min: 2, max: 4 },
+                    threatTypesRange: { min: 0, max: 2 },
+                    quantityRange: { min: 1, max: 2 },
+                    keywordAbilityChance: 0.1,
+                    bossThresholdBonus: 3,
+                    bossDamageBonus: 1
+                },
+                "Medium": {
+                    potencyWeights: { "Competent": 25, "Effective": 50, "Forceful": 25 },
+                    trapDamage: { min: 2, max: 3 },
+                    successTiers: { defeat: 3, overwhelm: 6 },
+                    baseThresholdRange: { min: 3, max: 5 },
+                    threatTypesRange: { min: 0, max: 3 },
+                    quantityRange: { min: 1, max: 3 },
+                    keywordAbilityChance: 0.25,
+                    bossThresholdBonus: 4,
+                    bossDamageBonus: 2
+                },
+                "Hard": {
+                    potencyWeights: { "Competent": 10, "Effective": 45, "Forceful": 45 },
+                    trapDamage: { min: 3, max: 4 },
+                    successTiers: { defeat: 4, overwhelm: 8 },
+                    baseThresholdRange: { min: 4, max: 6 },
+                    threatTypesRange: { min: 1, max: 3 },
+                    quantityRange: { min: 2, max: 4 },
+                    keywordAbilityChance: 0.5,
+                    bossThresholdBonus: 5,
+                    bossDamageBonus: 3
+                },
+                "Deadly": {
+                    potencyWeights: { "Competent": 5, "Effective": 30, "Forceful": 65 },
+                    trapDamage: { min: 4, max: 6 },
+                    successTiers: { defeat: 6, overwhelm: 10 },
+                    baseThresholdRange: { min: 5, max: 8 },
+                    threatTypesRange: { min: 2, max: 3 },
+                    quantityRange: { min: 3, max: 6 },
+                    keywordAbilityChance: 0.75,
+                    bossThresholdBonus: 6,
+                    bossDamageBonus: 4
+                }
+            },
+            layouts: {
+                Rooms: ["A1", "A3", "A4", "E2", "N1", "N2", "NE1", "NE2", "NS2", "S4"],
+                Halls: ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
+                "Dead Ends": ["D1", "D2", "D3", "D4"]
+            },
+            layoutExits: {
+                "A": ["N", "E", "S"],
+                "N": ["N"],
+                "E": ["E"],
+                "S": ["S"],
+                "NE": ["N", "E"],
+                "NS": ["N", "S"],
+                "D": []
+            }
+        };
+
+        // ==================== STATE ====================
+        let gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        let dungeonState = null;
+        let usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
+
+        // ==================== UTILITIES ====================
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function pick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function weightedPick(weights) {
+            const total = Object.values(weights).reduce((a, b) => a + b, 0);
+            let r = Math.random() * total;
+            for (const [key, weight] of Object.entries(weights)) {
+                r -= weight;
+                if (r <= 0) return key;
+            }
+            return Object.keys(weights)[0];
+        }
+
+        function getLayoutCode(layoutId) {
+            const match = layoutId.match(/^([A-Z]+)/);
+            return match ? match[1] : "D";
+        }
+
+        function getExitsForLayout(layoutId) {
+            const code = getLayoutCode(layoutId);
+            return gameData.layoutExits[code] || [];
+        }
+
+        // ==================== LAYOUT SELECTION ====================
+        function selectLayout(isBossRoom) {
+            // Boss room should be a Room, not a Dead End
+            const buckets = isBossRoom 
+                ? ["Rooms", "Halls"] 
+                : ["Rooms", "Halls", "Dead Ends"];
+            
+            // Weight buckets (Rooms more common)
+            const bucketWeights = isBossRoom
+                ? { "Rooms": 70, "Halls": 30 }
+                : { "Rooms": 50, "Halls": 35, "Dead Ends": 15 };
+            
+            const bucket = weightedPick(bucketWeights);
+            const available = gameData.layouts[bucket].filter(id => !usedLayouts[bucket].includes(id));
+            
+            // If exhausted, reset that bucket
+            if (available.length === 0) {
+                usedLayouts[bucket] = [];
+                return selectLayout(isBossRoom);
+            }
+            
+            const layoutId = pick(available);
+            usedLayouts[bucket].push(layoutId);
+            
+            return { bucket, layoutId };
+        }
+
+        // ==================== DESCRIPTION GENERATION ====================
+        function generateDescription() {
+            const leadIn = pick(gameData.leadIns);
+            const roomType = pick(gameData.roomTypes);
+            const underfoot = pick(gameData.sensesUnderfoot);
+            
+            // Pick one other sense type
+            const otherSenses = [gameData.sensesAir, gameData.sensesSound, gameData.sensesLight];
+            const otherSense = pick(pick(otherSenses));
+            
+            const anchor = pick(gameData.anchorFeatures);
+            const interaction = pick(gameData.interactions);
+            const pressure = pick(gameData.pressures);
+            const mitigation = pick(gameData.mitigations);
+            
+            const profile = gameData.difficultyProfiles[dungeonState.difficulty];
+            const potency = weightedPick(profile.potencyWeights);
+            
+            return {
+                text: `${leadIn} a ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}. ${pressure}, but a ${potency} check could ${mitigation}.`,
+                potency
+            };
+        }
+
+        // ==================== DOOR GENERATION ====================
+        function generateDoor(profile) {
+            const status = pick(gameData.doorStatuses);
+            
+            if (status === "Open") {
+                return { status, bypass: null };
+            }
+            
+            const bypassInfo = gameData.doorBypassVerbs[status] || { stat: pick(["Body", "Mind"]), verbs: ["overcome"] };
+            const potency = weightedPick(profile.potencyWeights);
+            const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
+            
+            return {
+                status,
+                bypass: {
+                    potency,
+                    stat: bypassInfo.stat,
+                    threshold,
+                    verb: pick(bypassInfo.verbs)
+                }
+            };
+        }
+
+        // ==================== THREAT GENERATION ====================
+        function generateThreats(isBoss) {
+            const profile = gameData.difficultyProfiles[dungeonState.difficulty];
+            const keyword = document.getElementById('threatKeyword').value.trim() || "Enemy";
+            
+            const keywordAbilities = [
+                document.getElementById('keywordAbility1').value.trim(),
+                document.getElementById('keywordAbility2').value.trim(),
+                document.getElementById('keywordAbility3').value.trim()
+            ].filter(a => a);
+            
+            if (isBoss) {
+                return [generateBossThreat(profile, keyword, keywordAbilities)];
+            }
+            
+            const numTypes = randInt(profile.threatTypesRange.min, profile.threatTypesRange.max);
+            if (numTypes === 0) return [];
+            
+            const threats = [];
+            const usedTypes = [];
+            
+            for (let i = 0; i < numTypes; i++) {
+                const availableTypes = gameData.typeWords.filter(t => !usedTypes.includes(t));
+                if (availableTypes.length === 0) break;
+                
+                const type = pick(availableTypes);
+                usedTypes.push(type);
+                
+                const quantity = randInt(profile.quantityRange.min, profile.quantityRange.max);
+                const damage = randInt(1, 2 + Math.floor(quantity / 2));
+                const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
+                
+                const abilities = [];
+                if (gameData.wordToAbility[type]) {
+                    abilities.push(gameData.wordToAbility[type]);
+                }
+                if (keywordAbilities.length > 0 && Math.random() < profile.keywordAbilityChance) {
+                    abilities.push(pick(keywordAbilities));
+                }
+                
+                threats.push({
+                    keyword,
+                    type,
+                    quantity,
+                    damage,
+                    threshold,
+                    defeat: profile.successTiers.defeat,
+                    overwhelm: profile.successTiers.overwhelm,
+                    abilities,
+                    isBoss: false
+                });
+            }
+            
+            return threats;
+        }
+
+        function generateBossThreat(profile, keyword, keywordAbilities) {
+            const type = pick(gameData.typeWords);
+            const damage = randInt(3, 4) + profile.bossDamageBonus;
+            const threshold = profile.baseThresholdRange.max + profile.bossThresholdBonus;
+            
+            const abilities = [];
+            if (gameData.wordToAbility[type]) {
+                abilities.push(gameData.wordToAbility[type]);
+            }
+            // Boss always gets a keyword ability if available
+            if (keywordAbilities.length > 0) {
+                abilities.push(pick(keywordAbilities));
+            }
+            abilities.push("Boss Action - takes an additional action each round");
+            
+            return {
+                keyword,
+                type,
+                quantity: 1,
+                damage,
+                threshold,
+                defeat: profile.successTiers.defeat + 5,
+                overwhelm: profile.successTiers.overwhelm + 5,
+                abilities,
+                isBoss: true
+            };
+        }
+
+        // ==================== ROOM GENERATION ====================
+        function generateRoom() {
+            const roomIndex = dungeonState.rooms.length + 1;
+            const isBoss = roomIndex === dungeonState.totalRooms;
+            const profile = gameData.difficultyProfiles[dungeonState.difficulty];
+            
+            const { bucket, layoutId } = selectLayout(isBoss);
+            const exits = getExitsForLayout(layoutId);
+            const description = generateDescription();
+            
+            const doors = {};
+            exits.forEach(exit => {
+                doors[exit] = generateDoor(profile);
+            });
+            
+            const threats = generateThreats(isBoss);
+            
+            const room = {
+                index: roomIndex,
+                isBoss,
+                bucket,
+                layoutId,
+                pngPath: `png/${bucket.toLowerCase().replace(' ', '-')}/${layoutId}.png`,
+                exits,
+                doors,
+                description: description.text,
+                descriptionPotency: description.potency,
+                threats,
+                timestamp: Date.now()
+            };
+            
+            dungeonState.rooms.push(room);
+            saveDungeonState();
+            
+            return room;
+        }
+
+        // ==================== RENDERING ====================
+        function renderRoom(room) {
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('roomContent').classList.remove('hidden');
+            
+            let exitsHtml = '';
+            if (room.exits.length === 0) {
+                exitsHtml = '<div class="no-threats">No exits — Dead End. Retrace your steps.</div>';
+            } else {
+                exitsHtml = '<div class="exit-list">';
+                const dirNames = { N: 'North', E: 'East', S: 'South' };
+                room.exits.forEach(exit => {
+                    const door = room.doors[exit];
+                    const statusClass = door.status === 'Open' ? 'open' : 'blocked';
+                    let bypassHtml = '';
+                    if (door.bypass) {
+                        bypassHtml = `<div class="bypass-info">
+                            Bypass: <span class="potency-${door.bypass.potency.toLowerCase()}">${door.bypass.potency}</span> 
+                            ${door.bypass.stat} check to ${door.bypass.verb}, Success Threshold ${door.bypass.threshold}
+                        </div>`;
+                    }
+                    exitsHtml += `
+                        <div class="exit-item">
+                            <span class="exit-direction">${dirNames[exit]}</span>
+                            <span class="exit-status ${statusClass}">${door.status}</span>
+                            ${bypassHtml}
+                        </div>
+                    `;
+                });
+                exitsHtml += '</div>';
+            }
+            
+            let threatsHtml = '';
+            if (room.threats.length === 0) {
+                threatsHtml = '<div class="no-threats">The room appears empty of immediate threats.</div>';
+            } else {
+                threatsHtml = '<div class="threat-list">';
+                room.threats.forEach(threat => {
+                    const bossClass = threat.isBoss ? 'boss' : '';
+                    const abilitiesHtml = threat.abilities.length > 0
+                        ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
+                        : '<div class="ability">—</div>';
+                    
+                    threatsHtml += `
+                        <div class="threat-block ${bossClass}">
+                            <div class="threat-header">
+                                ${threat.isBoss ? '👑 BOSS: ' : ''}${threat.keyword} ${threat.type} x${threat.quantity}
+                            </div>
+                            <div class="threat-stats">
+                                <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
+                                <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
+                                <div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>
+                            </div>
+                            <div class="threat-abilities">
+                                <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>
+                                ${abilitiesHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                threatsHtml += '</div>';
+            }
+            
+            document.getElementById('roomContent').innerHTML = `
+                <div class="room-header">
+                    <span class="room-number">Room ${room.index} of ${dungeonState.totalRooms}</span>
+                    ${room.isBoss ? '<span class="room-badge">BOSS ROOM</span>' : ''}
+                </div>
+                <div class="room-body">
+                    <div class="room-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Layout Type</span>
+                            <span class="meta-value">${room.bucket}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Layout ID</span>
+                            <span class="meta-value">${room.layoutId}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">PNG Path</span>
+                            <span class="meta-value">${room.pngPath}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Exits</span>
+                            <span class="meta-value">${room.exits.length > 0 ? room.exits.join(', ') : 'None'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="room-description">${room.description}</div>
+                    
+                    <div class="exits">
+                        <div class="section-title">Exits & Doors</div>
+                        ${exitsHtml}
+                    </div>
+                    
+                    <div class="threats">
+                        <div class="section-title">Threats</div>
+                        ${threatsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            
+            if (!dungeonState || dungeonState.rooms.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>Rooms will appear here as you explore.</p></div>';
+                return;
+            }
+            
+            const rooms = [...dungeonState.rooms].reverse();
+            list.innerHTML = rooms.map(room => {
+                const threatSummary = room.threats.length > 0 
+                    ? room.threats.map(t => `${t.type} x${t.quantity}`).join(', ')
+                    : 'No threats';
+                
+                return `
+                    <div class="history-item" data-index="${room.index}">
+                        <div class="history-summary">
+                            <span class="history-room-num">
+                                ${room.isBoss ? '👑 ' : ''}Room ${room.index}
+                            </span>
+                            <span class="history-layout">${room.layoutId}</span>
+                        </div>
+                        <div class="history-details">
+                            <div class="history-description">${room.description}</div>
+                            <div><strong>Exits:</strong> ${room.exits.length > 0 ? room.exits.join(', ') : 'Dead End'}</div>
+                            <div><strong>Threats:</strong> ${threatSummary}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add click handlers
+            list.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    item.classList.toggle('expanded');
+                });
+            });
+        }
+
+        function updateButtons() {
+            const hasState = dungeonState !== null;
+            const isComplete = hasState && dungeonState.rooms.length >= dungeonState.totalRooms;
+            
+            document.getElementById('nextRoomBtn').disabled = !hasState || isComplete;
+            document.getElementById('exportBtn').disabled = !hasState || dungeonState.rooms.length === 0;
+        }
+
+        // ==================== PERSISTENCE ====================
+        function saveDungeonState() {
+            localStorage.setItem('striveDungeon', JSON.stringify(dungeonState));
+            localStorage.setItem('striveUsedLayouts', JSON.stringify(usedLayouts));
+        }
+
+        function loadDungeonState() {
+            const saved = localStorage.getItem('striveDungeon');
+            const savedLayouts = localStorage.getItem('striveUsedLayouts');
+            
+            if (saved) {
+                dungeonState = JSON.parse(saved);
+                usedLayouts = savedLayouts ? JSON.parse(savedLayouts) : { Rooms: [], Halls: [], "Dead Ends": [] };
+                
+                if (dungeonState.rooms.length > 0) {
+                    renderRoom(dungeonState.rooms[dungeonState.rooms.length - 1]);
+                }
+                renderHistory();
+                updateButtons();
+                
+                // Restore UI values
+                document.getElementById('difficulty').value = dungeonState.difficulty;
+                document.getElementById('dungeonLength').value = dungeonState.totalRooms;
+                if (dungeonState.threatKeyword) {
+                    document.getElementById('threatKeyword').value = dungeonState.threatKeyword;
+                }
+            }
+        }
+
+        // ==================== EVENT HANDLERS ====================
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const difficulty = document.getElementById('difficulty').value;
+            const totalRooms = parseInt(document.getElementById('dungeonLength').value) || 10;
+            const threatKeyword = document.getElementById('threatKeyword').value.trim();
+            
+            // Reset state
+            usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
+            dungeonState = {
+                difficulty,
+                totalRooms: Math.max(6, Math.min(30, totalRooms)),
+                threatKeyword,
+                rooms: [],
+                startedAt: Date.now()
+            };
+            
+            // Generate first room
+            const room = generateRoom();
+            renderRoom(room);
+            renderHistory();
+            updateButtons();
+        });
+
+        document.getElementById('nextRoomBtn').addEventListener('click', () => {
+            if (!dungeonState) return;
+            if (dungeonState.rooms.length >= dungeonState.totalRooms) return;
+            
+            const room = generateRoom();
+            renderRoom(room);
+            renderHistory();
+            updateButtons();
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            if (!dungeonState) return;
+            
+            const exportData = {
+                ...dungeonState,
+                exportedAt: Date.now(),
+                gameData: gameData
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dungeon_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('dataFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                
+                // Validate required fields
+                const required = ['roomTypes', 'leadIns', 'doorStatuses', 'typeWords', 'difficultyProfiles'];
+                const missing = required.filter(key => !data[key]);
+                
+                if (missing.length > 0) {
+                    throw new Error(`Missing required fields: ${missing.join(', ')}`);
+                }
+                
+                // Merge with defaults (so partial files work)
+                gameData = { ...DEFAULT_DATA, ...data };
+                
+                document.getElementById('dataStatus').textContent = `Loaded: ${file.name}`;
+                document.getElementById('dataStatus').className = 'data-status loaded';
+                document.getElementById('errorDisplay').classList.add('hidden');
+                
+            } catch (err) {
+                document.getElementById('errorDisplay').textContent = `Error loading file: ${err.message}`;
+                document.getElementById('errorDisplay').classList.remove('hidden');
+                gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+        });
+
+        // ==================== INIT ====================
+        loadDungeonState();
+    </script>
+</body>
+</html>
