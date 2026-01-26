@@ -1059,6 +1059,16 @@
             return room.exits.includes(direction) || room.entryDir === direction;
         }
 
+        function getLinkedNeighborDirections(room) {
+            if (!room) return [];
+            return Object.keys(directionVectors).filter(dir => {
+                const vec = directionVectors[dir];
+                const neighborPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
+                const neighbor = getRoomByPosition(neighborPos);
+                return neighbor ? roomHasExit(neighbor, getOppositeDirection(dir)) : false;
+            });
+        }
+
         // ==================== LAYOUT SELECTION ====================
         function selectLayout({ isBossRoom, minExits, includeDeadEnds }) {
             const buckets = isBossRoom
@@ -1358,6 +1368,11 @@
             if (room.entryDir && !displayExits.includes(room.entryDir)) {
                 displayExits.push(room.entryDir);
             }
+            getLinkedNeighborDirections(room).forEach(dir => {
+                if (!displayExits.includes(dir)) {
+                    displayExits.push(dir);
+                }
+            });
 
             let exitsHtml = '';
             if (displayExits.length === 0) {
