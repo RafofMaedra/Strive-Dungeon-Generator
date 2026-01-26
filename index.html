@@ -512,6 +512,11 @@
             border-left: 3px solid var(--accent-gold-dim);
         }
 
+        .data-status.warning {
+            color: var(--accent-red);
+            border-left: 3px solid var(--accent-red);
+        }
+
         .error {
             background: var(--danger);
             padding: 1rem;
@@ -667,6 +672,10 @@
                 <label for="dataFile">Import Data File</label>
                 <input type="file" id="dataFile" accept=".json">
             </div>
+            <div class="control-group">
+                <label for="pngFolder">Load PNG Folder</label>
+                <input type="file" id="pngFolder" webkitdirectory directory>
+            </div>
         </div>
 
         <div class="buttons">
@@ -690,6 +699,7 @@
                         <div id="mapEmpty" class="empty-state">
                             <p>Rooms will reveal themselves here as you explore.</p>
                         </div>
+                        <div id="pngStatus" class="data-status default hidden"></div>
                         <div id="mapGrid" class="map-grid hidden">
                             <div id="mapRooms" class="map-rooms"></div>
                         </div>
@@ -911,6 +921,8 @@
         let gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
         let dungeonState = null;
         let usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
+        const pngCache = {};
+        const missingPngPaths = new Set();
         const directionVectors = {
             N: { x: 0, y: -1 },
             E: { x: 1, y: 0 },
@@ -978,6 +990,33 @@
 
         function rotateExits(exits, rotationDeg) {
             return exits.map(exit => rotateDirection(exit, rotationDeg));
+        }
+
+        function normalizePngPath(path) {
+            if (!path) return path;
+            const normalized = path.replace(/\\/g, '/');
+            const pngIndex = normalized.indexOf('png/');
+            if (pngIndex >= 0) {
+                return normalized.slice(pngIndex);
+            }
+            return normalized.split('/').pop();
+        }
+
+        function getPngSrc(path) {
+            const normalized = normalizePngPath(path);
+            return pngCache[normalized] || path;
+        }
+
+        function updatePngStatus() {
+            const status = document.getElementById('pngStatus');
+            if (!status) return;
+            if (missingPngPaths.size === 0) {
+                status.classList.add('hidden');
+                return;
+            }
+            status.className = 'data-status warning';
+            status.textContent = `Missing PNGs (${missingPngPaths.size}). Load the png folder if running from local files.`;
+            status.classList.remove('hidden');
         }
 
         function getRoomByPosition(position) {
@@ -1265,7 +1304,7 @@
             const room = {
                 id: `room_${Date.now()}_${roomIndex}`,
                 index: roomIndex,
-                isBoss: false,
+                isBoss: roomIndex === dungeonState.totalRooms,
                 bucket: layoutSelection.bucket,
                 layoutId: layoutSelection.layoutId,
                 pngPath: `png/${layoutSelection.bucket.toLowerCase().replace(' ', '-')}/${layoutSelection.layoutId}.png`,
@@ -1277,7 +1316,7 @@
                 entryDir: moveDir ? getOppositeDirection(moveDir) : null,
                 description: description.text,
                 descriptionPotency: description.potency,
-                threats: generateThreats(false),
+                threats: generateThreats(roomIndex === dungeonState.totalRooms),
                 timestamp: Date.now()
             };
 
@@ -1290,18 +1329,9 @@
 
         function assignBossRoom() {
             if (!dungeonState || dungeonState.rooms.length === 0) return;
-            let bossRoom = dungeonState.rooms[0];
-            let maxDistance = 0;
+            const bossRoom = dungeonState.rooms.find(room => room.index === dungeonState.totalRooms);
             dungeonState.rooms.forEach(room => {
-                const distance = Math.abs(room.position.x) + Math.abs(room.position.y);
-                if (distance > maxDistance) {
-                    maxDistance = distance;
-                    bossRoom = room;
-                }
-            });
-
-            dungeonState.rooms.forEach(room => {
-                const shouldBeBoss = room.id === bossRoom.id;
+                const shouldBeBoss = bossRoom ? room.id === bossRoom.id : false;
                 if (shouldBeBoss && !room.isBoss) {
                     room.threats = generateThreats(true);
                 }
@@ -1310,7 +1340,7 @@
                 }
                 room.isBoss = shouldBeBoss;
             });
-            dungeonState.bossRoomId = bossRoom.id;
+            dungeonState.bossRoomId = bossRoom ? bossRoom.id : null;
             saveDungeonState();
         }
 
@@ -1532,9 +1562,16 @@
                 roomDiv.style.top = `${offsetY}px`;
 
                 const img = document.createElement('img');
-                img.src = room.pngPath;
+                img.src = getPngSrc(room.pngPath);
                 img.alt = `Room ${room.index}`;
                 img.style.transform = `rotate(${room.rotation}deg)`;
+                img.addEventListener('error', () => {
+                    const normalized = normalizePngPath(room.pngPath);
+                    if (!missingPngPaths.has(normalized)) {
+                        missingPngPaths.add(normalized);
+                        updatePngStatus();
+                    }
+                });
 
                 const label = document.createElement('div');
                 label.className = 'map-room-label';
@@ -1556,7 +1593,6 @@
 
             if (existingRoom) {
                 dungeonState.currentRoomId = existingRoom.id;
-                assignBossRoom();
                 renderRoom(existingRoom);
                 renderMap();
                 updateButtons();
@@ -1570,7 +1606,9 @@
 
             const newRoom = generateRoom({ position: nextPos, moveDir: direction, fromRoom: currentRoom });
             dungeonState.currentRoomId = newRoom.id;
-            assignBossRoom();
+            if (newRoom.isBoss) {
+                dungeonState.bossRoomId = newRoom.id;
+            }
 
             renderRoom(newRoom);
             renderHistory();
@@ -1610,7 +1648,9 @@
                 }
                 
                 if (dungeonState.rooms.length > 0) {
-                    assignBossRoom();
+                    if (!dungeonState.bossRoomId) {
+                        assignBossRoom();
+                    }
                     renderRoom(getCurrentRoom());
                 }
                 renderHistory();
@@ -1701,7 +1741,9 @@
             // Generate first room
             const room = generateRoom({ position: { x: 0, y: 0 }, moveDir: null, fromRoom: null });
             dungeonState.currentRoomId = room.id;
-            assignBossRoom();
+            if (room.isBoss) {
+                dungeonState.bossRoomId = room.id;
+            }
             renderRoom(room);
             renderHistory();
             renderMap();
@@ -1754,6 +1796,18 @@
                 document.getElementById('errorDisplay').classList.remove('hidden');
                 gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
             }
+        });
+
+        document.getElementById('pngFolder').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
+            files.forEach(file => {
+                const key = normalizePngPath(file.webkitRelativePath || file.name);
+                pngCache[key] = URL.createObjectURL(file);
+                missingPngPaths.delete(key);
+            });
+            updatePngStatus();
+            renderMap();
         });
 
         // ==================== INIT ====================
