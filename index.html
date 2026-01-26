@@ -41,7 +41,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -73,11 +73,37 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding: 1.5rem;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 4px;
+        }
+
+        .setup-panel {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-card);
+        }
+
+        .setup-panel summary {
+            cursor: pointer;
+            padding: 1rem 1.5rem;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-gold);
+            list-style: none;
+        }
+
+        .setup-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .setup-panel[open] summary {
+            border-bottom: 1px solid var(--border);
         }
 
         .control-group {
@@ -183,7 +209,7 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: minmax(320px, 1.5fr) minmax(320px, 1fr) minmax(260px, 0.8fr);
             gap: 2rem;
         }
 
@@ -506,6 +532,11 @@
             border-left: 3px solid var(--accent-gold-dim);
         }
 
+        .data-status.warning {
+            color: var(--accent-red);
+            border-left: 3px solid var(--accent-red);
+        }
+
         .error {
             background: var(--danger);
             padding: 1rem;
@@ -518,6 +549,100 @@
         .potency-forceful { color: #9b6b6b; }
 
         .hidden { display: none !important; }
+
+        .exit-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .exit-action {
+            font-size: 0.65rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .map-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .map-header {
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.3);
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .map-body {
+            padding: 1rem;
+        }
+
+        .map-grid {
+            position: relative;
+            background-image:
+                linear-gradient(transparent 69px, rgba(255, 255, 255, 0.05) 70px),
+                linear-gradient(90deg, transparent 69px, rgba(255, 255, 255, 0.05) 70px);
+            background-size: 70px 70px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            overflow: auto;
+            min-height: 220px;
+        }
+
+        .map-rooms {
+            position: relative;
+        }
+
+        .map-room {
+            position: absolute;
+            width: var(--room-size, 140px);
+            height: var(--room-size, 140px);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+        }
+
+        .map-room img {
+            width: 100%;
+            height: 100%;
+            transform-origin: center;
+        }
+
+        .map-room.current {
+            outline: 3px solid var(--accent-gold);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.4);
+        }
+
+        .map-room.start {
+            outline: 2px dashed var(--accent-green);
+        }
+
+        .map-room.boss {
+            outline: 2px solid var(--accent-red);
+        }
+
+        .map-room-label {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            padding: 0.2rem 0.4rem;
+            background: rgba(0,0,0,0.6);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .map-room-label span {
+            color: var(--accent-gold);
+        }
     </style>
 </head>
 <body>
@@ -530,50 +655,56 @@
         <div id="dataStatus" class="data-status default">Using default embedded data. Load a custom JSON file to override.</div>
         <div id="errorDisplay" class="error hidden"></div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label for="difficulty">Difficulty</label>
-                <select id="difficulty">
-                    <option value="Easy">Easy</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="Hard">Hard</option>
-                    <option value="Deadly">Deadly</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="dungeonLength">Dungeon Length (rooms)</label>
-                <input type="number" id="dungeonLength" min="6" max="30" value="10">
-            </div>
-            <div class="control-group full-width keyword-group">
-                <label>Threat Keyword 1</label>
-                <div class="keyword-row">
-                    <input type="text" id="threatKeyword1" placeholder="e.g., Goblin" class="keyword-input">
-                    <input type="text" id="keywordAbility1_1" list="abilityList" placeholder="Ability 1" class="ability-input">
-                    <input type="text" id="keywordAbility1_2" list="abilityList" placeholder="Ability 2" class="ability-input">
-                    <input type="text" id="keywordAbility1_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+        <details class="setup-panel" open>
+            <summary>Dungeon Setup</summary>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                        <option value="Deadly">Deadly</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="dungeonLength">Dungeon Length (rooms)</label>
+                    <input type="number" id="dungeonLength" min="6" max="30" value="10">
+                </div>
+                <div class="control-group full-width keyword-group">
+                    <label>Threat Keyword 1</label>
+                    <div class="keyword-row">
+                        <input type="text" id="threatKeyword1" placeholder="e.g., Goblin" class="keyword-input">
+                        <input type="text" id="keywordAbility1_1" list="abilityList" placeholder="Ability 1" class="ability-input">
+                        <input type="text" id="keywordAbility1_2" list="abilityList" placeholder="Ability 2" class="ability-input">
+                        <input type="text" id="keywordAbility1_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+                    </div>
+                </div>
+                <div class="control-group full-width keyword-group">
+                    <label>Threat Keyword 2 (optional)</label>
+                    <div class="keyword-row">
+                        <input type="text" id="threatKeyword2" placeholder="e.g., Ogre" class="keyword-input">
+                        <input type="text" id="keywordAbility2_1" list="abilityList" placeholder="Ability 1" class="ability-input">
+                        <input type="text" id="keywordAbility2_2" list="abilityList" placeholder="Ability 2" class="ability-input">
+                        <input type="text" id="keywordAbility2_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+                    </div>
+                </div>
+                <datalist id="abilityList"></datalist>
+                <div class="control-group">
+                    <label for="dataFile">Import Data File</label>
+                    <input type="file" id="dataFile" accept=".json">
+                </div>
+                <div class="control-group">
+                    <label for="pngFolder">Load PNG Folder</label>
+                    <input type="file" id="pngFolder" webkitdirectory directory>
                 </div>
             </div>
-            <div class="control-group full-width keyword-group">
-                <label>Threat Keyword 2 (optional)</label>
-                <div class="keyword-row">
-                    <input type="text" id="threatKeyword2" placeholder="e.g., Ogre" class="keyword-input">
-                    <input type="text" id="keywordAbility2_1" list="abilityList" placeholder="Ability 1" class="ability-input">
-                    <input type="text" id="keywordAbility2_2" list="abilityList" placeholder="Ability 2" class="ability-input">
-                    <input type="text" id="keywordAbility2_3" list="abilityList" placeholder="Ability 3" class="ability-input">
-                </div>
-            </div>
-            <datalist id="abilityList"></datalist>
-            <div class="control-group">
-                <label for="dataFile">Import Data File</label>
-                <input type="file" id="dataFile" accept=".json">
-            </div>
-        </div>
 
-        <div class="buttons">
-            <button class="primary" id="startBtn">Start New Dungeon</button>
-            <button id="nextRoomBtn" disabled>Generate Next Room</button>
-            <button id="exportBtn" disabled>Export Dungeon (JSON)</button>
-        </div>
+            <div class="buttons">
+                <button class="primary" id="startBtn">Start New Dungeon</button>
+                <button id="exportBtn" disabled>Export Dungeon (JSON)</button>
+            </div>
+        </details>
 
         <div class="main-content">
             <div class="current-room" id="currentRoomPanel">
@@ -582,6 +713,19 @@
                     <p>Configure your settings above and click "Start New Dungeon" to begin.</p>
                 </div>
                 <div id="roomContent" class="hidden"></div>
+            </div>
+
+            <div class="map-panel">
+                <div class="map-header">Dungeon Map</div>
+                <div class="map-body">
+                    <div id="mapEmpty" class="empty-state">
+                        <p>Rooms will reveal themselves here as you explore.</p>
+                    </div>
+                    <div id="pngStatus" class="data-status default hidden"></div>
+                    <div id="mapGrid" class="map-grid hidden">
+                        <div id="mapRooms" class="map-rooms"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="history-panel">
@@ -783,6 +927,12 @@
                 Halls: ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
                 "Dead Ends": ["D1", "D2", "D3", "D4"]
             },
+            entranceLayouts: {
+                "ENT_E": ["E"],
+                "ENT_NS": ["N", "S"],
+                "ENT_NW": ["N", "W"],
+                "ENT_NWS": ["N", "W", "S"]
+            },
             layoutExits: {
                 "A": ["N", "E", "S"],
                 "N": ["N"],
@@ -798,6 +948,14 @@
         let gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
         let dungeonState = null;
         let usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
+        const pngCache = {};
+        const missingPngPaths = new Set();
+        const directionVectors = {
+            N: { x: 0, y: -1 },
+            E: { x: 1, y: 0 },
+            S: { x: 0, y: 1 },
+            W: { x: -1, y: 0 }
+        };
 
         // ==================== UTILITIES ====================
         function randInt(min, max) {
@@ -835,30 +993,154 @@
             return gameData.layoutExits[code] || [];
         }
 
+        function coordKey(x, y) {
+            return `${x},${y}`;
+        }
+
+        function getOppositeDirection(dir) {
+            const opposites = { N: 'S', S: 'N', E: 'W', W: 'E' };
+            return opposites[dir];
+        }
+
+        function getRotationForMove(moveDir) {
+            const rotations = { E: 0, W: 180, N: -90, S: 90 };
+            return rotations[moveDir] ?? 0;
+        }
+
+        function rotateDirection(dir, rotationDeg) {
+            const order = ['N', 'E', 'S', 'W'];
+            const index = order.indexOf(dir);
+            if (index === -1) return dir;
+            const steps = ((rotationDeg / 90) % 4 + 4) % 4;
+            return order[(index + steps) % 4];
+        }
+
+        function rotateExits(exits, rotationDeg) {
+            return exits.map(exit => rotateDirection(exit, rotationDeg));
+        }
+
+        function randomRotation() {
+            const rotations = [0, 90, 180, 270];
+            return pick(rotations);
+        }
+
+        function normalizePngPath(path) {
+            if (!path) return path;
+            const normalized = path.replace(/\\/g, '/');
+            const pngIndex = normalized.indexOf('png/');
+            if (pngIndex >= 0) {
+                return normalized.slice(pngIndex);
+            }
+            return normalized.split('/').pop();
+        }
+
+        function getPngSrc(path) {
+            const normalized = normalizePngPath(path);
+            return pngCache[normalized] || path;
+        }
+
+        function updatePngStatus() {
+            const status = document.getElementById('pngStatus');
+            if (!status) return;
+            if (missingPngPaths.size === 0) {
+                status.classList.add('hidden');
+                return;
+            }
+            status.className = 'data-status warning';
+            status.textContent = `Missing PNGs (${missingPngPaths.size}). Load the png folder if running from local files.`;
+            status.classList.remove('hidden');
+        }
+
+        function getRoomByPosition(position) {
+            if (!dungeonState || !dungeonState.map) return null;
+            const key = coordKey(position.x, position.y);
+            const roomId = dungeonState.map[key];
+            return dungeonState.rooms.find(room => room.id === roomId) || null;
+        }
+
+        function getCurrentRoom() {
+            if (!dungeonState) return null;
+            return dungeonState.rooms.find(room => room.id === dungeonState.currentRoomId) || null;
+        }
+
+        function getAvailableExpansionDirections(position, exits) {
+            return exits.filter(dir => {
+                const vec = directionVectors[dir];
+                const nextPos = { x: position.x + vec.x, y: position.y + vec.y };
+                return !dungeonState.map[coordKey(nextPos.x, nextPos.y)];
+            });
+        }
+
+        function getFrontierCount() {
+            if (!dungeonState) return 0;
+            let count = 0;
+            dungeonState.rooms.forEach(room => {
+                room.exits.forEach(exit => {
+                    const vec = directionVectors[exit];
+                    const nextPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
+                    if (!dungeonState.map[coordKey(nextPos.x, nextPos.y)]) {
+                        count += 1;
+                    }
+                });
+            });
+            return count;
+        }
+
+        function roomHasExit(room, direction) {
+            if (!room) return false;
+            return room.exits.includes(direction) || room.entryDir === direction;
+        }
+
+        function markDoorOpen(room, direction) {
+            if (!room) return;
+            if (!room.doors) {
+                room.doors = {};
+            }
+            room.doors[direction] = { status: 'Open', bypass: null };
+        }
+
+        function getLinkedNeighborDirections(room) {
+            if (!room) return [];
+            return Object.keys(directionVectors).filter(dir => {
+                if (!roomHasExit(room, dir)) {
+                    return false;
+                }
+                const vec = directionVectors[dir];
+                const neighborPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
+                const neighbor = getRoomByPosition(neighborPos);
+                return neighbor ? roomHasExit(neighbor, getOppositeDirection(dir)) : false;
+            });
+        }
+
         // ==================== LAYOUT SELECTION ====================
-        function selectLayout(isBossRoom) {
-            // Boss room should be a Room, not a Dead End
-            const buckets = isBossRoom 
-                ? ["Rooms", "Halls"] 
-                : ["Rooms", "Halls", "Dead Ends"];
-            
-            // Weight buckets (Rooms more common)
+        function selectLayout({ isBossRoom, minExits, includeDeadEnds }) {
+            const buckets = isBossRoom
+                ? ["Rooms", "Halls"]
+                : ["Rooms", "Halls", ...(includeDeadEnds ? ["Dead Ends"] : [])];
+
             const bucketWeights = isBossRoom
                 ? { "Rooms": 70, "Halls": 30 }
-                : { "Rooms": 50, "Halls": 35, "Dead Ends": 15 };
-            
+                : {
+                    "Rooms": 50,
+                    "Halls": 35,
+                    ...(includeDeadEnds ? { "Dead Ends": 15 } : {})
+                };
+
             const bucket = weightedPick(bucketWeights);
-            const available = gameData.layouts[bucket].filter(id => !usedLayouts[bucket].includes(id));
-            
-            // If exhausted, reset that bucket
+            const available = gameData.layouts[bucket].filter(id => {
+                if (usedLayouts[bucket].includes(id)) return false;
+                const exits = getExitsForLayout(id);
+                return exits.length >= minExits;
+            });
+
             if (available.length === 0) {
                 usedLayouts[bucket] = [];
-                return selectLayout(isBossRoom);
+                return selectLayout({ isBossRoom, minExits });
             }
-            
+
             const layoutId = pick(available);
             usedLayouts[bucket].push(layoutId);
-            
+
             return { bucket, layoutId };
         }
 
@@ -1035,40 +1317,120 @@
         }
 
         // ==================== ROOM GENERATION ====================
-        function generateRoom() {
+        function generateRoom({ position, moveDir, fromRoom }) {
             const roomIndex = dungeonState.rooms.length + 1;
-            const isBoss = roomIndex === dungeonState.totalRooms;
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
-            
-            const { bucket, layoutId } = selectLayout(isBoss);
-            const exits = getExitsForLayout(layoutId);
+            const isEntrance = roomIndex === 1;
+            const rotation = isEntrance
+                ? randomRotation()
+                : (moveDir ? getRotationForMove(moveDir) : 0);
+            const remainingAfter = dungeonState.totalRooms - (dungeonState.rooms.length + 1);
+            const frontierBefore = getFrontierCount();
+            const usedExit = fromRoom && moveDir ? 1 : 0;
+            const guaranteedFrontier = frontierBefore - usedExit;
+            const minExits = isEntrance
+                ? 1
+                : (remainingAfter > 0 && guaranteedFrontier === 0 ? 1 : 0);
+            const includeDeadEnds = !isEntrance && remainingAfter > 0 && guaranteedFrontier > 0;
+
+            let layoutSelection = null;
+            let attempts = 0;
+            while (!layoutSelection && attempts < 20) {
+                if (isEntrance) {
+                    const entranceIds = Object.keys(gameData.entranceLayouts || {});
+                    const entranceId = pick(entranceIds);
+                    const exits = gameData.entranceLayouts[entranceId] || [];
+                    const mapExits = rotateExits(exits, rotation);
+                    const availableExits = getAvailableExpansionDirections(position, mapExits);
+                    if (remainingAfter === 0 || availableExits.length > 0) {
+                        layoutSelection = {
+                            bucket: "Entrance",
+                            layoutId: entranceId,
+                            exits,
+                            mapExits
+                        };
+                    }
+                } else {
+                    const candidate = selectLayout({ isBossRoom: false, minExits, includeDeadEnds });
+                    const exits = getExitsForLayout(candidate.layoutId);
+                    const mapExits = rotateExits(exits, rotation);
+                    const availableExits = getAvailableExpansionDirections(position, mapExits);
+                    const frontierAfter = guaranteedFrontier + availableExits.length;
+                    if (remainingAfter === 0 || frontierAfter > 0) {
+                        layoutSelection = { ...candidate, exits, mapExits };
+                    }
+                }
+                attempts += 1;
+            }
+
+            if (!layoutSelection && !isEntrance) {
+                const fallback = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
+                layoutSelection = {
+                    ...fallback,
+                    exits: getExitsForLayout(fallback.layoutId),
+                    mapExits: rotateExits(getExitsForLayout(fallback.layoutId), rotation)
+                };
+            }
+
+            if (!layoutSelection && isEntrance) {
+                const entranceIds = Object.keys(gameData.entranceLayouts || {});
+                const entranceId = entranceIds[0] || "ENT_E";
+                const exits = gameData.entranceLayouts[entranceId] || [];
+                layoutSelection = {
+                    bucket: "Entrance",
+                    layoutId: entranceId,
+                    exits,
+                    mapExits: rotateExits(exits, rotation)
+                };
+            }
+
             const description = generateDescription();
-            
             const doors = {};
-            exits.forEach(exit => {
+            layoutSelection.mapExits.forEach(exit => {
                 doors[exit] = generateDoor(profile);
             });
-            
-            const threats = generateThreats(isBoss);
-            
+
             const room = {
+                id: `room_${Date.now()}_${roomIndex}`,
                 index: roomIndex,
-                isBoss,
-                bucket,
-                layoutId,
-                pngPath: `png/${bucket.toLowerCase().replace(' ', '-')}/${layoutId}.png`,
-                exits,
+                isBoss: roomIndex === dungeonState.totalRooms,
+                bucket: layoutSelection.bucket,
+                layoutId: layoutSelection.layoutId,
+                pngPath: `png/${layoutSelection.bucket.toLowerCase().replace(' ', '-')}/${layoutSelection.layoutId}.png`,
+                exits: layoutSelection.mapExits,
+                baseExits: layoutSelection.exits,
                 doors,
+                rotation,
+                position,
+                entryDir: moveDir ? getOppositeDirection(moveDir) : null,
                 description: description.text,
                 descriptionPotency: description.potency,
-                threats,
+                threats: generateThreats(roomIndex === dungeonState.totalRooms),
                 timestamp: Date.now()
             };
-            
+
             dungeonState.rooms.push(room);
+            dungeonState.map[coordKey(position.x, position.y)] = room.id;
             saveDungeonState();
-            
+
             return room;
+        }
+
+        function assignBossRoom() {
+            if (!dungeonState || dungeonState.rooms.length === 0) return;
+            const bossRoom = dungeonState.rooms.find(room => room.index === dungeonState.totalRooms);
+            dungeonState.rooms.forEach(room => {
+                const shouldBeBoss = bossRoom ? room.id === bossRoom.id : false;
+                if (shouldBeBoss && !room.isBoss) {
+                    room.threats = generateThreats(true);
+                }
+                if (!shouldBeBoss && room.isBoss) {
+                    room.threats = generateThreats(false);
+                }
+                room.isBoss = shouldBeBoss;
+            });
+            dungeonState.bossRoomId = bossRoom ? bossRoom.id : null;
+            saveDungeonState();
         }
 
         // ==================== RENDERING ====================
@@ -1076,14 +1438,26 @@
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('roomContent').classList.remove('hidden');
             
+            const displayExits = [...room.exits];
+            if (room.entryDir && !displayExits.includes(room.entryDir)) {
+                displayExits.push(room.entryDir);
+            }
+            getLinkedNeighborDirections(room).forEach(dir => {
+                if (!displayExits.includes(dir)) {
+                    displayExits.push(dir);
+                }
+            });
+
             let exitsHtml = '';
-            if (room.exits.length === 0) {
+            if (displayExits.length === 0) {
                 exitsHtml = '<div class="no-threats">No exits — Dead End. Retrace your steps.</div>';
             } else {
                 exitsHtml = '<div class="exit-list">';
-                const dirNames = { N: 'North', E: 'East', S: 'South' };
-                room.exits.forEach(exit => {
-                    const door = room.doors[exit];
+                const dirNames = { N: 'North', E: 'East', S: 'South', W: 'West' };
+                displayExits.forEach(exit => {
+                    const isEntry = exit === room.entryDir;
+                    const baseDoor = room.doors[exit] || { status: 'Open' };
+                    const door = isEntry ? { status: 'Open' } : baseDoor;
                     const statusClass = door.status === 'Open' ? 'open' : 'blocked';
                     let bypassHtml = '';
                     if (door.bypass) {
@@ -1096,10 +1470,22 @@
                             ${trapDamageHtml}
                         </div>`;
                     }
+                    const vec = directionVectors[exit];
+                    const targetPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
+                    const targetRoom = getRoomByPosition(targetPos);
+                    const oppositeDir = getOppositeDirection(exit);
+                    const canLink = targetRoom
+                        ? roomHasExit(room, exit) && roomHasExit(targetRoom, oppositeDir)
+                        : true;
+                    const canCreate = (!!targetRoom && canLink) || (!targetRoom && dungeonState.rooms.length < dungeonState.totalRooms);
+                    const buttonLabel = targetRoom ? 'Return' : 'Go this way';
                     exitsHtml += `
                         <div class="exit-item">
                             <span class="exit-direction">${dirNames[exit]}</span>
                             <span class="exit-status ${statusClass}">${door.status}</span>
+                            <div class="exit-actions">
+                                <button class="exit-action" data-dir="${exit}" ${canCreate ? '' : 'disabled'}>${buttonLabel}</button>
+                            </div>
                             ${bypassHtml}
                         </div>
                     `;
@@ -1159,6 +1545,10 @@
                             <span class="meta-value">${room.pngPath}</span>
                         </div>
                         <div class="meta-item">
+                            <span class="meta-label">Grid Position</span>
+                            <span class="meta-value">(${room.position.x}, ${room.position.y})</span>
+                        </div>
+                        <div class="meta-item">
                             <span class="meta-label">Exits</span>
                             <span class="meta-value">${room.exits.length > 0 ? room.exits.join(', ') : 'None'}</span>
                         </div>
@@ -1177,6 +1567,13 @@
                     </div>
                 </div>
             `;
+            
+            document.querySelectorAll('.exit-action').forEach(button => {
+                button.addEventListener('click', () => {
+                    const direction = button.dataset.dir;
+                    handleExitMove(direction);
+                });
+            });
         }
 
         function renderHistory() {
@@ -1218,11 +1615,113 @@
             });
         }
 
+        function renderMap() {
+            const mapGrid = document.getElementById('mapGrid');
+            const mapRooms = document.getElementById('mapRooms');
+            const mapEmpty = document.getElementById('mapEmpty');
+
+            if (!dungeonState || dungeonState.rooms.length === 0) {
+                mapGrid.classList.add('hidden');
+                mapEmpty.classList.remove('hidden');
+                return;
+            }
+
+            mapGrid.classList.remove('hidden');
+            mapEmpty.classList.add('hidden');
+
+            const positions = dungeonState.rooms.map(room => room.position);
+            const minX = Math.min(...positions.map(pos => pos.x));
+            const maxX = Math.max(...positions.map(pos => pos.x));
+            const minY = Math.min(...positions.map(pos => pos.y));
+            const maxY = Math.max(...positions.map(pos => pos.y));
+
+            const roomSize = 140;
+            const padding = 70;
+            const width = (maxX - minX + 1) * roomSize + padding * 2;
+            const height = (maxY - minY + 1) * roomSize + padding * 2;
+
+            mapGrid.style.setProperty('--room-size', `${roomSize}px`);
+            mapGrid.style.width = `${Math.max(width, 240)}px`;
+            mapGrid.style.height = `${Math.max(height, 240)}px`;
+            mapRooms.style.width = `${Math.max(width, 240)}px`;
+            mapRooms.style.height = `${Math.max(height, 240)}px`;
+
+            mapRooms.innerHTML = '';
+            dungeonState.rooms.forEach(room => {
+                const offsetX = (room.position.x - minX) * roomSize + padding;
+                const offsetY = (room.position.y - minY) * roomSize + padding;
+                const roomDiv = document.createElement('div');
+                const isCurrent = room.id === dungeonState.currentRoomId;
+                const isStart = room.position.x === 0 && room.position.y === 0;
+                const isBoss = room.id === dungeonState.bossRoomId;
+
+                roomDiv.className = `map-room${isCurrent ? ' current' : ''}${isStart ? ' start' : ''}${isBoss ? ' boss' : ''}`;
+                roomDiv.style.left = `${offsetX}px`;
+                roomDiv.style.top = `${offsetY}px`;
+
+                const img = document.createElement('img');
+                img.src = getPngSrc(room.pngPath);
+                img.alt = `Room ${room.index}`;
+                img.style.transform = `rotate(${room.rotation}deg)`;
+                img.addEventListener('error', () => {
+                    const normalized = normalizePngPath(room.pngPath);
+                    if (!missingPngPaths.has(normalized)) {
+                        missingPngPaths.add(normalized);
+                        updatePngStatus();
+                    }
+                });
+
+                const label = document.createElement('div');
+                label.className = 'map-room-label';
+                label.innerHTML = `${room.isBoss ? '👑 ' : ''}<span>Room ${room.index}</span>`;
+
+                roomDiv.appendChild(img);
+                roomDiv.appendChild(label);
+                mapRooms.appendChild(roomDiv);
+            });
+        }
+
+        function handleExitMove(direction) {
+            if (!dungeonState) return;
+            const currentRoom = getCurrentRoom();
+            if (!currentRoom) return;
+            const vec = directionVectors[direction];
+            const nextPos = { x: currentRoom.position.x + vec.x, y: currentRoom.position.y + vec.y };
+            const existingRoom = getRoomByPosition(nextPos);
+
+            if (existingRoom) {
+                const oppositeDir = getOppositeDirection(direction);
+                if (!roomHasExit(currentRoom, direction) || !roomHasExit(existingRoom, oppositeDir)) {
+                    return;
+                }
+                markDoorOpen(currentRoom, direction);
+                markDoorOpen(existingRoom, oppositeDir);
+                dungeonState.currentRoomId = existingRoom.id;
+                renderRoom(existingRoom);
+                renderMap();
+                updateButtons();
+                saveDungeonState();
+                return;
+            }
+
+            if (dungeonState.rooms.length >= dungeonState.totalRooms) {
+                return;
+            }
+
+            const newRoom = generateRoom({ position: nextPos, moveDir: direction, fromRoom: currentRoom });
+            dungeonState.currentRoomId = newRoom.id;
+            if (newRoom.isBoss) {
+                dungeonState.bossRoomId = newRoom.id;
+            }
+
+            renderRoom(newRoom);
+            renderHistory();
+            renderMap();
+            updateButtons();
+        }
+
         function updateButtons() {
             const hasState = dungeonState !== null;
-            const isComplete = hasState && dungeonState.rooms.length >= dungeonState.totalRooms;
-            
-            document.getElementById('nextRoomBtn').disabled = !hasState || isComplete;
             document.getElementById('exportBtn').disabled = !hasState || dungeonState.rooms.length === 0;
         }
 
@@ -1239,11 +1738,27 @@
             if (saved) {
                 dungeonState = JSON.parse(saved);
                 usedLayouts = savedLayouts ? JSON.parse(savedLayouts) : { Rooms: [], Halls: [], "Dead Ends": [] };
+
+                if (!dungeonState.map || dungeonState.rooms.some(room => !room.position)) {
+                    localStorage.removeItem('striveDungeon');
+                    localStorage.removeItem('striveUsedLayouts');
+                    dungeonState = null;
+                    usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
+                    return;
+                }
+
+                if (!dungeonState.currentRoomId && dungeonState.rooms.length > 0) {
+                    dungeonState.currentRoomId = dungeonState.rooms[dungeonState.rooms.length - 1].id;
+                }
                 
                 if (dungeonState.rooms.length > 0) {
-                    renderRoom(dungeonState.rooms[dungeonState.rooms.length - 1]);
+                    if (!dungeonState.bossRoomId) {
+                        assignBossRoom();
+                    }
+                    renderRoom(getCurrentRoom());
                 }
                 renderHistory();
+                renderMap();
                 updateButtons();
                 
                 // Restore UI values
@@ -1321,23 +1836,21 @@
                     ...(keyword2 ? [{ name: keyword2, abilities: keyword2Abilities }] : [])
                 ],
                 rooms: [],
+                map: {},
+                currentRoomId: null,
+                bossRoomId: null,
                 startedAt: Date.now()
             };
 
             // Generate first room
-            const room = generateRoom();
+            const room = generateRoom({ position: { x: 0, y: 0 }, moveDir: null, fromRoom: null });
+            dungeonState.currentRoomId = room.id;
+            if (room.isBoss) {
+                dungeonState.bossRoomId = room.id;
+            }
             renderRoom(room);
             renderHistory();
-            updateButtons();
-        });
-
-        document.getElementById('nextRoomBtn').addEventListener('click', () => {
-            if (!dungeonState) return;
-            if (dungeonState.rooms.length >= dungeonState.totalRooms) return;
-            
-            const room = generateRoom();
-            renderRoom(room);
-            renderHistory();
+            renderMap();
             updateButtons();
         });
 
@@ -1387,6 +1900,18 @@
                 document.getElementById('errorDisplay').classList.remove('hidden');
                 gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
             }
+        });
+
+        document.getElementById('pngFolder').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
+            files.forEach(file => {
+                const key = normalizePngPath(file.webkitRelativePath || file.name);
+                pngCache[key] = URL.createObjectURL(file);
+                missingPngPaths.delete(key);
+            });
+            updatePngStatus();
+            renderMap();
         });
 
         // ==================== INIT ====================
