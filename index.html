@@ -41,7 +41,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -927,6 +927,12 @@
                 Halls: ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
                 "Dead Ends": ["D1", "D2", "D3", "D4"]
             },
+            entranceLayouts: {
+                "ENT_E": ["E"],
+                "ENT_NS": ["N", "S"],
+                "ENT_NW": ["N", "W"],
+                "ENT_NWS": ["N", "W", "S"]
+            },
             layoutExits: {
                 "A": ["N", "E", "S"],
                 "N": ["N"],
@@ -1011,6 +1017,11 @@
 
         function rotateExits(exits, rotationDeg) {
             return exits.map(exit => rotateDirection(exit, rotationDeg));
+        }
+
+        function randomRotation() {
+            const rotations = [0, 90, 180, 270];
+            return pick(rotations);
         }
 
         function normalizePngPath(path) {
@@ -1309,36 +1320,67 @@
         function generateRoom({ position, moveDir, fromRoom }) {
             const roomIndex = dungeonState.rooms.length + 1;
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
-            const rotation = moveDir ? getRotationForMove(moveDir) : 0;
+            const isEntrance = roomIndex === 1;
+            const rotation = isEntrance
+                ? randomRotation()
+                : (moveDir ? getRotationForMove(moveDir) : 0);
             const remainingAfter = dungeonState.totalRooms - (dungeonState.rooms.length + 1);
             const frontierBefore = getFrontierCount();
             const usedExit = fromRoom && moveDir ? 1 : 0;
             const guaranteedFrontier = frontierBefore - usedExit;
-            const minExits = roomIndex === 1
-                ? 2
+            const minExits = isEntrance
+                ? 1
                 : (remainingAfter > 0 && guaranteedFrontier === 0 ? 1 : 0);
-            const includeDeadEnds = roomIndex !== 1 && remainingAfter > 0 && guaranteedFrontier > 0;
+            const includeDeadEnds = !isEntrance && remainingAfter > 0 && guaranteedFrontier > 0;
 
             let layoutSelection = null;
             let attempts = 0;
             while (!layoutSelection && attempts < 20) {
-                const candidate = selectLayout({ isBossRoom: false, minExits, includeDeadEnds });
-                const exits = getExitsForLayout(candidate.layoutId);
-                const mapExits = rotateExits(exits, rotation);
-                const availableExits = getAvailableExpansionDirections(position, mapExits);
-                const frontierAfter = guaranteedFrontier + availableExits.length;
-                if (remainingAfter === 0 || frontierAfter > 0) {
-                    layoutSelection = { ...candidate, exits, mapExits };
+                if (isEntrance) {
+                    const entranceIds = Object.keys(gameData.entranceLayouts || {});
+                    const entranceId = pick(entranceIds);
+                    const exits = gameData.entranceLayouts[entranceId] || [];
+                    const mapExits = rotateExits(exits, rotation);
+                    const availableExits = getAvailableExpansionDirections(position, mapExits);
+                    if (remainingAfter === 0 || availableExits.length > 0) {
+                        layoutSelection = {
+                            bucket: "Entrance",
+                            layoutId: entranceId,
+                            exits,
+                            mapExits
+                        };
+                    }
+                } else {
+                    const candidate = selectLayout({ isBossRoom: false, minExits, includeDeadEnds });
+                    const exits = getExitsForLayout(candidate.layoutId);
+                    const mapExits = rotateExits(exits, rotation);
+                    const availableExits = getAvailableExpansionDirections(position, mapExits);
+                    const frontierAfter = guaranteedFrontier + availableExits.length;
+                    if (remainingAfter === 0 || frontierAfter > 0) {
+                        layoutSelection = { ...candidate, exits, mapExits };
+                    }
                 }
                 attempts += 1;
             }
 
-            if (!layoutSelection) {
+            if (!layoutSelection && !isEntrance) {
                 const fallback = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
                 layoutSelection = {
                     ...fallback,
                     exits: getExitsForLayout(fallback.layoutId),
                     mapExits: rotateExits(getExitsForLayout(fallback.layoutId), rotation)
+                };
+            }
+
+            if (!layoutSelection && isEntrance) {
+                const entranceIds = Object.keys(gameData.entranceLayouts || {});
+                const entranceId = entranceIds[0] || "ENT_E";
+                const exits = gameData.entranceLayouts[entranceId] || [];
+                layoutSelection = {
+                    bucket: "Entrance",
+                    layoutId: entranceId,
+                    exits,
+                    mapExits: rotateExits(exits, rotation)
                 };
             }
 
