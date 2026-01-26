@@ -1,14 +1,71 @@
 {
+  "_documentation": {
+    "description": "Configuration data for the Strive Dungeon Generator. This file can be loaded into the generator to customize dungeon generation.",
+    "formatNotes": {
+      "general": [
+        "All arrays use simple string values unless otherwise specified",
+        "When adding new entries, maintain consistent style with existing entries",
+        "Ensure all strings are properly quoted and arrays end with the last element (no trailing comma)",
+        "Test changes by loading this file into the generator"
+      ],
+      "roomTypes": "Simple noun phrases for room names (e.g., 'chamber', 'vault'). Used in descriptions like 'a dusty [roomType]'.",
+      "leadIns": "Opening phrases for room descriptions. Should work grammatically before a room type (e.g., 'You enter a...').",
+      "sensesUnderfoot": "Descriptions of what the floor feels like underfoot. Should be complete clauses that can follow 'where'.",
+      "sensesAir": "Descriptions of air quality/smell. Should be complete clauses.",
+      "sensesSound": "Descriptions of ambient sounds. Should be complete clauses.",
+      "sensesLight": "Descriptions of lighting conditions. Should be complete clauses.",
+      "interactions": "Verb phrases describing how anchor features appear (e.g., 'crumbling with age'). Used after anchor features.",
+      "anchorFeatures": "Major objects/features in rooms. Should start with 'A/An' or 'The' or be plural nouns.",
+      "pressures": "Environmental dangers or tension-building descriptions. Complete sentences.",
+      "mitigations": "Actions players can take to address pressures. Verb phrases that follow 'A successful check could...'.",
+      "doorStatuses": "States a door can be in. 'Open' means no check needed; others require bypass checks.",
+      "doorBypassVerbs": "Object mapping door statuses to bypass options. Each status has an array of 'verbs' (action words for bypassing). The stat used is determined contextually in-game.",
+      "typeWords": "Enemy type classifications. Each maps to an ability in wordToAbility and a range in typeRange.",
+      "wordToAbility": "Maps typeWords to their special abilities. Format: 'AbilityName: Full description of what the ability does.'",
+      "typeRange": "Maps typeWords to their attack range. Values: 'Melee', 'Ranged', 'Melee and Ranged', or an array for random selection.",
+      "striveAbilities": "Master list of all Strive TTRPG abilities. Format: 'AbilityName: Full rules description.' Used for keyword abilities.",
+      "keywordAbilityInputMax": "Maximum number of custom abilities per keyword when setting up a dungeon.",
+      "difficultyProfiles": "Object with 'Easy', 'Medium', 'Hard', 'Deadly' keys. Each profile controls enemy stats, quantities, and challenge scaling.",
+      "difficultyProfileFields": {
+        "potencyWeights": "Weighted chances for Competent/Effective/Forceful potency levels (should sum to 100)",
+        "trapDamage": "Min/max trap damage dice",
+        "successTiers": "Success thresholds for defeating (defeat) and overwhelming (overwhelm) enemies",
+        "successTiersWeak": "Optional weaker tiers for Hard/Deadly difficulty variation",
+        "baseThresholdRange": "Min/max for enemy success thresholds",
+        "damageRange": "Min/max damage dice enemies deal",
+        "threatTypesRange": "Min/max different enemy types per room",
+        "quantityRange": "Min/max enemies of each type",
+        "maxThreatsPerRoom": "Hard cap on total enemies in one room",
+        "keywordAbilityChance": "Probability (0-1) that an enemy gets a keyword ability",
+        "bossDefeatBonus": "Extra successes needed to defeat a boss",
+        "bossOverwhelmBonus": "Extra successes needed to overwhelm a boss",
+        "bossDamageBonus": "Extra damage dice for bosses"
+      },
+      "layouts": "Maps layout categories (Rooms, Halls, Dead Ends) to arrays of layout IDs. IDs reference PNG files in layouts/ folder.",
+      "entranceLayouts": "Special entrance room layouts. Maps layout ID to array of exit directions (N/E/S/W).",
+      "layoutExits": "Maps layout code prefixes to their exit directions. Code is extracted from layout ID (e.g., 'NE1' -> 'NE' -> ['N', 'E'])."
+    },
+    "addingNewEntries": {
+      "arrays": "Simply add new string entries to the end of the array, before the closing bracket. Ensure comma after previous entry.",
+      "typeWords": "When adding a new type: 1) Add to typeWords array, 2) Add corresponding entry in wordToAbility, 3) Add range in typeRange.",
+      "striveAbilities": "Format must be 'AbilityName: Description'. The colon separator is required for parsing.",
+      "difficultyProfiles": "Copy an existing profile and adjust values. All fields are required.",
+      "layouts": "Add new layout ID to appropriate category. Ensure matching PNG exists in layouts/ folder with matching filename."
+    }
+  },
+
   "roomTypes": [
-    "chamber", "alcove", "vault", "crypt", "gallery", "sanctum", 
-    "antechamber", "hall", "passage", "den", "lair", "pit", 
-    "shrine", "cellar", "cave", "grotto", "tomb", "archive"
+    "chamber", "alcove", "vault", "crypt", "gallery", "sanctum",
+    "antechamber", "hall", "passage", "den", "lair", "pit",
+    "shrine", "cellar", "cave"
   ],
+
   "leadIns": [
     "You enter", "Before you lies", "You step into", "Ahead stretches",
     "You discover", "Opening before you is", "You find yourself in",
-    "Emerging into", "Through the doorway lies", "Pushing forward into"
+    "Emerging into", "Through the doorway lies"
   ],
+
   "sensesUnderfoot": [
     "cracked flagstones shift beneath your feet",
     "soft earth muffles your steps",
@@ -21,6 +78,7 @@
     "dried leaves crackle beneath you",
     "rough-hewn stone chills your soles"
   ],
+
   "sensesAir": [
     "a musty dampness hangs in the air",
     "cold drafts whisper through unseen cracks",
@@ -32,6 +90,7 @@
     "cool air suggests hidden depths nearby",
     "warm humid air presses against you"
   ],
+
   "sensesSound": [
     "distant dripping echoes",
     "an unnatural silence presses in",
@@ -43,6 +102,7 @@
     "the soft rustle of unseen movement",
     "water trickles somewhere nearby"
   ],
+
   "sensesLight": [
     "dim light filters from cracks above",
     "absolute darkness swallows everything",
@@ -54,6 +114,7 @@
     "a single shaft of light pierces the darkness",
     "bioluminescent lichen traces the ceiling"
   ],
+
   "interactions": [
     "dominating the space",
     "crumbling with age",
@@ -65,6 +126,7 @@
     "slick with moisture",
     "scorched by ancient fire"
   ],
+
   "anchorFeatures": [
     "A massive stone altar",
     "Towering pillars",
@@ -82,6 +144,7 @@
     "A raised dais",
     "Ornate sarcophagi"
   ],
+
   "pressures": [
     "The ceiling groans ominously",
     "Cracks spread across the floor",
@@ -93,6 +156,7 @@
     "The ground trembles faintly",
     "Shadows move independently"
   ],
+
   "mitigations": [
     "reveal a safe path",
     "disable the mechanism",
@@ -104,92 +168,204 @@
     "calm the disturbance",
     "spot the trigger"
   ],
+
   "doorStatuses": [
-    "Open", "Stuck", "Locked", "Jammed", 
+    "Open", "Stuck", "Locked", "Jammed",
     "Barred", "Trapped", "Sealed", "Collapsed"
   ],
+
   "doorBypassVerbs": {
-    "Stuck": { "stat": "Body", "verbs": ["force", "pry", "shoulder"] },
-    "Locked": { "stat": "Mind", "verbs": ["pick", "bypass", "decode"] },
-    "Jammed": { "stat": "Body", "verbs": ["wrench", "lever", "force"] },
-    "Barred": { "stat": "Body", "verbs": ["break", "lift", "smash"] },
-    "Trapped": { "stat": "Mind", "verbs": ["disarm", "bypass", "disable"] },
-    "Sealed": { "stat": "Mind", "verbs": ["decipher", "unravel", "break"] },
-    "Collapsed": { "stat": "Body", "verbs": ["clear", "dig through", "move"] }
+    "Stuck": { "verbs": ["force", "pry", "shoulder"] },
+    "Locked": { "verbs": ["pick", "bypass", "decode"] },
+    "Jammed": { "verbs": ["wrench", "lever", "force"] },
+    "Barred": { "verbs": ["break", "lift", "smash"] },
+    "Trapped": { "verbs": ["disarm", "bypass", "disable"] },
+    "Sealed": { "verbs": ["decipher", "unravel", "break"] },
+    "Collapsed": { "verbs": ["clear", "dig through", "move"] }
   },
+
   "typeWords": [
-    "Archer", "Brute", "Skirmisher", "Elite", "Shaman", 
-    "Scout", "Defender", "Lurker", "Swarm", "Caster",
-    "Berserker", "Assassin", "Necromancer", "Champion"
+    "Archer", "Brute", "Skirmisher", "Elite", "Shaman",
+    "Scout", "Defender", "Lurker", "Caster"
   ],
+
   "wordToAbility": {
-    "Archer": "Volley - can attack two targets at once",
-    "Brute": "Crushing Blow - +1d6 damage on successful hit",
-    "Skirmisher": "Hit and Run - can disengage freely after attacking",
-    "Elite": "Swordmaster - reroll one failed attack per round",
-    "Shaman": "Dark Ritual - can heal allies or curse enemies",
-    "Scout": "Alert - party cannot surprise this enemy",
-    "Defender": "Shield Wall - adjacent allies gain +2 Success Threshold",
-    "Lurker": "Ambush - +2d6 damage when attacking from hiding",
-    "Swarm": "Overwhelming Numbers - gains bonus when multiple swarms attack",
-    "Caster": "Arcane Blast - ranged magical attack ignoring armor",
-    "Berserker": "Frenzy - gains +1d6 damage when below half health",
-    "Assassin": "Death Strike - critical hits deal triple damage",
-    "Necromancer": "Raise Dead - can summon 1d4 Swarm minions",
-    "Champion": "Inspiring Presence - all allies gain +1 to checks"
+    "Archer": "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
+    "Brute": "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
+    "Skirmisher": "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
+    "Elite": "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
+    "Shaman": "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
+    "Scout": "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
+    "Defender": "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
+    "Lurker": "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
+    "Caster": "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency."
   },
+
+  "typeRange": {
+    "Archer": "Ranged",
+    "Brute": "Melee",
+    "Skirmisher": "Melee and Ranged",
+    "Elite": "Melee",
+    "Shaman": "Ranged",
+    "Scout": ["Melee", "Ranged"],
+    "Defender": "Melee",
+    "Lurker": "Melee",
+    "Caster": "Ranged"
+  },
+
+  "striveAbilities": [
+    "Acidic Blood: When a PC assigns successes to this threat while in Touch range, that PC loses 2 Grit.",
+    "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
+    "Armoured (2): This Threat is unaffected by checks and successes less potent than Effective.",
+    "Armoured (3): This Threat is unaffected by checks and successes less potent than Forceful.",
+    "Anti-magic: Within Short range, magic checks require an additional success to achieve the desired potency.",
+    "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency.",
+    "Arcanist: Instead of dealing damage, this threat can wield magic to majorly impact the combat at a forceful potency.",
+    "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
+    "Besiege: Instead of dealing damage, this threat forces open a gate or doorway.",
+    "Bound: If conjured, the conjurer can command the threat at no focus cost, can use the threat's senses as if they are its own, and can communicate by taking command of it's mouth, even at beyond distance. If the threat is defeated, its conjurer takes 1 damage to their focus. A conjurer can only be bound to one threat at a time.",
+    "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
+    "Cowardly: If at least 1 success has been assigned against this threat this round, it attempts to flee instead of dealing damage—unless an allied leader or at least 3 other allies are in Short range.",
+    "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
+    "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn.",
+    "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
+    "Death Wave: When this threat is Defeated (not Overwhelmed), each PC in Touch range loses 1d6 Grit.",
+    "Enrage: This threat's damage increases by 1d6 for each round of combat.",
+    "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
+    "Ethereal: Non-magical actions cannot affect this threat unless it is anchored in the physical world. A PC may Anchor it with a suitable Major Impact action (Effective potency) until the end of the next round.",
+    "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat's Success Threshold; on failure, you can't Push your rolls this turn.",
+    "Fire Immunity: This threat ignores successes dealt with fire.",
+    "Fire Vulnerability: Attacking this threat with fire grants an additional success.",
+    "Flame Aura: When you assign successes to this threat while in Touch range, you lose 1d6 Grit.",
+    "Flaming Breath (2d6): Unless surprised, this threat opens the combat by dealing 2d6 damage against all creatures in Short range, unless they succeed on a relevant check at Effective potency.",
+    "Flaming Breath (3d6): Unless surprised, this threat opens the combat by dealing 3d6 damage against all creatures in Short range, unless they succeed on a relevant check at Forceful potency.",
+    "Flying: Cannot be targeted by non-ranged checks unless this threat is grounded. A PC may ground it with a suitable Major Impact action (Effective) until the end of the round.",
+    "Focus Fire: Instead of dealing damage to multiple targets, this threat deals 3d6 damage to a single target. This can only be used when there are no enemies in touch range of this threat.",
+    "Forest's Protection: Checks to Major Impact this threat require two additional success to achieve the desired potency.",
+    "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
+    "Foul (2): At the start of your turn, while in Short range, make a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
+    "Grapple & Pin: Instead of dealing damage, this threat attempts to Pin a creature in Touch range. The target makes an Effective Body check against this threat's Success Threshold; on failure they are Pinned (can't move or act except in attempts to break free) until they succeed on a Forceful Body check against this threat's Success Threshold at the start of their turn.",
+    "Grappler: When this threat deals damage to you in Touch range, you become Restrained (can't move away) until the end of your next turn unless you succeed on a Competent Body check against this threat's Success Threshold.",
+    "Grappler (2): Instead of dealing damage, this threat attempts to Restrain its target(s). Each target makes a Forceful Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+    "Grappler (All): Instead of dealing damage, this threat attempts to Restrain every PC in Touch range. Each target makes an Effective Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+    "Group: If this threat is part of a stack of 3 or more threats, it can use all of its non-damaging abilities in addition to dealing half of its damage to each of its targets.",
+    "Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.",
+    "Horde: This threat can use all of its non-damaging abilities and still deals half of its damage to each of its targets.",
+    "Hurl: Instead of dealing damage in melee, this threat deals its damage to one target up to Far range.",
+    "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat's Success Threshold; on failure, you're Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
+    "Ice Immunity: This threat ignores successes dealt with ice.",
+    "Ice Vulnerability: Attacking this threat with ice grants an additional success.",
+    "Ice-bite: Damage from this threat leaves the skin feeling cold and numb for days. If left untreated for several days, it turns into frostbite.",
+    "Illusory Doubles: This threat has a number of illusions equal to its success threshold. When targeting this threat, the players roll 1d6. If the number is below the threat's Success Threshold, and has not been rolled already against this threat, they strike an illusion instead.",
+    "Indulgent: So long as it isn't disturbed, this threat may let others pass without taking notice.",
+    "Lightning Immunity: This threat ignores successes dealt with lightning.",
+    "Lightning Vulnerability: Attacking this threat with lightning grants an additional success.",
+    "Meat Shield: If this threat has allies in touch range, the first success dealt against it is dealt to an ally instead.",
+    "Mental Drain: Whenever a PC within Short range makes a magic check, they lose 1 Focus.",
+    "Mind-breaker: This threat deals damage to Focus instead of Grit.",
+    "Poisonous: If a player takes damage from this threat, they take another instance of that damage after an hour.",
+    "Poisonous (1): If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1 Grit until they succeed a Competent Body check (Threshold 4) or receive treatment.",
+    "Potent Poison: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1d6 Grit until they succeed an Effective Body check (Threshold 4) or receive treatment.",
+    "Power-words: Instead of dealing damage, this threat speaks a Word at a target in Short range. The target makes an Effective Mind check against this threat's Success Threshold; on failure they suffer a Forceful-tier effect appropriate to the Word (GM call) until the end of their next turn.",
+    "Pursuer: An additional two successes are required to flee from this threat.",
+    "Reassembling: Unless this threat's remains are burned and scattered, it shortly reassembles, all successes removed.",
+    "Reflective Hide: When you assign three or more successes to this threat from a single check, you take 1d6 damage to your Grit.",
+    "Regeneration: At the end of each round, remove all accumulated successes from this threat.",
+    "Regeneration (Numerical): At the end of each round, remove accumulated successes equal to this threat's Success Threshold.",
+    "Second Stage: When this threat would be defeated, its second stage is revealed.",
+    "Second Stage (Strive): When this threat would be defeated, its second stage is revealed, and each player regains a Strive Die.",
+    "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
+    "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
+    "Slow: Defend & Flee checks to escape this threat are set to Competent (1 success), unless the GM rules otherwise.",
+    "Smother: Instead of dealing damage, this threat smothers all light sources in Short range, until relit.",
+    "Squeeze: A creature Restrained by this threat (can't move away) loses 1d6 Grit at the start of its turn.",
+    "Stone Skin: Non-magical checks treat this threat's Success Threshold as 5 (even if it is normally lower).",
+    "Suppressing Shot: The first target to push a roll within far range of this threat immediately takes 1d6 damage.",
+    "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
+    "Teamwork: This threat immediately deals 1d6 damage to touch range targets that attack a nearby allied threat.",
+    "Teleport (Short Range): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
+    "Teleport (Beyond): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range.",
+    "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
+    "Water Immunity: This threat ignores successes dealt with water.",
+    "Water Vulnerability: Attacking this threat with water grants an additional success."
+  ],
+
   "keywordAbilityInputMax": 3,
+
   "difficultyProfiles": {
     "Easy": {
       "potencyWeights": { "Competent": 60, "Effective": 30, "Forceful": 10 },
-      "trapDamage": { "min": 1, "max": 2 },
+      "trapDamage": { "min": 1, "max": 1 },
       "successTiers": { "defeat": 2, "overwhelm": 4 },
-      "baseThresholdRange": { "min": 2, "max": 4 },
+      "baseThresholdRange": { "min": 3, "max": 4 },
+      "damageRange": { "min": 1, "max": 1 },
       "threatTypesRange": { "min": 0, "max": 2 },
       "quantityRange": { "min": 1, "max": 2 },
+      "maxThreatsPerRoom": 3,
       "keywordAbilityChance": 0.1,
-      "bossThresholdBonus": 3,
+      "bossDefeatBonus": 5,
+      "bossOverwhelmBonus": 6,
       "bossDamageBonus": 1
     },
     "Medium": {
       "potencyWeights": { "Competent": 25, "Effective": 50, "Forceful": 25 },
-      "trapDamage": { "min": 2, "max": 3 },
-      "successTiers": { "defeat": 3, "overwhelm": 6 },
-      "baseThresholdRange": { "min": 3, "max": 5 },
-      "threatTypesRange": { "min": 0, "max": 3 },
+      "trapDamage": { "min": 1, "max": 2 },
+      "successTiers": { "defeat": 5, "overwhelm": 7 },
+      "baseThresholdRange": { "min": 3, "max": 4 },
+      "damageRange": { "min": 1, "max": 2 },
+      "threatTypesRange": { "min": 1, "max": 2 },
       "quantityRange": { "min": 1, "max": 3 },
+      "maxThreatsPerRoom": 4,
       "keywordAbilityChance": 0.25,
-      "bossThresholdBonus": 4,
-      "bossDamageBonus": 2
+      "bossDefeatBonus": 6,
+      "bossOverwhelmBonus": 8,
+      "bossDamageBonus": 1
     },
     "Hard": {
       "potencyWeights": { "Competent": 10, "Effective": 45, "Forceful": 45 },
-      "trapDamage": { "min": 3, "max": 4 },
-      "successTiers": { "defeat": 4, "overwhelm": 8 },
-      "baseThresholdRange": { "min": 4, "max": 6 },
+      "trapDamage": { "min": 1, "max": 2 },
+      "successTiers": { "defeat": 8, "overwhelm": 12 },
+      "successTiersWeak": { "defeat": 5, "overwhelm": 7 },
+      "baseThresholdRange": { "min": 4, "max": 5 },
+      "damageRange": { "min": 1, "max": 2 },
       "threatTypesRange": { "min": 1, "max": 3 },
-      "quantityRange": { "min": 2, "max": 4 },
+      "quantityRange": { "min": 2, "max": 3 },
+      "maxThreatsPerRoom": 6,
       "keywordAbilityChance": 0.5,
-      "bossThresholdBonus": 5,
-      "bossDamageBonus": 3
+      "bossDefeatBonus": 6,
+      "bossOverwhelmBonus": 8,
+      "bossDamageBonus": 2
     },
     "Deadly": {
       "potencyWeights": { "Competent": 5, "Effective": 30, "Forceful": 65 },
-      "trapDamage": { "min": 4, "max": 6 },
-      "successTiers": { "defeat": 6, "overwhelm": 10 },
-      "baseThresholdRange": { "min": 5, "max": 8 },
+      "trapDamage": { "min": 2, "max": 3 },
+      "successTiers": { "defeat": 16, "overwhelm": 24 },
+      "successTiersWeak": { "defeat": 8, "overwhelm": 12 },
+      "baseThresholdRange": { "min": 4, "max": 5 },
+      "damageRange": { "min": 2, "max": 3 },
       "threatTypesRange": { "min": 2, "max": 3 },
-      "quantityRange": { "min": 3, "max": 6 },
+      "quantityRange": { "min": 2, "max": 4 },
+      "maxThreatsPerRoom": 8,
       "keywordAbilityChance": 0.75,
-      "bossThresholdBonus": 6,
-      "bossDamageBonus": 4
+      "bossDefeatBonus": 8,
+      "bossOverwhelmBonus": 10,
+      "bossDamageBonus": 2
     }
   },
+
   "layouts": {
     "Rooms": ["A1", "A3", "A4", "E2", "N1", "N2", "NE1", "NE2", "NS2", "S4"],
     "Halls": ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
     "Dead Ends": ["D1", "D2", "D3", "D4"]
   },
+
+  "entranceLayouts": {
+    "ENT_E": ["E"],
+    "ENT_NS": ["N", "S"],
+    "ENT_NW": ["N", "W"],
+    "ENT_NWS": ["N", "W", "S"]
+  },
+
   "layoutExits": {
     "A": ["N", "E", "S"],
     "N": ["N"],
