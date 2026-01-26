@@ -73,11 +73,37 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding: 1.5rem;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 4px;
+        }
+
+        .setup-panel {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-card);
+        }
+
+        .setup-panel summary {
+            cursor: pointer;
+            padding: 1rem 1.5rem;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-gold);
+            list-style: none;
+        }
+
+        .setup-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .setup-panel[open] summary {
+            border-bottom: 1px solid var(--border);
         }
 
         .control-group {
@@ -183,13 +209,7 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-        }
-
-        .left-column {
-            display: flex;
-            flex-direction: column;
+            grid-template-columns: minmax(320px, 1.5fr) minmax(320px, 1fr) minmax(260px, 0.8fr);
             gap: 2rem;
         }
 
@@ -635,74 +655,75 @@
         <div id="dataStatus" class="data-status default">Using default embedded data. Load a custom JSON file to override.</div>
         <div id="errorDisplay" class="error hidden"></div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label for="difficulty">Difficulty</label>
-                <select id="difficulty">
-                    <option value="Easy">Easy</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="Hard">Hard</option>
-                    <option value="Deadly">Deadly</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="dungeonLength">Dungeon Length (rooms)</label>
-                <input type="number" id="dungeonLength" min="6" max="30" value="10">
-            </div>
-            <div class="control-group full-width keyword-group">
-                <label>Threat Keyword 1</label>
-                <div class="keyword-row">
-                    <input type="text" id="threatKeyword1" placeholder="e.g., Goblin" class="keyword-input">
-                    <input type="text" id="keywordAbility1_1" list="abilityList" placeholder="Ability 1" class="ability-input">
-                    <input type="text" id="keywordAbility1_2" list="abilityList" placeholder="Ability 2" class="ability-input">
-                    <input type="text" id="keywordAbility1_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+        <details class="setup-panel" open>
+            <summary>Dungeon Setup</summary>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                        <option value="Deadly">Deadly</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="dungeonLength">Dungeon Length (rooms)</label>
+                    <input type="number" id="dungeonLength" min="6" max="30" value="10">
+                </div>
+                <div class="control-group full-width keyword-group">
+                    <label>Threat Keyword 1</label>
+                    <div class="keyword-row">
+                        <input type="text" id="threatKeyword1" placeholder="e.g., Goblin" class="keyword-input">
+                        <input type="text" id="keywordAbility1_1" list="abilityList" placeholder="Ability 1" class="ability-input">
+                        <input type="text" id="keywordAbility1_2" list="abilityList" placeholder="Ability 2" class="ability-input">
+                        <input type="text" id="keywordAbility1_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+                    </div>
+                </div>
+                <div class="control-group full-width keyword-group">
+                    <label>Threat Keyword 2 (optional)</label>
+                    <div class="keyword-row">
+                        <input type="text" id="threatKeyword2" placeholder="e.g., Ogre" class="keyword-input">
+                        <input type="text" id="keywordAbility2_1" list="abilityList" placeholder="Ability 1" class="ability-input">
+                        <input type="text" id="keywordAbility2_2" list="abilityList" placeholder="Ability 2" class="ability-input">
+                        <input type="text" id="keywordAbility2_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+                    </div>
+                </div>
+                <datalist id="abilityList"></datalist>
+                <div class="control-group">
+                    <label for="dataFile">Import Data File</label>
+                    <input type="file" id="dataFile" accept=".json">
+                </div>
+                <div class="control-group">
+                    <label for="pngFolder">Load PNG Folder</label>
+                    <input type="file" id="pngFolder" webkitdirectory directory>
                 </div>
             </div>
-            <div class="control-group full-width keyword-group">
-                <label>Threat Keyword 2 (optional)</label>
-                <div class="keyword-row">
-                    <input type="text" id="threatKeyword2" placeholder="e.g., Ogre" class="keyword-input">
-                    <input type="text" id="keywordAbility2_1" list="abilityList" placeholder="Ability 1" class="ability-input">
-                    <input type="text" id="keywordAbility2_2" list="abilityList" placeholder="Ability 2" class="ability-input">
-                    <input type="text" id="keywordAbility2_3" list="abilityList" placeholder="Ability 3" class="ability-input">
-                </div>
-            </div>
-            <datalist id="abilityList"></datalist>
-            <div class="control-group">
-                <label for="dataFile">Import Data File</label>
-                <input type="file" id="dataFile" accept=".json">
-            </div>
-            <div class="control-group">
-                <label for="pngFolder">Load PNG Folder</label>
-                <input type="file" id="pngFolder" webkitdirectory directory>
-            </div>
-        </div>
 
-        <div class="buttons">
-            <button class="primary" id="startBtn">Start New Dungeon</button>
-            <button id="exportBtn" disabled>Export Dungeon (JSON)</button>
-        </div>
+            <div class="buttons">
+                <button class="primary" id="startBtn">Start New Dungeon</button>
+                <button id="exportBtn" disabled>Export Dungeon (JSON)</button>
+            </div>
+        </details>
 
         <div class="main-content">
-            <div class="left-column">
-                <div class="current-room" id="currentRoomPanel">
-                    <div class="empty-state" id="emptyState">
-                        <p>No dungeon started yet.</p>
-                        <p>Configure your settings above and click "Start New Dungeon" to begin.</p>
-                    </div>
-                    <div id="roomContent" class="hidden"></div>
+            <div class="current-room" id="currentRoomPanel">
+                <div class="empty-state" id="emptyState">
+                    <p>No dungeon started yet.</p>
+                    <p>Configure your settings above and click "Start New Dungeon" to begin.</p>
                 </div>
+                <div id="roomContent" class="hidden"></div>
+            </div>
 
-                <div class="map-panel">
-                    <div class="map-header">Dungeon Map</div>
-                    <div class="map-body">
-                        <div id="mapEmpty" class="empty-state">
-                            <p>Rooms will reveal themselves here as you explore.</p>
-                        </div>
-                        <div id="pngStatus" class="data-status default hidden"></div>
-                        <div id="mapGrid" class="map-grid hidden">
-                            <div id="mapRooms" class="map-rooms"></div>
-                        </div>
+            <div class="map-panel">
+                <div class="map-header">Dungeon Map</div>
+                <div class="map-body">
+                    <div id="mapEmpty" class="empty-state">
+                        <p>Rooms will reveal themselves here as you explore.</p>
+                    </div>
+                    <div id="pngStatus" class="data-status default hidden"></div>
+                    <div id="mapGrid" class="map-grid hidden">
+                        <div id="mapRooms" class="map-rooms"></div>
                     </div>
                 </div>
             </div>
@@ -1059,9 +1080,20 @@
             return room.exits.includes(direction) || room.entryDir === direction;
         }
 
+        function markDoorOpen(room, direction) {
+            if (!room) return;
+            if (!room.doors) {
+                room.doors = {};
+            }
+            room.doors[direction] = { status: 'Open', bypass: null };
+        }
+
         function getLinkedNeighborDirections(room) {
             if (!room) return [];
             return Object.keys(directionVectors).filter(dir => {
+                if (!roomHasExit(room, dir)) {
+                    return false;
+                }
                 const vec = directionVectors[dir];
                 const neighborPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
                 const neighbor = getRoomByPosition(neighborPos);
@@ -1400,7 +1432,9 @@
                     const targetPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
                     const targetRoom = getRoomByPosition(targetPos);
                     const oppositeDir = getOppositeDirection(exit);
-                    const canLink = targetRoom ? roomHasExit(targetRoom, oppositeDir) : true;
+                    const canLink = targetRoom
+                        ? roomHasExit(room, exit) && roomHasExit(targetRoom, oppositeDir)
+                        : true;
                     const canCreate = (!!targetRoom && canLink) || (!targetRoom && dungeonState.rooms.length < dungeonState.totalRooms);
                     const buttonLabel = targetRoom ? 'Return' : 'Go this way';
                     exitsHtml += `
@@ -1615,9 +1649,11 @@
 
             if (existingRoom) {
                 const oppositeDir = getOppositeDirection(direction);
-                if (!roomHasExit(existingRoom, oppositeDir)) {
+                if (!roomHasExit(currentRoom, direction) || !roomHasExit(existingRoom, oppositeDir)) {
                     return;
                 }
+                markDoorOpen(currentRoom, direction);
+                markDoorOpen(existingRoom, oppositeDir);
                 dungeonState.currentRoomId = existingRoom.id;
                 renderRoom(existingRoom);
                 renderMap();
