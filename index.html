@@ -1112,6 +1112,46 @@
             });
         }
 
+        function getNeighborExitConstraints(position) {
+            const requiredExits = new Set();
+            const forbiddenExits = new Set();
+            Object.keys(directionVectors).forEach(dir => {
+                const vec = directionVectors[dir];
+                const neighborPos = { x: position.x + vec.x, y: position.y + vec.y };
+                const neighbor = getRoomByPosition(neighborPos);
+                if (!neighbor) return;
+                const oppositeDir = getOppositeDirection(dir);
+                if (roomHasExit(neighbor, oppositeDir)) {
+                    requiredExits.add(dir);
+                } else {
+                    forbiddenExits.add(dir);
+                }
+            });
+            return { requiredExits, forbiddenExits };
+        }
+
+        function layoutMatchesConstraints(exits, constraints) {
+            const exitSet = new Set(exits);
+            for (const required of constraints.requiredExits) {
+                if (!exitSet.has(required)) {
+                    return false;
+                }
+            }
+            for (const forbidden of constraints.forbiddenExits) {
+                if (exitSet.has(forbidden)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function applyExitConstraints(exits, constraints) {
+            const adjusted = new Set(exits);
+            constraints.forbiddenExits.forEach(dir => adjusted.delete(dir));
+            constraints.requiredExits.forEach(dir => adjusted.add(dir));
+            return Array.from(adjusted);
+        }
+
         // ==================== LAYOUT SELECTION ====================
         function selectLayout({ isBossRoom, minExits, includeDeadEnds }) {
             const buckets = isBossRoom
@@ -1332,6 +1372,7 @@
                 ? 1
                 : (remainingAfter > 0 && guaranteedFrontier === 0 ? 1 : 0);
             const includeDeadEnds = !isEntrance && remainingAfter > 0 && guaranteedFrontier > 0;
+            const neighborConstraints = getNeighborExitConstraints(position);
 
             let layoutSelection = null;
             let attempts = 0;
@@ -1354,6 +1395,10 @@
                     const candidate = selectLayout({ isBossRoom: false, minExits, includeDeadEnds });
                     const exits = getExitsForLayout(candidate.layoutId);
                     const mapExits = rotateExits(exits, rotation);
+                    if (!layoutMatchesConstraints(mapExits, neighborConstraints)) {
+                        attempts += 1;
+                        continue;
+                    }
                     const availableExits = getAvailableExpansionDirections(position, mapExits);
                     const frontierAfter = guaranteedFrontier + availableExits.length;
                     if (remainingAfter === 0 || frontierAfter > 0) {
@@ -1384,6 +1429,7 @@
                 };
             }
 
+            layoutSelection.mapExits = applyExitConstraints(layoutSelection.mapExits, neighborConstraints);
             const description = generateDescription();
             const doors = {};
             layoutSelection.mapExits.forEach(exit => {
