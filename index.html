@@ -1054,6 +1054,11 @@
             return count;
         }
 
+        function roomHasExit(room, direction) {
+            if (!room) return false;
+            return room.exits.includes(direction) || room.entryDir === direction;
+        }
+
         // ==================== LAYOUT SELECTION ====================
         function selectLayout({ isBossRoom, minExits, includeDeadEnds }) {
             const buckets = isBossRoom
@@ -1379,7 +1384,9 @@
                     const vec = directionVectors[exit];
                     const targetPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
                     const targetRoom = getRoomByPosition(targetPos);
-                    const canCreate = !!targetRoom || dungeonState.rooms.length < dungeonState.totalRooms;
+                    const oppositeDir = getOppositeDirection(exit);
+                    const canLink = targetRoom ? roomHasExit(targetRoom, oppositeDir) : true;
+                    const canCreate = (!!targetRoom && canLink) || (!targetRoom && dungeonState.rooms.length < dungeonState.totalRooms);
                     const buttonLabel = targetRoom ? 'Return' : 'Go this way';
                     exitsHtml += `
                         <div class="exit-item">
@@ -1592,6 +1599,10 @@
             const existingRoom = getRoomByPosition(nextPos);
 
             if (existingRoom) {
+                const oppositeDir = getOppositeDirection(direction);
+                if (!roomHasExit(existingRoom, oppositeDir)) {
+                    return;
+                }
                 dungeonState.currentRoomId = existingRoom.id;
                 renderRoom(existingRoom);
                 renderMap();
