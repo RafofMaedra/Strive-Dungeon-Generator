@@ -634,7 +634,7 @@
             typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Group", "Caster"],
             wordToAbility: {
                 "Archer": "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
-                "Brute": "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn.",
+                "Brute": "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
                 "Skirmisher": "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
                 "Elite": "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
                 "Shaman": "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
@@ -642,7 +642,19 @@
                 "Defender": "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
                 "Lurker": "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
                 "Group": "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
-                "Caster": "Arcanist: Instead of dealing damage, this threat can wield magic to majorly impact the combat at a forceful potency."
+                "Caster": "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency."
+            },
+            typeRange: {
+                "Archer": "Ranged",
+                "Brute": "Melee",
+                "Skirmisher": "Melee and Ranged",
+                "Elite": "Melee",
+                "Shaman": "Ranged",
+                "Scout": "Melee or Ranged",
+                "Defender": "Melee",
+                "Lurker": "Melee",
+                "Group": "Melee (All) or Ranged (3)",
+                "Caster": "Ranged"
             },
             striveAbilities: [
                 "Acidic Blood: When a PC assigns successes to this threat while in Touch range, that PC loses 2 Grit.",
@@ -726,45 +738,55 @@
                     potencyWeights: { "Competent": 60, "Effective": 30, "Forceful": 10 },
                     trapDamage: { min: 1, max: 2 },
                     successTiers: { defeat: 2, overwhelm: 4 },
-                    baseThresholdRange: { min: 2, max: 4 },
+                    baseThresholdRange: { min: 3, max: 4 },
+                    damageRange: { min: 1, max: 1 },
                     threatTypesRange: { min: 0, max: 2 },
                     quantityRange: { min: 1, max: 2 },
                     keywordAbilityChance: 0.1,
-                    bossThresholdBonus: 3,
+                    bossDefeatBonus: 5,
+                    bossOverwhelmBonus: 6,
                     bossDamageBonus: 1
                 },
                 "Medium": {
                     potencyWeights: { "Competent": 25, "Effective": 50, "Forceful": 25 },
                     trapDamage: { min: 2, max: 3 },
-                    successTiers: { defeat: 3, overwhelm: 6 },
-                    baseThresholdRange: { min: 3, max: 5 },
-                    threatTypesRange: { min: 0, max: 3 },
+                    successTiers: { defeat: 5, overwhelm: 7 },
+                    baseThresholdRange: { min: 3, max: 4 },
+                    damageRange: { min: 1, max: 2 },
+                    threatTypesRange: { min: 1, max: 2 },
                     quantityRange: { min: 1, max: 3 },
                     keywordAbilityChance: 0.25,
-                    bossThresholdBonus: 4,
-                    bossDamageBonus: 2
+                    bossDefeatBonus: 6,
+                    bossOverwhelmBonus: 8,
+                    bossDamageBonus: 1
                 },
                 "Hard": {
                     potencyWeights: { "Competent": 10, "Effective": 45, "Forceful": 45 },
                     trapDamage: { min: 3, max: 4 },
-                    successTiers: { defeat: 4, overwhelm: 8 },
-                    baseThresholdRange: { min: 4, max: 6 },
+                    successTiers: { defeat: 8, overwhelm: 12 },
+                    successTiersWeak: { defeat: 5, overwhelm: 7 },
+                    baseThresholdRange: { min: 4, max: 5 },
+                    damageRange: { min: 1, max: 2 },
                     threatTypesRange: { min: 1, max: 3 },
-                    quantityRange: { min: 2, max: 4 },
+                    quantityRange: { min: 2, max: 3 },
                     keywordAbilityChance: 0.5,
-                    bossThresholdBonus: 5,
-                    bossDamageBonus: 3
+                    bossDefeatBonus: 6,
+                    bossOverwhelmBonus: 8,
+                    bossDamageBonus: 2
                 },
                 "Deadly": {
                     potencyWeights: { "Competent": 5, "Effective": 30, "Forceful": 65 },
                     trapDamage: { min: 4, max: 6 },
-                    successTiers: { defeat: 6, overwhelm: 10 },
-                    baseThresholdRange: { min: 5, max: 8 },
+                    successTiers: { defeat: 16, overwhelm: 24 },
+                    successTiersWeak: { defeat: 8, overwhelm: 12 },
+                    baseThresholdRange: { min: 4, max: 5 },
+                    damageRange: { min: 2, max: 3 },
                     threatTypesRange: { min: 2, max: 3 },
-                    quantityRange: { min: 3, max: 6 },
+                    quantityRange: { min: 2, max: 4 },
                     keywordAbilityChance: 0.75,
-                    bossThresholdBonus: 6,
-                    bossDamageBonus: 4
+                    bossDefeatBonus: 8,
+                    bossOverwhelmBonus: 10,
+                    bossDamageBonus: 2
                 }
             },
             layouts: {
@@ -934,8 +956,14 @@
                 const keywordAbilities = keywordData.abilities;
 
                 const quantity = randInt(profile.quantityRange.min, profile.quantityRange.max);
-                const damage = randInt(1, 2 + Math.floor(quantity / 2));
+                const damage = randInt(profile.damageRange.min, profile.damageRange.max);
                 const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
+
+                // Determine success tiers - Hard/Deadly may use weaker tiers for variety
+                let successTiers = profile.successTiers;
+                if (profile.successTiersWeak && Math.random() < 0.4) {
+                    successTiers = profile.successTiersWeak;
+                }
 
                 const abilities = [];
                 if (gameData.wordToAbility[type]) {
@@ -946,23 +974,27 @@
                     abilities.push(getAbilityDescription(abilityName));
                 }
 
+                // Get range for this type
+                const range = gameData.typeRange[type] || "Melee";
+
                 const threat = {
                     keyword,
                     type,
                     quantity,
                     damage,
                     threshold,
-                    defeat: profile.successTiers.defeat,
-                    overwhelm: profile.successTiers.overwhelm,
+                    defeat: successTiers.defeat,
+                    overwhelm: successTiers.overwhelm,
+                    range,
                     abilities,
                     isBoss: false
                 };
 
                 // Calculate lesser threats for Group type
                 if (type === "Group") {
-                    const lesserQuantity = Math.max(1, Math.floor(profile.successTiers.defeat / 2));
-                    const lesserDefeat = Math.max(1, Math.floor(profile.successTiers.defeat / lesserQuantity));
-                    const lesserOverwhelm = Math.max(2, Math.floor(profile.successTiers.overwhelm / lesserQuantity));
+                    const lesserQuantity = Math.max(1, Math.floor(successTiers.defeat / 2));
+                    const lesserDefeat = Math.max(1, Math.floor(successTiers.defeat / lesserQuantity));
+                    const lesserOverwhelm = Math.max(2, Math.floor(successTiers.overwhelm / lesserQuantity));
                     const lesserDamage = Math.max(1, Math.floor(damage / 2));
                     threat.lesserThreats = {
                         quantity: lesserQuantity,
@@ -981,8 +1013,9 @@
 
         function generateBossThreat(profile, keyword, keywordAbilities) {
             const type = pick(gameData.typeWords);
-            const damage = randInt(3, 4) + profile.bossDamageBonus;
-            const threshold = profile.baseThresholdRange.max + profile.bossThresholdBonus;
+            const baseDamage = profile.damageRange.max;
+            const damage = baseDamage + profile.bossDamageBonus;
+            const threshold = profile.baseThresholdRange.max;
 
             const abilities = [];
             if (gameData.wordToAbility[type]) {
@@ -994,15 +1027,19 @@
                 abilities.push(getAbilityDescription(abilityName));
             }
             abilities.push("Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.");
-            
+
+            // Boss range - typically melee (all) or ranged (2)
+            const bossRange = Math.random() < 0.5 ? "Melee (All)" : "Ranged (2)";
+
             return {
                 keyword,
                 type,
                 quantity: 1,
                 damage,
                 threshold,
-                defeat: profile.successTiers.defeat + 5,
-                overwhelm: profile.successTiers.overwhelm + 5,
+                defeat: profile.successTiers.defeat + profile.bossDefeatBonus,
+                overwhelm: profile.successTiers.overwhelm + profile.bossOverwhelmBonus,
+                range: bossRange,
                 abilities,
                 isBoss: true
             };
@@ -1104,6 +1141,7 @@
                                 <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
                                 <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
                                 <div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>
+                                <div class="threat-stat"><span class="stat-label">Range:</span> ${threat.range || 'Melee'}</div>
                             </div>
                             <div class="threat-abilities">
                                 <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>
