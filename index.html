@@ -324,6 +324,12 @@
             padding-left: 70px;
         }
 
+        .trap-damage {
+            color: var(--accent-red);
+            font-weight: bold;
+            margin-top: 0.25rem;
+        }
+
         .threats {
             margin-bottom: 1rem;
         }
@@ -383,25 +389,6 @@
         }
 
         .ability-name {
-            color: var(--accent-gold);
-        }
-
-        .lesser-threats {
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            background: rgba(139, 38, 53, 0.15);
-            border-radius: 3px;
-            border-left: 2px solid var(--accent-gold);
-        }
-
-        .lesser-threats-header {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-
-        .lesser-threat-stat {
-            font-size: 0.9rem;
             color: var(--accent-gold);
         }
 
@@ -623,15 +610,15 @@
             mitigations: ["reveal a safe path", "disable the mechanism", "find stable footing", "dispel the effect", "locate an escape route", "neutralize the danger", "identify the source", "calm the disturbance", "spot the trigger"],
             doorStatuses: ["Open", "Stuck", "Locked", "Jammed", "Barred", "Trapped", "Sealed", "Collapsed"],
             doorBypassVerbs: {
-                "Stuck": { stat: "Body", verbs: ["force", "pry", "shoulder"] },
-                "Locked": { stat: "Mind", verbs: ["pick", "bypass", "decode"] },
-                "Jammed": { stat: "Body", verbs: ["wrench", "lever", "force"] },
-                "Barred": { stat: "Body", verbs: ["break", "lift", "smash"] },
-                "Trapped": { stat: "Mind", verbs: ["disarm", "bypass", "disable"] },
-                "Sealed": { stat: "Mind", verbs: ["decipher", "unravel", "break"] },
-                "Collapsed": { stat: "Body", verbs: ["clear", "dig through", "move"] }
+                "Stuck": { verbs: ["force", "pry", "shoulder"] },
+                "Locked": { verbs: ["pick", "bypass", "decode"] },
+                "Jammed": { verbs: ["wrench", "lever", "force"] },
+                "Barred": { verbs: ["break", "lift", "smash"] },
+                "Trapped": { verbs: ["disarm", "bypass", "disable"] },
+                "Sealed": { verbs: ["decipher", "unravel", "break"] },
+                "Collapsed": { verbs: ["clear", "dig through", "move"] }
             },
-            typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Group", "Caster"],
+            typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Caster"],
             wordToAbility: {
                 "Archer": "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
                 "Brute": "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
@@ -641,7 +628,6 @@
                 "Scout": "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
                 "Defender": "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
                 "Lurker": "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
-                "Group": "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
                 "Caster": "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency."
             },
             typeRange: {
@@ -650,10 +636,9 @@
                 "Skirmisher": "Melee and Ranged",
                 "Elite": "Melee",
                 "Shaman": "Ranged",
-                "Scout": "Melee or Ranged",
+                "Scout": ["Melee", "Ranged"],
                 "Defender": "Melee",
                 "Lurker": "Melee",
-                "Group": "Melee (All) or Ranged (3)",
                 "Caster": "Ranged"
             },
             striveAbilities: [
@@ -736,12 +721,13 @@
             difficultyProfiles: {
                 "Easy": {
                     potencyWeights: { "Competent": 60, "Effective": 30, "Forceful": 10 },
-                    trapDamage: { min: 1, max: 2 },
+                    trapDamage: { min: 1, max: 1 },
                     successTiers: { defeat: 2, overwhelm: 4 },
                     baseThresholdRange: { min: 3, max: 4 },
                     damageRange: { min: 1, max: 1 },
                     threatTypesRange: { min: 0, max: 2 },
                     quantityRange: { min: 1, max: 2 },
+                    maxThreatsPerRoom: 3,
                     keywordAbilityChance: 0.1,
                     bossDefeatBonus: 5,
                     bossOverwhelmBonus: 6,
@@ -749,12 +735,13 @@
                 },
                 "Medium": {
                     potencyWeights: { "Competent": 25, "Effective": 50, "Forceful": 25 },
-                    trapDamage: { min: 2, max: 3 },
+                    trapDamage: { min: 1, max: 2 },
                     successTiers: { defeat: 5, overwhelm: 7 },
                     baseThresholdRange: { min: 3, max: 4 },
                     damageRange: { min: 1, max: 2 },
                     threatTypesRange: { min: 1, max: 2 },
                     quantityRange: { min: 1, max: 3 },
+                    maxThreatsPerRoom: 4,
                     keywordAbilityChance: 0.25,
                     bossDefeatBonus: 6,
                     bossOverwhelmBonus: 8,
@@ -762,13 +749,14 @@
                 },
                 "Hard": {
                     potencyWeights: { "Competent": 10, "Effective": 45, "Forceful": 45 },
-                    trapDamage: { min: 3, max: 4 },
+                    trapDamage: { min: 1, max: 2 },
                     successTiers: { defeat: 8, overwhelm: 12 },
                     successTiersWeak: { defeat: 5, overwhelm: 7 },
                     baseThresholdRange: { min: 4, max: 5 },
                     damageRange: { min: 1, max: 2 },
                     threatTypesRange: { min: 1, max: 3 },
                     quantityRange: { min: 2, max: 3 },
+                    maxThreatsPerRoom: 6,
                     keywordAbilityChance: 0.5,
                     bossDefeatBonus: 6,
                     bossOverwhelmBonus: 8,
@@ -776,12 +764,13 @@
                 },
                 "Deadly": {
                     potencyWeights: { "Competent": 5, "Effective": 30, "Forceful": 65 },
-                    trapDamage: { min: 4, max: 6 },
+                    trapDamage: { min: 2, max: 3 },
                     successTiers: { defeat: 16, overwhelm: 24 },
                     successTiersWeak: { defeat: 8, overwhelm: 12 },
                     baseThresholdRange: { min: 4, max: 5 },
                     damageRange: { min: 2, max: 3 },
                     threatTypesRange: { min: 2, max: 3 },
+                    maxThreatsPerRoom: 8,
                     quantityRange: { min: 2, max: 4 },
                     keywordAbilityChance: 0.75,
                     bossDefeatBonus: 8,
@@ -900,24 +889,30 @@
         // ==================== DOOR GENERATION ====================
         function generateDoor(profile) {
             const status = pick(gameData.doorStatuses);
-            
+
             if (status === "Open") {
                 return { status, bypass: null };
             }
-            
-            const bypassInfo = gameData.doorBypassVerbs[status] || { stat: pick(["Body", "Mind"]), verbs: ["overcome"] };
+
+            const bypassInfo = gameData.doorBypassVerbs[status] || { verbs: ["overcome"] };
             const potency = weightedPick(profile.potencyWeights);
             const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
-            
-            return {
+
+            const door = {
                 status,
                 bypass: {
                     potency,
-                    stat: bypassInfo.stat,
                     threshold,
                     verb: pick(bypassInfo.verbs)
                 }
             };
+
+            // Add trap damage for Trapped doors
+            if (status === "Trapped") {
+                door.trapDamage = randInt(profile.damageRange.min, profile.damageRange.max);
+            }
+
+            return door;
         }
 
         // ==================== THREAT GENERATION ====================
@@ -942,8 +937,12 @@
 
             const threats = [];
             const usedTypes = [];
+            let totalThreatCount = 0;
+            const maxThreats = profile.maxThreatsPerRoom || 99;
 
             for (let i = 0; i < numTypes; i++) {
+                if (totalThreatCount >= maxThreats) break;
+
                 const availableTypes = gameData.typeWords.filter(t => !usedTypes.includes(t));
                 if (availableTypes.length === 0) break;
 
@@ -955,7 +954,11 @@
                 const keyword = keywordData.name;
                 const keywordAbilities = keywordData.abilities;
 
-                const quantity = randInt(profile.quantityRange.min, profile.quantityRange.max);
+                // Calculate quantity, respecting max threats limit
+                const remainingSlots = maxThreats - totalThreatCount;
+                const maxQuantity = Math.min(profile.quantityRange.max, remainingSlots);
+                const quantity = randInt(profile.quantityRange.min, maxQuantity);
+                totalThreatCount += quantity;
                 const damage = randInt(profile.damageRange.min, profile.damageRange.max);
                 const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
 
@@ -974,8 +977,9 @@
                     abilities.push(getAbilityDescription(abilityName));
                 }
 
-                // Get range for this type
-                const range = gameData.typeRange[type] || "Melee";
+                // Get range for this type - pick randomly if array
+                const typeRangeValue = gameData.typeRange[type] || "Melee";
+                const range = Array.isArray(typeRangeValue) ? pick(typeRangeValue) : typeRangeValue;
 
                 const threat = {
                     keyword,
@@ -989,21 +993,6 @@
                     abilities,
                     isBoss: false
                 };
-
-                // Calculate lesser threats for Group type
-                if (type === "Group") {
-                    const lesserQuantity = Math.max(1, Math.floor(successTiers.defeat / 2));
-                    const lesserDefeat = Math.max(1, Math.floor(successTiers.defeat / lesserQuantity));
-                    const lesserOverwhelm = Math.max(2, Math.floor(successTiers.overwhelm / lesserQuantity));
-                    const lesserDamage = Math.max(1, Math.floor(damage / 2));
-                    threat.lesserThreats = {
-                        quantity: lesserQuantity,
-                        defeat: lesserDefeat,
-                        overwhelm: lesserOverwhelm,
-                        damage: lesserDamage,
-                        threshold: threshold
-                    };
-                }
 
                 threats.push(threat);
             }
@@ -1098,9 +1087,13 @@
                     const statusClass = door.status === 'Open' ? 'open' : 'blocked';
                     let bypassHtml = '';
                     if (door.bypass) {
+                        const trapDamageHtml = door.trapDamage
+                            ? `<div class="trap-damage">Trap Damage: ${door.trapDamage}d6</div>`
+                            : '';
                         bypassHtml = `<div class="bypass-info">
-                            Bypass: <span class="potency-${door.bypass.potency.toLowerCase()}">${door.bypass.potency}</span> 
-                            ${door.bypass.stat} check to ${door.bypass.verb}, Success Threshold ${door.bypass.threshold}
+                            Bypass: <span class="potency-${door.bypass.potency.toLowerCase()}">${door.bypass.potency}</span>
+                            check to ${door.bypass.verb}, Threshold +${door.bypass.threshold}
+                            ${trapDamageHtml}
                         </div>`;
                     }
                     exitsHtml += `
@@ -1124,13 +1117,6 @@
                     const abilitiesHtml = threat.abilities.length > 0
                         ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
                         : '<div class="ability">—</div>';
-                    
-                        const lesserThreatsHtml = threat.lesserThreats
-                        ? `<div class="lesser-threats">
-                            <div class="lesser-threats-header">When Defeated, splits into:</div>
-                            <div class="lesser-threat-stat">${threat.lesserThreats.quantity}x ${threat.keyword} (${threat.lesserThreats.defeat}/${threat.lesserThreats.overwhelm}, ${threat.lesserThreats.damage}d6, +${threat.lesserThreats.threshold})</div>
-                        </div>`
-                        : '';
 
                     threatsHtml += `
                         <div class="threat-block ${bossClass}">
@@ -1147,7 +1133,6 @@
                                 <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>
                                 ${abilitiesHtml}
                             </div>
-                            ${lesserThreatsHtml}
                         </div>
                     `;
                 });
