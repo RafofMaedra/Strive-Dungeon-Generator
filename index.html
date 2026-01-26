@@ -119,15 +119,24 @@
             padding: 0.5rem;
         }
 
-        .keyword-abilities {
+        .keyword-group {
+            margin-bottom: 0.5rem;
+        }
+
+        .keyword-row {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
 
-        .keyword-abilities input {
+        .keyword-input {
+            flex: 0 0 120px;
+            min-width: 100px;
+        }
+
+        .ability-input {
             flex: 1;
-            min-width: 150px;
+            min-width: 140px;
         }
 
         .buttons {
@@ -377,6 +386,25 @@
             color: var(--accent-gold);
         }
 
+        .lesser-threats {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(139, 38, 53, 0.15);
+            border-radius: 3px;
+            border-left: 2px solid var(--accent-gold);
+        }
+
+        .lesser-threats-header {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .lesser-threat-stat {
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+        }
+
         .no-threats {
             color: var(--text-muted);
             font-style: italic;
@@ -529,18 +557,25 @@
                 <label for="dungeonLength">Dungeon Length (rooms)</label>
                 <input type="number" id="dungeonLength" min="6" max="30" value="10">
             </div>
-            <div class="control-group">
-                <label for="threatKeyword">Threat Keyword</label>
-                <input type="text" id="threatKeyword" placeholder="e.g., Goblin, Undead, Cultist">
-            </div>
-            <div class="control-group full-width">
-                <label>Keyword Abilities (optional, up to 3)</label>
-                <div class="keyword-abilities">
-                    <input type="text" id="keywordAbility1" placeholder="Ability 1">
-                    <input type="text" id="keywordAbility2" placeholder="Ability 2">
-                    <input type="text" id="keywordAbility3" placeholder="Ability 3">
+            <div class="control-group full-width keyword-group">
+                <label>Threat Keyword 1</label>
+                <div class="keyword-row">
+                    <input type="text" id="threatKeyword1" placeholder="e.g., Goblin" class="keyword-input">
+                    <input type="text" id="keywordAbility1_1" list="abilityList" placeholder="Ability 1" class="ability-input">
+                    <input type="text" id="keywordAbility1_2" list="abilityList" placeholder="Ability 2" class="ability-input">
+                    <input type="text" id="keywordAbility1_3" list="abilityList" placeholder="Ability 3" class="ability-input">
                 </div>
             </div>
+            <div class="control-group full-width keyword-group">
+                <label>Threat Keyword 2 (optional)</label>
+                <div class="keyword-row">
+                    <input type="text" id="threatKeyword2" placeholder="e.g., Ogre" class="keyword-input">
+                    <input type="text" id="keywordAbility2_1" list="abilityList" placeholder="Ability 1" class="ability-input">
+                    <input type="text" id="keywordAbility2_2" list="abilityList" placeholder="Ability 2" class="ability-input">
+                    <input type="text" id="keywordAbility2_3" list="abilityList" placeholder="Ability 3" class="ability-input">
+                </div>
+            </div>
+            <datalist id="abilityList"></datalist>
             <div class="control-group">
                 <label for="dataFile">Import Data File</label>
                 <input type="file" id="dataFile" accept=".json">
@@ -596,64 +631,162 @@
                 "Sealed": { stat: "Mind", verbs: ["decipher", "unravel", "break"] },
                 "Collapsed": { stat: "Body", verbs: ["clear", "dig through", "move"] }
             },
-            typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Swarm", "Caster"],
+            typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Group", "Caster"],
             wordToAbility: {
-                "Archer": "Volley - can attack two targets at once",
-                "Brute": "Crushing Blow - +1d6 damage on successful hit",
-                "Skirmisher": "Hit and Run - can disengage freely after attacking",
-                "Elite": "Swordmaster - reroll one failed attack per round",
-                "Shaman": "Dark Ritual - can heal allies or curse enemies",
-                "Scout": "Alert - party cannot surprise this enemy",
-                "Defender": "Shield Wall - adjacent allies gain +2 Success Threshold",
-                "Lurker": "Ambush - +2d6 damage when attacking from hiding",
-                "Swarm": "Overwhelming Numbers - gains bonus when multiple swarms attack",
-                "Caster": "Arcane Blast - ranged magical attack ignoring armor"
+                "Archer": "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
+                "Brute": "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
+                "Skirmisher": "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
+                "Elite": "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
+                "Shaman": "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
+                "Scout": "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
+                "Defender": "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
+                "Lurker": "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
+                "Group": "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
+                "Caster": "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency."
             },
+            typeRange: {
+                "Archer": "Ranged",
+                "Brute": "Melee",
+                "Skirmisher": "Melee and Ranged",
+                "Elite": "Melee",
+                "Shaman": "Ranged",
+                "Scout": "Melee or Ranged",
+                "Defender": "Melee",
+                "Lurker": "Melee",
+                "Group": "Melee (All) or Ranged (3)",
+                "Caster": "Ranged"
+            },
+            striveAbilities: [
+                "Acidic Blood: When a PC assigns successes to this threat while in Touch range, that PC loses 2 Grit.",
+                "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
+                "Armoured (2): This Threat is unaffected by checks and successes less potent than Effective.",
+                "Armoured (3): This Threat is unaffected by checks and successes less potent than Forceful.",
+                "Anti-magic: Within Short range, magic checks require an additional success to achieve the desired potency.",
+                "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency.",
+                "Arcanist: Instead of dealing damage, this threat can wield magic to majorly impact the combat at a forceful potency.",
+                "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
+                "Besiege: Instead of dealing damage, this threat forces open a gate or doorway.",
+                "Bound: If conjured, the conjurer can command the threat at no focus cost, can use the threat's senses as if they are its own, and can communicate by taking command of it's mouth, even at beyond distance. If the threat is defeated, its conjurer takes 1 damage to their focus. A conjurer can only be bound to one threat at a time.",
+                "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
+                "Cowardly: If at least 1 success has been assigned against this threat this round, it attempts to flee instead of dealing damage—unless an allied leader or at least 3 other allies are in Short range.",
+                "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
+                "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn.",
+                "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
+                "Death Wave: When this threat is Defeated (not Overwhelmed), each PC in Touch range loses 1d6 Grit.",
+                "Enrage: This threat's damage increases by 1d6 for each round of combat.",
+                "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
+                "Ethereal: Non-magical actions cannot affect this threat unless it is anchored in the physical world. A PC may Anchor it with a suitable Major Impact action (Effective potency) until the end of the next round.",
+                "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat's Success Threshold; on failure, you can't Push your rolls this turn.",
+                "Fire Immunity: This threat ignores successes dealt with fire.",
+                "Fire Vulnerability: Attacking this threat with fire grants an additional success.",
+                "Flame Aura: When you assign successes to this threat while in Touch range, you lose 1d6 Grit.",
+                "Flaming Breath (2d6): Unless surprised, this threat opens the combat by dealing 2d6 damage against all creatures in Short range, unless they succeed on a relevant check at Effective potency.",
+                "Flaming Breath (3d6): Unless surprised, this threat opens the combat by dealing 3d6 damage against all creatures in Short range, unless they succeed on a relevant check at Forceful potency.",
+                "Flying: Cannot be targeted by non-ranged checks unless this threat is grounded. A PC may ground it with a suitable Major Impact action (Effective) until the end of the round.",
+                "Focus Fire: Instead of dealing damage to multiple targets, this threat deals 3d6 damage to a single target. This can only be used when there are no enemies in touch range of this threat.",
+                "Forest's Protection: Checks to Major Impact this threat require two additional success to achieve the desired potency.",
+                "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
+                "Foul (2): At the start of your turn, while in Short range, make a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
+                "Grapple & Pin: Instead of dealing damage, this threat attempts to Pin a creature in Touch range. The target makes an Effective Body check against this threat's Success Threshold; on failure they are Pinned (can't move or act except in attempts to break free) until they succeed on a Forceful Body check against this threat's Success Threshold at the start of their turn.",
+                "Grappler: When this threat deals damage to you in Touch range, you become Restrained (can't move away) until the end of your next turn unless you succeed on a Competent Body check against this threat's Success Threshold.",
+                "Grappler (2): Instead of dealing damage, this threat attempts to Restrain its target(s). Each target makes a Forceful Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+                "Grappler (All): Instead of dealing damage, this threat attempts to Restrain every PC in Touch range. Each target makes an Effective Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+                "Group: If this threat is part of a stack of 3 or more threats, it can use all of its non-damaging abilities in addition to dealing half of its damage to each of its targets.",
+                "Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.",
+                "Horde: This threat can use all of its non-damaging abilities and still deals half of its damage to each of its targets.",
+                "Hurl: Instead of dealing damage in melee, this threat deals its damage to one target up to Far range.",
+                "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat's Success Threshold; on failure, you're Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
+                "Ice Immunity: This threat ignores successes dealt with ice.",
+                "Ice Vulnerability: Attacking this threat with ice grants an additional success.",
+                "Ice-bite: Damage from this threat leaves the skin feeling cold and numb for days. If left untreated for several days, it turns into frostbite.",
+                "Illusory Doubles: This threat has a number of illusions equal to its success threshold. When targeting this threat, the players roll 1d6. If the number is below the threat's Success Threshold, and has not been rolled already against this threat, they strike an illusion instead.",
+                "Indulgent: So long as it isn't disturbed, this threat may let others pass without taking notice.",
+                "Lightning Immunity: This threat ignores successes dealt with lightning.",
+                "Lightning Vulnerability: Attacking this threat with lightning grants an additional success.",
+                "Meat Shield: If this threat has allies in touch range, the first success dealt against it is dealt to an ally instead.",
+                "Mental Drain: Whenever a PC within Short range makes a magic check, they lose 1 Focus.",
+                "Mind-breaker: This threat deals damage to Focus instead of Grit.",
+                "Poisonous: If a player takes damage from this threat, they take another instance of that damage after an hour.",
+                "Poisonous (1): If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1 Grit until they succeed a Competent Body check (Threshold 4) or receive treatment.",
+                "Potent Poison: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1d6 Grit until they succeed an Effective Body check (Threshold 4) or receive treatment.",
+                "Power-words: Instead of dealing damage, this threat speaks a Word at a target in Short range. The target makes an Effective Mind check against this threat's Success Threshold; on failure they suffer a Forceful-tier effect appropriate to the Word (GM call) until the end of their next turn.",
+                "Pursuer: An additional two successes are required to flee from this threat.",
+                "Reassembling: Unless this threat's remains are burned and scattered, it shortly reassembles, all successes removed.",
+                "Reflective Hide: When you assign three or more successes to this threat from a single check, you take 1d6 damage to your Grit.",
+                "Regeneration: At the end of each round, remove all accumulated successes from this threat.",
+                "Regeneration (Numerical): At the end of each round, remove accumulated successes equal to this threat's Success Threshold.",
+                "Second Stage: When this threat would be defeated, its second stage is revealed.",
+                "Second Stage (Strive): When this threat would be defeated, its second stage is revealed, and each player regains a Strive Die.",
+                "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
+                "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
+                "Slow: Defend & Flee checks to escape this threat are set to Competent (1 success), unless the GM rules otherwise.",
+                "Smother: Instead of dealing damage, this threat smothers all light sources in Short range, until relit.",
+                "Squeeze: A creature Restrained by this threat (can't move away) loses 1d6 Grit at the start of its turn.",
+                "Stone Skin: Non-magical checks treat this threat's Success Threshold as 5 (even if it is normally lower).",
+                "Suppressing Shot: The first target to push a roll within far range of this threat immediately takes 1d6 damage.",
+                "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
+                "Teamwork: This threat immediately deals 1d6 damage to touch range targets that attack a nearby allied threat.",
+                "Teleport (Short Range): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
+                "Teleport (Beyond): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range.",
+                "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
+                "Water Immunity: This threat ignores successes dealt with water.",
+                "Water Vulnerability: Attacking this threat with water grants an additional success."
+            ],
             keywordAbilityInputMax: 3,
             difficultyProfiles: {
                 "Easy": {
                     potencyWeights: { "Competent": 60, "Effective": 30, "Forceful": 10 },
                     trapDamage: { min: 1, max: 2 },
                     successTiers: { defeat: 2, overwhelm: 4 },
-                    baseThresholdRange: { min: 2, max: 4 },
+                    baseThresholdRange: { min: 3, max: 4 },
+                    damageRange: { min: 1, max: 1 },
                     threatTypesRange: { min: 0, max: 2 },
                     quantityRange: { min: 1, max: 2 },
                     keywordAbilityChance: 0.1,
-                    bossThresholdBonus: 3,
+                    bossDefeatBonus: 5,
+                    bossOverwhelmBonus: 6,
                     bossDamageBonus: 1
                 },
                 "Medium": {
                     potencyWeights: { "Competent": 25, "Effective": 50, "Forceful": 25 },
                     trapDamage: { min: 2, max: 3 },
-                    successTiers: { defeat: 3, overwhelm: 6 },
-                    baseThresholdRange: { min: 3, max: 5 },
-                    threatTypesRange: { min: 0, max: 3 },
+                    successTiers: { defeat: 5, overwhelm: 7 },
+                    baseThresholdRange: { min: 3, max: 4 },
+                    damageRange: { min: 1, max: 2 },
+                    threatTypesRange: { min: 1, max: 2 },
                     quantityRange: { min: 1, max: 3 },
                     keywordAbilityChance: 0.25,
-                    bossThresholdBonus: 4,
-                    bossDamageBonus: 2
+                    bossDefeatBonus: 6,
+                    bossOverwhelmBonus: 8,
+                    bossDamageBonus: 1
                 },
                 "Hard": {
                     potencyWeights: { "Competent": 10, "Effective": 45, "Forceful": 45 },
                     trapDamage: { min: 3, max: 4 },
-                    successTiers: { defeat: 4, overwhelm: 8 },
-                    baseThresholdRange: { min: 4, max: 6 },
+                    successTiers: { defeat: 8, overwhelm: 12 },
+                    successTiersWeak: { defeat: 5, overwhelm: 7 },
+                    baseThresholdRange: { min: 4, max: 5 },
+                    damageRange: { min: 1, max: 2 },
                     threatTypesRange: { min: 1, max: 3 },
-                    quantityRange: { min: 2, max: 4 },
+                    quantityRange: { min: 2, max: 3 },
                     keywordAbilityChance: 0.5,
-                    bossThresholdBonus: 5,
-                    bossDamageBonus: 3
+                    bossDefeatBonus: 6,
+                    bossOverwhelmBonus: 8,
+                    bossDamageBonus: 2
                 },
                 "Deadly": {
                     potencyWeights: { "Competent": 5, "Effective": 30, "Forceful": 65 },
                     trapDamage: { min: 4, max: 6 },
-                    successTiers: { defeat: 6, overwhelm: 10 },
-                    baseThresholdRange: { min: 5, max: 8 },
+                    successTiers: { defeat: 16, overwhelm: 24 },
+                    successTiersWeak: { defeat: 8, overwhelm: 12 },
+                    baseThresholdRange: { min: 4, max: 5 },
+                    damageRange: { min: 2, max: 3 },
                     threatTypesRange: { min: 2, max: 3 },
-                    quantityRange: { min: 3, max: 6 },
+                    quantityRange: { min: 2, max: 4 },
                     keywordAbilityChance: 0.75,
-                    bossThresholdBonus: 6,
-                    bossDamageBonus: 4
+                    bossDefeatBonus: 8,
+                    bossOverwhelmBonus: 10,
+                    bossDamageBonus: 2
                 }
             },
             layouts: {
@@ -694,6 +827,13 @@
                 if (r <= 0) return key;
             }
             return Object.keys(weights)[0];
+        }
+
+        function article(word) {
+            // Returns "a" or "an" based on whether the word starts with a vowel sound
+            const vowels = ['a', 'e', 'i', 'o', 'u'];
+            const firstLetter = word.trim().toLowerCase().charAt(0);
+            return vowels.includes(firstLetter) ? 'an' : 'a';
         }
 
         function getLayoutCode(layoutId) {
@@ -752,7 +892,7 @@
             const potency = weightedPick(profile.potencyWeights);
             
             return {
-                text: `${leadIn} a ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}. ${pressure}, but a ${potency} check could ${mitigation}.`,
+                text: `${leadIn} ${article(roomType)} ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}. ${pressure}, but ${article(potency)} ${potency} check could ${mitigation}.`,
                 potency
             };
         }
@@ -781,84 +921,125 @@
         }
 
         // ==================== THREAT GENERATION ====================
+        function getAbilityDescription(abilityName) {
+            // Look up the full ability description from the striveAbilities list
+            const ability = gameData.striveAbilities.find(a => a.startsWith(abilityName + ':'));
+            return ability || abilityName;
+        }
+
         function generateThreats(isBoss) {
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
-            const keyword = document.getElementById('threatKeyword').value.trim() || "Enemy";
-            
-            const keywordAbilities = [
-                document.getElementById('keywordAbility1').value.trim(),
-                document.getElementById('keywordAbility2').value.trim(),
-                document.getElementById('keywordAbility3').value.trim()
-            ].filter(a => a);
-            
+            const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
+
             if (isBoss) {
-                return [generateBossThreat(profile, keyword, keywordAbilities)];
+                // Boss uses the first keyword
+                const keywordData = keywords[0];
+                return [generateBossThreat(profile, keywordData.name, keywordData.abilities)];
             }
-            
+
             const numTypes = randInt(profile.threatTypesRange.min, profile.threatTypesRange.max);
             if (numTypes === 0) return [];
-            
+
             const threats = [];
             const usedTypes = [];
-            
+
             for (let i = 0; i < numTypes; i++) {
                 const availableTypes = gameData.typeWords.filter(t => !usedTypes.includes(t));
                 if (availableTypes.length === 0) break;
-                
+
                 const type = pick(availableTypes);
                 usedTypes.push(type);
-                
+
+                // Pick a random keyword for this threat
+                const keywordData = pick(keywords);
+                const keyword = keywordData.name;
+                const keywordAbilities = keywordData.abilities;
+
                 const quantity = randInt(profile.quantityRange.min, profile.quantityRange.max);
-                const damage = randInt(1, 2 + Math.floor(quantity / 2));
+                const damage = randInt(profile.damageRange.min, profile.damageRange.max);
                 const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
-                
+
+                // Determine success tiers - Hard/Deadly may use weaker tiers for variety
+                let successTiers = profile.successTiers;
+                if (profile.successTiersWeak && Math.random() < 0.4) {
+                    successTiers = profile.successTiersWeak;
+                }
+
                 const abilities = [];
                 if (gameData.wordToAbility[type]) {
                     abilities.push(gameData.wordToAbility[type]);
                 }
                 if (keywordAbilities.length > 0 && Math.random() < profile.keywordAbilityChance) {
-                    abilities.push(pick(keywordAbilities));
+                    const abilityName = pick(keywordAbilities);
+                    abilities.push(getAbilityDescription(abilityName));
                 }
-                
-                threats.push({
+
+                // Get range for this type
+                const range = gameData.typeRange[type] || "Melee";
+
+                const threat = {
                     keyword,
                     type,
                     quantity,
                     damage,
                     threshold,
-                    defeat: profile.successTiers.defeat,
-                    overwhelm: profile.successTiers.overwhelm,
+                    defeat: successTiers.defeat,
+                    overwhelm: successTiers.overwhelm,
+                    range,
                     abilities,
                     isBoss: false
-                });
+                };
+
+                // Calculate lesser threats for Group type
+                if (type === "Group") {
+                    const lesserQuantity = Math.max(1, Math.floor(successTiers.defeat / 2));
+                    const lesserDefeat = Math.max(1, Math.floor(successTiers.defeat / lesserQuantity));
+                    const lesserOverwhelm = Math.max(2, Math.floor(successTiers.overwhelm / lesserQuantity));
+                    const lesserDamage = Math.max(1, Math.floor(damage / 2));
+                    threat.lesserThreats = {
+                        quantity: lesserQuantity,
+                        defeat: lesserDefeat,
+                        overwhelm: lesserOverwhelm,
+                        damage: lesserDamage,
+                        threshold: threshold
+                    };
+                }
+
+                threats.push(threat);
             }
-            
+
             return threats;
         }
 
         function generateBossThreat(profile, keyword, keywordAbilities) {
             const type = pick(gameData.typeWords);
-            const damage = randInt(3, 4) + profile.bossDamageBonus;
-            const threshold = profile.baseThresholdRange.max + profile.bossThresholdBonus;
-            
+            const baseDamage = profile.damageRange.max;
+            const damage = baseDamage + profile.bossDamageBonus;
+            const threshold = profile.baseThresholdRange.max;
+
             const abilities = [];
             if (gameData.wordToAbility[type]) {
                 abilities.push(gameData.wordToAbility[type]);
             }
             // Boss always gets a keyword ability if available
             if (keywordAbilities.length > 0) {
-                abilities.push(pick(keywordAbilities));
+                const abilityName = pick(keywordAbilities);
+                abilities.push(getAbilityDescription(abilityName));
             }
-            abilities.push("Boss Action - takes an additional action each round");
-            
+            abilities.push("Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.");
+
+            // Boss range - typically melee (all) or ranged (2)
+            const bossRange = Math.random() < 0.5 ? "Melee (All)" : "Ranged (2)";
+
             return {
                 keyword,
                 type,
                 quantity: 1,
                 damage,
                 threshold,
-                defeat: profile.successTiers.defeat + 5,
-                overwhelm: profile.successTiers.overwhelm + 5,
+                defeat: profile.successTiers.defeat + profile.bossDefeatBonus,
+                overwhelm: profile.successTiers.overwhelm + profile.bossOverwhelmBonus,
+                range: bossRange,
                 abilities,
                 isBoss: true
             };
@@ -944,6 +1125,13 @@
                         ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
                         : '<div class="ability">—</div>';
                     
+                        const lesserThreatsHtml = threat.lesserThreats
+                        ? `<div class="lesser-threats">
+                            <div class="lesser-threats-header">When Defeated, splits into:</div>
+                            <div class="lesser-threat-stat">${threat.lesserThreats.quantity}x ${threat.keyword} (${threat.lesserThreats.defeat}/${threat.lesserThreats.overwhelm}, ${threat.lesserThreats.damage}d6, +${threat.lesserThreats.threshold})</div>
+                        </div>`
+                        : '';
+
                     threatsHtml += `
                         <div class="threat-block ${bossClass}">
                             <div class="threat-header">
@@ -953,11 +1141,13 @@
                                 <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
                                 <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
                                 <div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>
+                                <div class="threat-stat"><span class="stat-label">Range:</span> ${threat.range || 'Melee'}</div>
                             </div>
                             <div class="threat-abilities">
                                 <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>
                                 ${abilitiesHtml}
                             </div>
+                            ${lesserThreatsHtml}
                         </div>
                     `;
                 });
@@ -1074,28 +1264,81 @@
                 // Restore UI values
                 document.getElementById('difficulty').value = dungeonState.difficulty;
                 document.getElementById('dungeonLength').value = dungeonState.totalRooms;
-                if (dungeonState.threatKeyword) {
-                    document.getElementById('threatKeyword').value = dungeonState.threatKeyword;
+
+                // Restore keywords and abilities
+                if (dungeonState.keywords && dungeonState.keywords.length > 0) {
+                    const kw1 = dungeonState.keywords[0];
+                    document.getElementById('threatKeyword1').value = kw1.name || '';
+                    if (kw1.abilities) {
+                        if (kw1.abilities[0]) document.getElementById('keywordAbility1_1').value = kw1.abilities[0];
+                        if (kw1.abilities[1]) document.getElementById('keywordAbility1_2').value = kw1.abilities[1];
+                        if (kw1.abilities[2]) document.getElementById('keywordAbility1_3').value = kw1.abilities[2];
+                    }
+
+                    if (dungeonState.keywords.length > 1) {
+                        const kw2 = dungeonState.keywords[1];
+                        document.getElementById('threatKeyword2').value = kw2.name || '';
+                        if (kw2.abilities) {
+                            if (kw2.abilities[0]) document.getElementById('keywordAbility2_1').value = kw2.abilities[0];
+                            if (kw2.abilities[1]) document.getElementById('keywordAbility2_2').value = kw2.abilities[1];
+                            if (kw2.abilities[2]) document.getElementById('keywordAbility2_3').value = kw2.abilities[2];
+                        }
+                    }
                 }
             }
         }
+
+        // ==================== INITIALIZATION ====================
+        function populateAbilityDatalist() {
+            const datalist = document.getElementById('abilityList');
+            datalist.innerHTML = '';
+            gameData.striveAbilities.forEach(ability => {
+                const option = document.createElement('option');
+                // Extract just the ability name for the dropdown value
+                const abilityName = ability.split(':')[0].trim();
+                option.value = abilityName;
+                option.textContent = ability;
+                datalist.appendChild(option);
+            });
+        }
+
+        // Populate datalist on page load
+        populateAbilityDatalist();
 
         // ==================== EVENT HANDLERS ====================
         document.getElementById('startBtn').addEventListener('click', () => {
             const difficulty = document.getElementById('difficulty').value;
             const totalRooms = parseInt(document.getElementById('dungeonLength').value) || 10;
-            const threatKeyword = document.getElementById('threatKeyword').value.trim();
-            
+
+            // Get keyword 1 and its abilities
+            const keyword1 = document.getElementById('threatKeyword1').value.trim() || "Enemy";
+            const keyword1Abilities = [
+                document.getElementById('keywordAbility1_1').value.trim(),
+                document.getElementById('keywordAbility1_2').value.trim(),
+                document.getElementById('keywordAbility1_3').value.trim()
+            ].filter(a => a);
+
+            // Get keyword 2 and its abilities (optional)
+            const keyword2 = document.getElementById('threatKeyword2').value.trim();
+            const keyword2Abilities = [
+                document.getElementById('keywordAbility2_1').value.trim(),
+                document.getElementById('keywordAbility2_2').value.trim(),
+                document.getElementById('keywordAbility2_3').value.trim()
+            ].filter(a => a);
+
             // Reset state
             usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
             dungeonState = {
                 difficulty,
                 totalRooms: Math.max(6, Math.min(30, totalRooms)),
-                threatKeyword,
+                keywords: [
+                    { name: keyword1, abilities: keyword1Abilities },
+                    ...(keyword2 ? [{ name: keyword2, abilities: keyword2Abilities }] : [])
+                ],
                 rooms: [],
                 startedAt: Date.now()
             };
-            
+
             // Generate first room
             const room = generateRoom();
             renderRoom(room);
