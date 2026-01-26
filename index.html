@@ -361,6 +361,60 @@
             margin-bottom: 1rem;
         }
 
+        .loot {
+            margin-bottom: 1rem;
+        }
+
+        .loot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .loot-block {
+            background: rgba(201, 162, 39, 0.08);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 4px;
+            padding: 0.85rem;
+        }
+
+        .loot-block h4 {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .loot-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .loot-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: baseline;
+        }
+
+        .loot-tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.4rem;
+            border-radius: 2px;
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text-muted);
+        }
+
+        .loot-tag.common { color: #e5d7a3; }
+        .loot-tag.rare { color: #9fd1ff; }
+        .loot-tag.legendary { color: #f4b4ff; }
+
         .threat-list {
             display: flex;
             flex-direction: column;
@@ -945,6 +999,70 @@
             }
         };
 
+        const LOOT_DATA = {
+            magic: {
+                Common: {
+                    potions: ["Focus Potion", "Healing Potion"],
+                    items: [
+                        "Focus Beads", "Grit Gloves", "Grappling Hook Gauntlet", "Common Arcane Conduit",
+                        "Torch-stone", "Discouraging Fragrance", "Hunter’s Toxin", "Keen-Eye Lens",
+                        "Soft-Step Wax", "Smoke Pellet", "Quicklime Chalk", "Climbing Spikes",
+                        "Flash-Glass", "Field Stitch Kit", "Whisper-Coin", "Rust-Eater Vial"
+                    ]
+                },
+                Rare: {
+                    potions: ["Potent Focus Potion", "Potent Healing Potion", "Wound-Salve"],
+                    items: [
+                        "Ring of Featherlight", "Rare Arcane Conduit", "Cloak of Shadows",
+                        "Warding Aegis", "Venom-strike (Weapon)", "Extradimensional Storage Pouch",
+                        "Warded Cloak", "Arcane Armour", "Lantern of True Forms",
+                        "Blink Charm", "Spell-Sunder Bindings", "Oath-Thread Bracelet",
+                        "Mindward Circlet", "Grasping Chain", "Siphoning Vambrace"
+                    ]
+                },
+                Legendary: {
+                    potions: ["Legendary Focus Potion", "Legendary Healing Potion"],
+                    items: [
+                        "Legendary Arcane Conduit", "Storm-enchanted Weapon", "Legendary Arcane Armour",
+                        "Crown of the Unbroken", "Gatekey", "Blade of Echoes (Weapon)",
+                        "Mantle of the Deep Step", "Hourglass Locket",
+                        "Sigil of Dominion", "Aegis of Iron Vows"
+                    ]
+                }
+            },
+            mundane: {
+                equipment: [
+                    "Shield and arm strap", "Steel longsword", "Hardened spear",
+                    "Shortbow with 20 arrows", "Chain shirt", "Leather armor",
+                    "Iron lantern", "Crowbar", "Lockpick set",
+                    "Grapple and rope (50 ft)", "Piton kit (10 spikes + hammer)"
+                ],
+                supplies: [
+                    "Rations (3 days)", "Water skin", "Torch bundle (6)",
+                    "Oil flask", "Bandages and salves", "Chalk sticks",
+                    "Bedroll", "Climbing harness"
+                ],
+                trinkets: [
+                    "Silvered locket with a faded portrait", "Carved bone die",
+                    "Tiny brass astrolabe", "Ring of braided copper wire",
+                    "Faded battle pennant", "Ivory comb with sigil",
+                    "Glass vial of glittering sand", "Child’s tin whistle"
+                ],
+                gemstones: [
+                    "Polished agate (10 coins)", "Deep-blue lapis (25 coins)",
+                    "Cracked ruby chip (50 coins)", "Moonstone shard (40 coins)",
+                    "Cut emerald sliver (75 coins)", "Amber bead with fossil (30 coins)"
+                ]
+            }
+        };
+
+        const LOOT_RARITY_WEIGHTS = {
+            Easy: { Common: 85, Rare: 13, Legendary: 2 },
+            Medium: { Common: 72, Rare: 23, Legendary: 5 },
+            Hard: { Common: 58, Rare: 32, Legendary: 10 },
+            Deadly: { Common: 45, Rare: 38, Legendary: 17 }
+        };
+
         // ==================== STATE ====================
         let gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
         let dungeonState = null;
@@ -975,6 +1093,38 @@
                 if (r <= 0) return key;
             }
             return Object.keys(weights)[0];
+        }
+
+        function clampRarityWeights(weights) {
+            const clamped = { ...weights };
+            Object.keys(clamped).forEach(key => {
+                if (clamped[key] < 1) clamped[key] = 1;
+            });
+            return clamped;
+        }
+
+        function adjustRarityWeights(baseWeights, hasEncounter, isBoss) {
+            const adjusted = { ...baseWeights };
+            if (hasEncounter) {
+                adjusted.Common -= 10;
+                adjusted.Rare += 7;
+                adjusted.Legendary += 3;
+            }
+            if (isBoss) {
+                adjusted.Common -= 10;
+                adjusted.Rare += 5;
+                adjusted.Legendary += 5;
+            }
+            return clampRarityWeights(adjusted);
+        }
+
+        function formatCoins(coins) {
+            if (!coins) return '';
+            const parts = [];
+            if (coins.gp) parts.push(`${coins.gp} gp`);
+            if (coins.sp) parts.push(`${coins.sp} sp`);
+            if (coins.cp) parts.push(`${coins.cp} cp`);
+            return parts.length > 0 ? parts.join(', ') : `${coins.total} coins`;
         }
 
         function article(word) {
@@ -1357,6 +1507,110 @@
             };
         }
 
+        // ==================== LOOT GENERATION ====================
+        function rollLootRarity(hasEncounter, isBoss) {
+            const baseWeights = LOOT_RARITY_WEIGHTS[dungeonState.difficulty] || LOOT_RARITY_WEIGHTS.Medium;
+            const adjusted = adjustRarityWeights(baseWeights, hasEncounter, isBoss);
+            return weightedPick(adjusted);
+        }
+
+        function pickMagicItem(rarity, potionChance) {
+            const pool = LOOT_DATA.magic[rarity] || LOOT_DATA.magic.Common;
+            const usePotion = pool.potions.length > 0 && Math.random() < potionChance;
+            const name = usePotion ? pick(pool.potions) : pick(pool.items);
+            return {
+                name,
+                category: "Magic",
+                rarity
+            };
+        }
+
+        function generateCoins(hasEncounter, isBoss) {
+            const ranges = {
+                Easy: { min: 10, max: 60 },
+                Medium: { min: 25, max: 120 },
+                Hard: { min: 60, max: 240 },
+                Deadly: { min: 120, max: 400 }
+            };
+            const range = ranges[dungeonState.difficulty] || ranges.Medium;
+            const multiplier = (hasEncounter ? 1.5 : 1) * (isBoss ? 2 : 1);
+            const total = Math.max(1, Math.round(randInt(range.min, range.max) * multiplier));
+            const gp = Math.floor(total / 50);
+            const sp = Math.floor((total % 50) / 10);
+            const cp = total % 10;
+            return { total, gp, sp, cp };
+        }
+
+        function generateLoot(room) {
+            const hasEncounter = room.threats && room.threats.length > 0;
+            const isBoss = room.isBoss;
+            const loot = { coins: null, items: [] };
+
+            const coinChance = isBoss ? 1 : hasEncounter ? 0.85 : 0.55;
+            if (Math.random() < coinChance) {
+                loot.coins = generateCoins(hasEncounter, isBoss);
+            }
+
+            const mundaneCount = isBoss ? randInt(2, 3) : hasEncounter ? randInt(1, 2) : randInt(0, 1);
+            for (let i = 0; i < mundaneCount; i++) {
+                const pool = Math.random() < 0.55 ? LOOT_DATA.mundane.equipment : LOOT_DATA.mundane.supplies;
+                loot.items.push({
+                    name: pick(pool),
+                    category: "Mundane"
+                });
+            }
+
+            const trinketChance = isBoss ? 0.75 : hasEncounter ? 0.55 : 0.3;
+            if (Math.random() < trinketChance) {
+                loot.items.push({
+                    name: pick(LOOT_DATA.mundane.trinkets),
+                    category: "Trinket"
+                });
+            }
+            const gemChance = isBoss ? 0.65 : hasEncounter ? 0.5 : 0.25;
+            if (Math.random() < gemChance) {
+                loot.items.push({
+                    name: pick(LOOT_DATA.mundane.gemstones),
+                    category: "Gemstone"
+                });
+            }
+
+            const magicChance = isBoss ? 0.95 : hasEncounter ? 0.7 : 0.35;
+            if (Math.random() < magicChance) {
+                const magicCount = isBoss ? randInt(2, 3) : hasEncounter ? randInt(1, 2) : 1;
+                const potionChance = isBoss ? 0.7 : hasEncounter ? 0.6 : 0.45;
+                for (let i = 0; i < magicCount; i++) {
+                    const rarity = rollLootRarity(hasEncounter, isBoss);
+                    loot.items.push(pickMagicItem(rarity, potionChance));
+                }
+            }
+
+            return loot;
+        }
+
+        function ensureRoomLoot(room) {
+            if (!room.loot) {
+                room.loot = generateLoot(room);
+                return true;
+            }
+            return false;
+        }
+
+        function formatLootSummary(loot) {
+            if (!loot) return "No notable loot";
+            const parts = [];
+            if (loot.coins) {
+                parts.push(`Coins: ${formatCoins(loot.coins)}`);
+            }
+            if (loot.items && loot.items.length > 0) {
+                const names = loot.items.map(item => item.name);
+                const shown = names.slice(0, 3).join(', ');
+                const extra = names.length > 3 ? ` +${names.length - 3} more` : '';
+                parts.push(`Items: ${shown}${extra}`);
+            }
+            return parts.length > 0 ? parts.join(' • ') : "No notable loot";
+        }
+
         // ==================== ROOM GENERATION ====================
         function generateRoom({ position, moveDir, fromRoom }) {
             const roomIndex = dungeonState.rooms.length + 1;
@@ -1453,8 +1707,11 @@
                 description: description.text,
                 descriptionPotency: description.potency,
                 threats: generateThreats(roomIndex === dungeonState.totalRooms),
+                loot: null,
                 timestamp: Date.now()
             };
+
+            room.loot = generateLoot(room);
 
             dungeonState.rooms.push(room);
             dungeonState.map[coordKey(position.x, position.y)] = room.id;
@@ -1468,6 +1725,7 @@
             const bossRoom = dungeonState.rooms.find(room => room.index === dungeonState.totalRooms);
             dungeonState.rooms.forEach(room => {
                 const shouldBeBoss = bossRoom ? room.id === bossRoom.id : false;
+                const wasBoss = room.isBoss;
                 if (shouldBeBoss && !room.isBoss) {
                     room.threats = generateThreats(true);
                 }
@@ -1475,6 +1733,9 @@
                     room.threats = generateThreats(false);
                 }
                 room.isBoss = shouldBeBoss;
+                if (wasBoss !== room.isBoss) {
+                    room.loot = generateLoot(room);
+                }
             });
             dungeonState.bossRoomId = bossRoom ? bossRoom.id : null;
             saveDungeonState();
@@ -1484,6 +1745,11 @@
         function renderRoom(room) {
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('roomContent').classList.remove('hidden');
+
+            const lootUpdated = ensureRoomLoot(room);
+            if (lootUpdated) {
+                saveDungeonState();
+            }
             
             const displayExits = [...room.exits];
             if (room.entryDir && !displayExits.includes(room.entryDir)) {
@@ -1571,6 +1837,64 @@
                 });
                 threatsHtml += '</div>';
             }
+
+            const loot = room.loot;
+            let lootHtml = '';
+            if (!loot || (!loot.coins && (!loot.items || loot.items.length === 0))) {
+                lootHtml = '<div class="no-threats">No notable loot stands out at the moment.</div>';
+            } else {
+                const magicItems = (loot.items || []).filter(item => item.category === 'Magic');
+                const mundaneItems = (loot.items || []).filter(item => item.category === 'Mundane');
+                const curios = (loot.items || []).filter(item => ['Trinket', 'Gemstone'].includes(item.category));
+
+                lootHtml = '<div class="loot-list">';
+                if (loot.coins) {
+                    lootHtml += `
+                        <div class="loot-block">
+                            <h4>Coins</h4>
+                            <div class="loot-items">
+                                <div class="loot-item">${formatCoins(loot.coins)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                if (magicItems.length > 0) {
+                    lootHtml += `
+                        <div class="loot-block">
+                            <h4>Magic Items</h4>
+                            <div class="loot-items">
+                                ${magicItems.map(item => `
+                                    <div class="loot-item">
+                                        <span class="loot-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
+                                        <span>${item.name}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                if (mundaneItems.length > 0) {
+                    lootHtml += `
+                        <div class="loot-block">
+                            <h4>Supplies & Gear</h4>
+                            <div class="loot-items">
+                                ${mundaneItems.map(item => `<div class="loot-item">${item.name}</div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                if (curios.length > 0) {
+                    lootHtml += `
+                        <div class="loot-block">
+                            <h4>Trinkets & Gems</h4>
+                            <div class="loot-items">
+                                ${curios.map(item => `<div class="loot-item">${item.name}</div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                lootHtml += '</div>';
+            }
             
             document.getElementById('roomContent').innerHTML = `
                 <div class="room-header">
@@ -1612,6 +1936,11 @@
                         <div class="section-title">Threats</div>
                         ${threatsHtml}
                     </div>
+
+                    <div class="loot">
+                        <div class="section-title">Loot</div>
+                        ${lootHtml}
+                    </div>
                 </div>
             `;
             
@@ -1632,10 +1961,15 @@
             }
             
             const rooms = [...dungeonState.rooms].reverse();
+            let updatedLoot = false;
             list.innerHTML = rooms.map(room => {
+                if (ensureRoomLoot(room)) {
+                    updatedLoot = true;
+                }
                 const threatSummary = room.threats.length > 0 
                     ? room.threats.map(t => `${t.type} x${t.quantity}`).join(', ')
                     : 'No threats';
+                const lootSummary = formatLootSummary(room.loot);
                 
                 return `
                     <div class="history-item" data-index="${room.index}">
@@ -1649,10 +1983,15 @@
                             <div class="history-description">${room.description}</div>
                             <div><strong>Exits:</strong> ${room.exits.length > 0 ? room.exits.join(', ') : 'Dead End'}</div>
                             <div><strong>Threats:</strong> ${threatSummary}</div>
+                            <div><strong>Loot:</strong> ${lootSummary}</div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            if (updatedLoot) {
+                saveDungeonState();
+            }
             
             // Add click handlers
             list.querySelectorAll('.history-item').forEach(item => {
