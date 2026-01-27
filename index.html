@@ -1182,6 +1182,20 @@
             neighbor.doors[oppositeDir] = sharedDoor;
         }
 
+        function linkAdjacentDoors(room) {
+            if (!room) return;
+            Object.keys(directionVectors).forEach(dir => {
+                const vec = directionVectors[dir];
+                const neighborPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
+                const neighbor = getRoomByPosition(neighborPos);
+                if (!neighbor) return;
+                const oppositeDir = getOppositeDirection(dir);
+                if (roomHasExit(room, dir) && roomHasExit(neighbor, oppositeDir)) {
+                    syncDoorPair(room, dir, neighbor);
+                }
+            });
+        }
+
         function getLinkedNeighborDirections(room) {
             if (!room) return [];
             return Object.keys(directionVectors).filter(dir => {
@@ -1695,6 +1709,7 @@
 
             dungeonState.rooms.push(room);
             dungeonState.map[coordKey(position.x, position.y)] = room.id;
+            linkAdjacentDoors(room);
             saveDungeonState();
 
             return room;
