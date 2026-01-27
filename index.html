@@ -1058,13 +1058,15 @@
             Deadly: { Common: 45, Rare: 38, Legendary: 17 }
         };
 
+        const LOOT_REVEAL_THRESHOLD_RANGE = { min: 3, max: 5 };
+
         const LOOT_REVEAL_TIERS = {
-            coins: { label: "Hidden Coin Cache", potency: "Competent", successes: 1, thresholdRange: { min: 2, max: 4 } },
-            mundane: { label: "Stashed Supplies", potency: "Competent", successes: 1, thresholdRange: { min: 2, max: 4 } },
-            curios: { label: "Curios & Gems", potency: "Effective", successes: 2, thresholdRange: { min: 3, max: 5 } },
-            magicCommon: { label: "Common Magic", potency: "Effective", successes: 2, thresholdRange: { min: 3, max: 5 } },
-            magicRare: { label: "Rare Magic", potency: "Forceful", successes: 3, thresholdRange: { min: 4, max: 6 } },
-            magicLegendary: { label: "Legendary Magic", potency: "Forceful", successes: 3, thresholdRange: { min: 5, max: 7 } }
+            coins: { order: 1, successes: 1 },
+            mundane: { order: 2, successes: 2 },
+            curios: { order: 3, successes: 3 },
+            magicCommon: { order: 4, successes: 4 },
+            magicRare: { order: 5, successes: 5 },
+            magicLegendary: { order: 6, successes: 6 }
         };
 
         // ==================== STATE ====================
@@ -1687,6 +1689,13 @@
             return parts.length > 0 ? parts.join(' • ') : "No notable loot";
         }
 
+        function getLootRevealThreshold(room) {
+            if (room.lootRevealThreshold) return room.lootRevealThreshold;
+            room.lootRevealThreshold = randInt(LOOT_REVEAL_THRESHOLD_RANGE.min, LOOT_REVEAL_THRESHOLD_RANGE.max);
+            saveDungeonState();
+            return room.lootRevealThreshold;
+        }
+
         function getLootRevealRequirement(room, tierKey) {
             const config = LOOT_REVEAL_TIERS[tierKey];
             if (!config) return null;
@@ -1697,9 +1706,8 @@
             }
             if (!room.lootReveal[tierKey]) {
                 room.lootReveal[tierKey] = {
-                    threshold: randInt(config.thresholdRange.min, config.thresholdRange.max),
+                    threshold: getLootRevealThreshold(room),
                     successes: config.successes,
-                    potency: config.potency,
                     revealed: false
                 };
                 created = true;
@@ -1986,7 +1994,7 @@
                             </div>
                         </div>
                     `;
-                    lootTiers.push(buildLootTierHtml(room, 'coins', coinsHtml));
+                    lootTiers.push({ key: 'coins', html: buildLootTierHtml(room, 'coins', coinsHtml) });
                 }
                 if (magicItems.length > 0) {
                     const magicByRarity = {
@@ -2014,7 +2022,7 @@
                                 </div>
                             </div>
                         `;
-                        lootTiers.push(buildLootTierHtml(room, tierKey, magicHtml));
+                        lootTiers.push({ key: tierKey, html: buildLootTierHtml(room, tierKey, magicHtml) });
                     });
                 }
                 if (mundaneItems.length > 0) {
@@ -2026,7 +2034,7 @@
                             </div>
                         </div>
                     `;
-                    lootTiers.push(buildLootTierHtml(room, 'mundane', mundaneHtml));
+                    lootTiers.push({ key: 'mundane', html: buildLootTierHtml(room, 'mundane', mundaneHtml) });
                 }
                 if (curios.length > 0) {
                     const curiosHtml = `
@@ -2037,9 +2045,14 @@
                             </div>
                         </div>
                     `;
-                    lootTiers.push(buildLootTierHtml(room, 'curios', curiosHtml));
+                    lootTiers.push({ key: 'curios', html: buildLootTierHtml(room, 'curios', curiosHtml) });
                 }
-                lootHtml = `<div class="loot-list">${lootTiers.join('')}</div>`;
+                lootTiers.sort((a, b) => {
+                    const orderA = LOOT_REVEAL_TIERS[a.key]?.order ?? 99;
+                    const orderB = LOOT_REVEAL_TIERS[b.key]?.order ?? 99;
+                    return orderA - orderB;
+                });
+                lootHtml = `<div class="loot-list">${lootTiers.map(tier => tier.html).join('')}</div>`;
             }
             
             document.getElementById('roomContent').innerHTML = `
