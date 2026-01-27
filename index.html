@@ -1172,6 +1172,17 @@
             return room.exits.includes(direction) || room.entryDir === direction;
         }
 
+        function ensureExit(room, direction) {
+            if (!room) return;
+            if (!room.exits.includes(direction)) {
+                room.exits.push(direction);
+            }
+            if (!room.doors) room.doors = {};
+            if (!room.doors[direction]) {
+                room.doors[direction] = { status: 'Open', bypass: null };
+            }
+        }
+
         function syncDoorPair(room, direction, neighbor) {
             if (!room || !neighbor) return;
             const oppositeDir = getOppositeDirection(direction);
@@ -1180,6 +1191,8 @@
             const sharedDoor = room.doors[direction] || neighbor.doors[oppositeDir] || { status: 'Open', bypass: null };
             room.doors[direction] = sharedDoor;
             neighbor.doors[oppositeDir] = sharedDoor;
+            ensureExit(room, direction);
+            ensureExit(neighbor, oppositeDir);
         }
 
         function linkAdjacentDoors(room) {
@@ -1190,7 +1203,7 @@
                 const neighbor = getRoomByPosition(neighborPos);
                 if (!neighbor) return;
                 const oppositeDir = getOppositeDirection(dir);
-                if (roomHasExit(room, dir) && roomHasExit(neighbor, oppositeDir)) {
+                if (roomHasExit(room, dir) || roomHasExit(neighbor, oppositeDir)) {
                     syncDoorPair(room, dir, neighbor);
                 }
             });
