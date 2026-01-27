@@ -723,8 +723,17 @@
             sensesLight: ["dim light filters from cracks above", "absolute darkness swallows everything", "phosphorescent fungi cast an eerie glow", "your torchlight barely penetrates the gloom", "strange shadows dance without source", "pale light seeps from the walls themselves", "flickering braziers line the walls", "a single shaft of light pierces the darkness", "bioluminescent lichen traces the ceiling"],
             interactions: ["dominating the space", "crumbling with age", "covered in strange markings", "partially collapsed", "surprisingly intact", "recently disturbed", "webbed with cracks", "slick with moisture", "scorched by ancient fire"],
             anchorFeatures: ["A massive stone altar", "Towering pillars", "A dry fountain", "Collapsed scaffolding", "An iron cage", "Stacked crates and barrels", "A ritual circle", "Broken statuary", "A deep pit", "Thick chains", "A wooden platform", "Ancient machinery", "Piled rubble", "A raised dais", "Ornate sarcophagi"],
-            pressures: ["The ceiling groans ominously", "Cracks spread across the floor", "The air grows thin", "Strange symbols pulse with light", "The walls seem to close in", "Noxious fumes seep from vents", "Unstable magic crackles", "The ground trembles faintly", "Shadows move independently"],
-            mitigations: ["reveal a safe path", "disable the mechanism", "find stable footing", "dispel the effect", "locate an escape route", "neutralize the danger", "identify the source", "calm the disturbance", "spot the trigger"],
+            environmentalThreatChance: 0.3,
+            environmentalThreats: [
+                { name: "Cracking Ceiling", description: "Cracking Ceiling: The ceiling sheds rubble in unpredictable bursts.", check: "Forceful" },
+                { name: "Noxious Fumes", description: "Noxious Fumes: Toxic vapors choke the room and sting the eyes.", check: "Competent" },
+                { name: "Tripwire Snare", description: "Tripwire Snare: Thin cords yank and bind ankles when disturbed.", check: "Effective" },
+                { name: "Shifting Floor", description: "Shifting Floor: The stone tilts and slides, threatening to hurl creatures into hazards.", check: "Effective" },
+                { name: "Runed Conduit", description: "Runed Conduit: Arcane glyphs pulse, discharging surges across the chamber." },
+                { name: "Collapsing Lintel", description: "Collapsing Lintel: A cracked arch threatens to drop and block the path." },
+                { name: "Spinning Blades", description: "Spinning Blades: Hidden gears drive whirling blades along the walls." },
+                { name: "Grasping Vines", description: "Grasping Vines: Thorny growths lash out to entangle anything that passes." }
+            ],
             doorStatuses: ["Open", "Stuck", "Locked", "Jammed", "Barred", "Trapped", "Sealed", "Collapsed"],
             doorBypassVerbs: {
                 "Stuck": { verbs: ["force", "pry", "shoulder"] },
@@ -1268,15 +1277,9 @@
             
             const anchor = pick(gameData.anchorFeatures);
             const interaction = pick(gameData.interactions);
-            const pressure = pick(gameData.pressures);
-            const mitigation = pick(gameData.mitigations);
-            
-            const profile = gameData.difficultyProfiles[dungeonState.difficulty];
-            const potency = weightedPick(profile.potencyWeights);
             
             return {
-                text: `${leadIn} ${article(roomType)} ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}. ${pressure}, but ${article(potency)} ${potency} check could ${mitigation}.`,
-                potency
+                text: `${leadIn} ${article(roomType)} ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}.`
             };
         }
 
@@ -1316,6 +1319,48 @@
             return ability || abilityName;
         }
 
+        function generateEnvironmentalThreat(profile) {
+            if (!gameData.environmentalThreats || gameData.environmentalThreats.length === 0) return null;
+
+            const hazard = pick(gameData.environmentalThreats);
+            const damage = randInt(profile.damageRange.min, profile.damageRange.max);
+            const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
+
+            let successTiers = profile.successTiers;
+            if (profile.successTiersWeak && Math.random() < 0.4) {
+                successTiers = profile.successTiersWeak;
+            }
+
+            const hasCheck = Boolean(hazard.check);
+
+            return {
+                keyword: hazard.name,
+                type: "Hazard",
+                quantity: 1,
+                damage,
+                threshold,
+                defeat: hasCheck ? null : successTiers.defeat,
+                overwhelm: hasCheck ? null : successTiers.overwhelm,
+                checkRequirement: hasCheck ? hazard.check : null,
+                range: "",
+                abilities: [hazard.description],
+                isBoss: false,
+                isHazard: true
+            };
+        }
+
+        function maybeAddEnvironmentalThreat(threats, profile) {
+            const chance = typeof gameData.environmentalThreatChance === 'number'
+                ? gameData.environmentalThreatChance
+                : 0;
+            if (Math.random() >= chance) return;
+
+            const hazard = generateEnvironmentalThreat(profile);
+            if (hazard) {
+                threats.push(hazard);
+            }
+        }
+
         function generateThreats(isBoss) {
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
             const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
@@ -1323,11 +1368,17 @@
             if (isBoss) {
                 // Boss uses the first keyword
                 const keywordData = keywords[0];
-                return [generateBossThreat(profile, keywordData.name, keywordData.abilities)];
+                const bossThreats = [generateBossThreat(profile, keywordData.name, keywordData.abilities)];
+                maybeAddEnvironmentalThreat(bossThreats, profile);
+                return bossThreats;
             }
 
             const numTypes = randInt(profile.threatTypesRange.min, profile.threatTypesRange.max);
-            if (numTypes === 0) return [];
+            if (numTypes === 0) {
+                const threats = [];
+                maybeAddEnvironmentalThreat(threats, profile);
+                return threats;
+            }
 
             const threats = [];
             const usedTypes = [];
@@ -1391,6 +1442,7 @@
                 threats.push(threat);
             }
 
+            maybeAddEnvironmentalThreat(threats, profile);
             return threats;
         }
 
@@ -1623,7 +1675,6 @@
                 position,
                 entryDir: moveDir ? getOppositeDirection(moveDir) : null,
                 description: description.text,
-                descriptionPotency: description.potency,
                 threats: generateThreats(roomIndex === dungeonState.totalRooms),
                 loot: null,
                 timestamp: Date.now()
@@ -1735,6 +1786,11 @@
                         ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
                         : '<div class="ability">—</div>';
 
+                    const resolutionHtml = threat.checkRequirement
+                        ? `<div class="threat-stat"><span class="stat-label">Check:</span> ${threat.checkRequirement}</div>`
+                        : `<div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>`;
+                    const rangeValue = threat.range ?? 'Melee';
+
                     threatsHtml += `
                         <div class="threat-block ${bossClass}">
                             <div class="threat-header">
@@ -1743,8 +1799,8 @@
                             <div class="threat-stats">
                                 <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
                                 <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
-                                <div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>
-                                <div class="threat-stat"><span class="stat-label">Range:</span> ${threat.range || 'Melee'}</div>
+                                ${resolutionHtml}
+                                <div class="threat-stat"><span class="stat-label">Range:</span> ${rangeValue}</div>
                             </div>
                             <div class="threat-abilities">
                                 <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>

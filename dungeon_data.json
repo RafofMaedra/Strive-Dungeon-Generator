@@ -16,8 +16,8 @@
       "sensesLight": "Descriptions of lighting conditions. Should be complete clauses.",
       "interactions": "Verb phrases describing how anchor features appear (e.g., 'crumbling with age'). Used after anchor features.",
       "anchorFeatures": "Major objects/features in rooms. Should start with 'A/An' or 'The' or be plural nouns.",
-      "pressures": "Environmental dangers or tension-building descriptions. Complete sentences.",
-      "mitigations": "Actions players can take to address pressures. Verb phrases that follow 'A successful check could...'.",
+      "environmentalThreatChance": "Chance (0-1) that a room contains an environmental hazard in addition to normal threats.",
+      "environmentalThreats": "List of environmental hazards. Each entry should include a name, description, and optional check (e.g., 'Effective Body'). If no check is provided, defeat/overwhelm tiers are used.",
       "doorStatuses": "States a door can be in. 'Open' means no check needed; others require bypass checks.",
       "doorBypassVerbs": "Object mapping door statuses to bypass options. Each status has an array of 'verbs' (action words for bypassing). The stat used is determined contextually in-game.",
       "typeWords": "Enemy type classifications. Each maps to an ability in wordToAbility and a range in typeRange.",
@@ -145,28 +145,17 @@
     "Ornate sarcophagi"
   ],
 
-  "pressures": [
-    "The ceiling groans ominously",
-    "Cracks spread across the floor",
-    "The air grows thin",
-    "Strange symbols pulse with light",
-    "The walls seem to close in",
-    "Noxious fumes seep from vents",
-    "Unstable magic crackles",
-    "The ground trembles faintly",
-    "Shadows move independently"
-  ],
+  "environmentalThreatChance": 0.3,
 
-  "mitigations": [
-    "reveal a safe path",
-    "disable the mechanism",
-    "find stable footing",
-    "dispel the effect",
-    "locate an escape route",
-    "neutralize the danger",
-    "identify the source",
-    "calm the disturbance",
-    "spot the trigger"
+  "environmentalThreats": [
+    { "name": "Cracking Ceiling", "description": "Cracking Ceiling: The ceiling sheds rubble in unpredictable bursts.", "check": "Forceful" },
+    { "name": "Noxious Fumes", "description": "Noxious Fumes: Toxic vapors choke the room and sting the eyes.", "check": "Competent" },
+    { "name": "Tripwire Snare", "description": "Tripwire Snare: Thin cords yank and bind ankles when disturbed.", "check": "Effective" },
+    { "name": "Shifting Floor", "description": "Shifting Floor: The stone tilts and slides, threatening to hurl creatures into hazards.", "check": "Effective" },
+    { "name": "Runed Conduit", "description": "Runed Conduit: Arcane glyphs pulse, discharging surges across the chamber." },
+    { "name": "Collapsing Lintel", "description": "Collapsing Lintel: A cracked arch threatens to drop and block the path." },
+    { "name": "Spinning Blades", "description": "Spinning Blades: Hidden gears drive whirling blades along the walls." },
+    { "name": "Grasping Vines", "description": "Grasping Vines: Thorny growths lash out to entangle anything that passes." }
   ],
 
   "doorStatuses": [
