@@ -1172,12 +1172,41 @@
             return room.exits.includes(direction) || room.entryDir === direction;
         }
 
-        function markDoorOpen(room, direction) {
+        function ensureExit(room, direction) {
             if (!room) return;
-            if (!room.doors) {
-                room.doors = {};
+            if (!room.exits.includes(direction)) {
+                room.exits.push(direction);
             }
-            room.doors[direction] = { status: 'Open', bypass: null };
+            if (!room.doors) room.doors = {};
+            if (!room.doors[direction]) {
+                room.doors[direction] = { status: 'Open', bypass: null };
+            }
+        }
+
+        function syncDoorPair(room, direction, neighbor) {
+            if (!room || !neighbor) return;
+            const oppositeDir = getOppositeDirection(direction);
+            if (!room.doors) room.doors = {};
+            if (!neighbor.doors) neighbor.doors = {};
+            const sharedDoor = room.doors[direction] || neighbor.doors[oppositeDir] || { status: 'Open', bypass: null };
+            room.doors[direction] = sharedDoor;
+            neighbor.doors[oppositeDir] = sharedDoor;
+            ensureExit(room, direction);
+            ensureExit(neighbor, oppositeDir);
+        }
+
+        function linkAdjacentDoors(room) {
+            if (!room) return;
+            Object.keys(directionVectors).forEach(dir => {
+                const vec = directionVectors[dir];
+                const neighborPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
+                const neighbor = getRoomByPosition(neighborPos);
+                if (!neighbor) return;
+                const oppositeDir = getOppositeDirection(dir);
+                if (roomHasExit(room, dir) || roomHasExit(neighbor, oppositeDir)) {
+                    syncDoorPair(room, dir, neighbor);
+                }
+            });
         }
 
         function getLinkedNeighborDirections(room) {
@@ -1660,6 +1689,15 @@
             layoutSelection.mapExits.forEach(exit => {
                 doors[exit] = generateDoor(profile);
             });
+            if (fromRoom && moveDir) {
+                const entryDir = getOppositeDirection(moveDir);
+                if (!fromRoom.doors) {
+                    fromRoom.doors = {};
+                }
+                const linkedDoor = fromRoom.doors[moveDir] || { status: 'Open', bypass: null };
+                fromRoom.doors[moveDir] = linkedDoor;
+                doors[entryDir] = linkedDoor;
+            }
 
             const room = {
                 id: `room_${Date.now()}_${roomIndex}`,
@@ -1684,6 +1722,7 @@
 
             dungeonState.rooms.push(room);
             dungeonState.map[coordKey(position.x, position.y)] = room.id;
+            linkAdjacentDoors(room);
             saveDungeonState();
 
             return room;
@@ -1737,9 +1776,8 @@
                 exitsHtml = '<div class="exit-list">';
                 const dirNames = { N: 'North', E: 'East', S: 'South', W: 'West' };
                 displayExits.forEach(exit => {
-                    const isEntry = exit === room.entryDir;
                     const baseDoor = room.doors[exit] || { status: 'Open' };
-                    const door = isEntry ? { status: 'Open' } : baseDoor;
+                    const door = baseDoor;
                     const statusClass = door.status === 'Open' ? 'open' : 'blocked';
                     let bypassHtml = '';
                     if (door.bypass) {
@@ -2005,8 +2043,7 @@
                 if (!roomHasExit(currentRoom, direction) || !roomHasExit(existingRoom, oppositeDir)) {
                     return;
                 }
-                markDoorOpen(currentRoom, direction);
-                markDoorOpen(existingRoom, oppositeDir);
+                syncDoorPair(currentRoom, direction, existingRoom);
                 dungeonState.currentRoomId = existingRoom.id;
                 renderRoom(existingRoom);
                 renderMap();
