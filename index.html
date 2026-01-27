@@ -1172,12 +1172,14 @@
             return room.exits.includes(direction) || room.entryDir === direction;
         }
 
-        function markDoorOpen(room, direction) {
-            if (!room) return;
-            if (!room.doors) {
-                room.doors = {};
-            }
-            room.doors[direction] = { status: 'Open', bypass: null };
+        function syncDoorPair(room, direction, neighbor) {
+            if (!room || !neighbor) return;
+            const oppositeDir = getOppositeDirection(direction);
+            if (!room.doors) room.doors = {};
+            if (!neighbor.doors) neighbor.doors = {};
+            const sharedDoor = room.doors[direction] || neighbor.doors[oppositeDir] || { status: 'Open', bypass: null };
+            room.doors[direction] = sharedDoor;
+            neighbor.doors[oppositeDir] = sharedDoor;
         }
 
         function getLinkedNeighborDirections(room) {
@@ -1660,6 +1662,15 @@
             layoutSelection.mapExits.forEach(exit => {
                 doors[exit] = generateDoor(profile);
             });
+            if (fromRoom && moveDir) {
+                const entryDir = getOppositeDirection(moveDir);
+                if (!fromRoom.doors) {
+                    fromRoom.doors = {};
+                }
+                const linkedDoor = fromRoom.doors[moveDir] || { status: 'Open', bypass: null };
+                fromRoom.doors[moveDir] = linkedDoor;
+                doors[entryDir] = linkedDoor;
+            }
 
             const room = {
                 id: `room_${Date.now()}_${roomIndex}`,
@@ -1737,9 +1748,8 @@
                 exitsHtml = '<div class="exit-list">';
                 const dirNames = { N: 'North', E: 'East', S: 'South', W: 'West' };
                 displayExits.forEach(exit => {
-                    const isEntry = exit === room.entryDir;
                     const baseDoor = room.doors[exit] || { status: 'Open' };
-                    const door = isEntry ? { status: 'Open' } : baseDoor;
+                    const door = baseDoor;
                     const statusClass = door.status === 'Open' ? 'open' : 'blocked';
                     let bypassHtml = '';
                     if (door.bypass) {
@@ -2005,8 +2015,7 @@
                 if (!roomHasExit(currentRoom, direction) || !roomHasExit(existingRoom, oppositeDir)) {
                     return;
                 }
-                markDoorOpen(currentRoom, direction);
-                markDoorOpen(existingRoom, oppositeDir);
+                syncDoorPair(currentRoom, direction, existingRoom);
                 dungeonState.currentRoomId = existingRoom.id;
                 renderRoom(existingRoom);
                 renderMap();
