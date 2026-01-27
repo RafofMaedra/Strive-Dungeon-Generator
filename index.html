@@ -1038,7 +1038,14 @@
 
         function formatCoins(coins) {
             if (!coins) return '';
-            return `${coins.total} Coins`;
+            const total = typeof coins === 'number'
+                ? coins
+                : typeof coins === 'string'
+                    ? parseInt(coins, 10)
+                    : typeof coins.total === 'string'
+                        ? parseInt(coins.total, 10)
+                        : coins.total;
+            return Number.isFinite(total) ? `${total} Coins` : '';
         }
 
         function article(word) {
