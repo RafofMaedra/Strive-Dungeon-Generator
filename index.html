@@ -1038,11 +1038,7 @@
 
         function formatCoins(coins) {
             if (!coins) return '';
-            const parts = [];
-            if (coins.gp) parts.push(`${coins.gp} gp`);
-            if (coins.sp) parts.push(`${coins.sp} sp`);
-            if (coins.cp) parts.push(`${coins.cp} cp`);
-            return parts.length > 0 ? parts.join(', ') : `${coins.total} coins`;
+            return `${coins.total} Coins`;
         }
 
         function article(word) {
@@ -1453,10 +1449,7 @@
             const range = ranges[dungeonState.difficulty] || ranges.Medium;
             const multiplier = (hasEncounter ? 1.5 : 1) * (isBoss ? 2 : 1);
             const total = Math.max(1, Math.round(randInt(range.min, range.max) * multiplier));
-            const gp = Math.floor(total / 50);
-            const sp = Math.floor((total % 50) / 10);
-            const cp = total % 10;
-            return { total, gp, sp, cp };
+            return { total };
         }
 
         function generateLoot(room) {
