@@ -411,7 +411,7 @@
 
         .loot-discover-title {
             font-family: var(--font-display);
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             color: var(--accent-gold);
@@ -422,6 +422,7 @@
             color: var(--text-muted);
             text-transform: none;
             letter-spacing: 0.02em;
+            text-align: center;
         }
 
         .loot-block {
@@ -1712,15 +1713,13 @@
         function buildLootTierHtml(room, tierKey, contentHtml) {
             const requirement = getLootRevealRequirement(room, tierKey);
             if (!requirement) return contentHtml;
-            const label = LOOT_REVEAL_TIERS[tierKey]?.label ?? "Hidden Loot";
-            const details = `Threshold +${requirement.threshold} • Successes: ${requirement.successes} (${requirement.potency})`;
             const revealedClass = requirement.revealed ? 'revealed' : '';
             return `
                 <div class="loot-tier ${revealedClass}" data-tier="${tierKey}">
                     <div class="loot-cover">
                         <button class="loot-discover" data-tier="${tierKey}">
-                            <span class="loot-discover-title">Find this loot</span>
-                            <span class="loot-discover-detail">${label} — ${details}</span>
+                            <span class="loot-discover-title">Find this loot:</span>
+                            <span class="loot-discover-detail">${requirement.successes} Successes at Threshold +${requirement.threshold}</span>
                         </button>
                     </div>
                     ${contentHtml}
