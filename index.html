@@ -371,6 +371,60 @@
             gap: 0.5rem;
         }
 
+        .loot-tier {
+            position: relative;
+            flex: 1 1 240px;
+            min-width: 220px;
+        }
+
+        .loot-tier.revealed .loot-cover {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loot-cover {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: rgba(12, 12, 16, 0.88);
+            border: 1px dashed rgba(201, 162, 39, 0.4);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .loot-discover {
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(201, 162, 39, 0.4);
+            background: linear-gradient(135deg, rgba(22, 22, 26, 0.9), rgba(10, 10, 14, 0.85));
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .loot-discover-title {
+            font-family: var(--font-display);
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+        }
+
+        .loot-discover-detail {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: none;
+            letter-spacing: 0.02em;
+            text-align: center;
+        }
+
         .loot-block {
             background: rgba(201, 162, 39, 0.08);
             border: 1px solid rgba(201, 162, 39, 0.3);
@@ -962,23 +1016,37 @@
                     "Shield and arm strap", "Steel longsword", "Hardened spear",
                     "Shortbow with 20 arrows", "Chain shirt", "Leather armor",
                     "Iron lantern", "Crowbar", "Lockpick set",
-                    "Grapple and rope (50 ft)", "Piton kit (10 spikes + hammer)"
+                    "Grapple and rope (50 ft)", "Piton kit (10 spikes + hammer)",
+                    "Wooden buckler", "Spare dagger", "Travel cloak",
+                    "Whetstone and oil", "Iron rations tin", "Hand mirror",
+                    "Signal whistle", "Oilskin cloak", "Rope net",
+                    "Glass vial set", "Metal canteen", "Small toolkit"
                 ],
                 supplies: [
                     "Rations (3 days)", "Water skin", "Torch bundle (6)",
                     "Oil flask", "Bandages and salves", "Chalk sticks",
-                    "Bedroll", "Climbing harness"
+                    "Bedroll", "Climbing harness", "Tinderbox",
+                    "Herbal poultice kit", "Needle and thread",
+                    "Small sack of salt", "Soap bar", "Map case",
+                    "Spare flint", "Candle stubs (5)",
+                    "Fishing line and hooks", "Empty jars (3)"
                 ],
                 trinkets: [
                     "Silvered locket with a faded portrait", "Carved bone die",
                     "Tiny brass astrolabe", "Ring of braided copper wire",
                     "Faded battle pennant", "Ivory comb with sigil",
-                    "Glass vial of glittering sand", "Child’s tin whistle"
+                    "Glass vial of glittering sand", "Child’s tin whistle",
+                    "Miniature stone idol", "Copper coin with a hole",
+                    "Threadbare ribbon of office", "Sealed love letter",
+                    "Tiny compass that jitters", "Lucky rabbit paw",
+                    "Pressed flower in wax", "Smudged charcoal sketch"
                 ],
                 gemstones: [
                     "Polished agate (10 coins)", "Deep-blue lapis (25 coins)",
                     "Cracked ruby chip (50 coins)", "Moonstone shard (40 coins)",
-                    "Cut emerald sliver (75 coins)", "Amber bead with fossil (30 coins)"
+                    "Cut emerald sliver (75 coins)", "Amber bead with fossil (30 coins)",
+                    "Smoky quartz nugget (20 coins)", "Citrine shard (35 coins)",
+                    "Garnet fragment (45 coins)", "Pearl button (60 coins)"
                 ]
             }
         };
@@ -988,6 +1056,17 @@
             Medium: { Common: 72, Rare: 23, Legendary: 5 },
             Hard: { Common: 58, Rare: 32, Legendary: 10 },
             Deadly: { Common: 45, Rare: 38, Legendary: 17 }
+        };
+
+        const LOOT_REVEAL_THRESHOLD_RANGE = { min: 3, max: 5 };
+
+        const LOOT_REVEAL_TIERS = {
+            coins: { order: 1, successes: 1 },
+            mundane: { order: 2, successes: 2 },
+            curios: { order: 3, successes: 3 },
+            magicCommon: { order: 4, successes: 4 },
+            magicRare: { order: 5, successes: 5 },
+            magicLegendary: { order: 6, successes: 6 }
         };
 
         // ==================== STATE ====================
@@ -1550,7 +1629,7 @@
                 loot.coins = generateCoins(hasEncounter, isBoss);
             }
 
-            const mundaneCount = isBoss ? randInt(2, 3) : hasEncounter ? randInt(1, 2) : randInt(0, 1);
+            const mundaneCount = isBoss ? randInt(3, 5) : hasEncounter ? randInt(2, 3) : randInt(1, 2);
             for (let i = 0; i < mundaneCount; i++) {
                 const pool = Math.random() < 0.55 ? LOOT_DATA.mundane.equipment : LOOT_DATA.mundane.supplies;
                 loot.items.push({
@@ -1559,14 +1638,14 @@
                 });
             }
 
-            const trinketChance = isBoss ? 0.75 : hasEncounter ? 0.55 : 0.3;
+            const trinketChance = isBoss ? 0.85 : hasEncounter ? 0.65 : 0.45;
             if (Math.random() < trinketChance) {
                 loot.items.push({
                     name: pick(LOOT_DATA.mundane.trinkets),
                     category: "Trinket"
                 });
             }
-            const gemChance = isBoss ? 0.65 : hasEncounter ? 0.5 : 0.25;
+            const gemChance = isBoss ? 0.75 : hasEncounter ? 0.6 : 0.35;
             if (Math.random() < gemChance) {
                 loot.items.push({
                     name: pick(LOOT_DATA.mundane.gemstones),
@@ -1608,6 +1687,52 @@
                 parts.push(`Items: ${shown}${extra}`);
             }
             return parts.length > 0 ? parts.join(' • ') : "No notable loot";
+        }
+
+        function getLootRevealThreshold(room) {
+            if (room.lootRevealThreshold) return room.lootRevealThreshold;
+            room.lootRevealThreshold = randInt(LOOT_REVEAL_THRESHOLD_RANGE.min, LOOT_REVEAL_THRESHOLD_RANGE.max);
+            saveDungeonState();
+            return room.lootRevealThreshold;
+        }
+
+        function getLootRevealRequirement(room, tierKey) {
+            const config = LOOT_REVEAL_TIERS[tierKey];
+            if (!config) return null;
+            let created = false;
+            if (!room.lootReveal) {
+                room.lootReveal = {};
+                created = true;
+            }
+            if (!room.lootReveal[tierKey]) {
+                room.lootReveal[tierKey] = {
+                    threshold: getLootRevealThreshold(room),
+                    successes: config.successes,
+                    revealed: false
+                };
+                created = true;
+            }
+            if (created) {
+                saveDungeonState();
+            }
+            return room.lootReveal[tierKey];
+        }
+
+        function buildLootTierHtml(room, tierKey, contentHtml) {
+            const requirement = getLootRevealRequirement(room, tierKey);
+            if (!requirement) return contentHtml;
+            const revealedClass = requirement.revealed ? 'revealed' : '';
+            return `
+                <div class="loot-tier ${revealedClass}" data-tier="${tierKey}">
+                    <div class="loot-cover">
+                        <button class="loot-discover" data-tier="${tierKey}">
+                            <span class="loot-discover-title">Find this loot:</span>
+                            <span class="loot-discover-detail">${requirement.successes} Successes at Threshold +${requirement.threshold}</span>
+                        </button>
+                    </div>
+                    ${contentHtml}
+                </div>
+            `;
         }
 
         // ==================== ROOM GENERATION ====================
@@ -1859,9 +1984,9 @@
                 const mundaneItems = (loot.items || []).filter(item => item.category === 'Mundane');
                 const curios = (loot.items || []).filter(item => ['Trinket', 'Gemstone'].includes(item.category));
 
-                lootHtml = '<div class="loot-list">';
+                const lootTiers = [];
                 if (loot.coins) {
-                    lootHtml += `
+                    const coinsHtml = `
                         <div class="loot-block">
                             <h4>Coins</h4>
                             <div class="loot-items">
@@ -1869,24 +1994,39 @@
                             </div>
                         </div>
                     `;
+                    lootTiers.push({ key: 'coins', html: buildLootTierHtml(room, 'coins', coinsHtml) });
                 }
                 if (magicItems.length > 0) {
-                    lootHtml += `
-                        <div class="loot-block">
-                            <h4>Magic Items</h4>
-                            <div class="loot-items">
-                                ${magicItems.map(item => `
-                                    <div class="loot-item">
-                                        <span class="loot-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
-                                        <span>${item.name}</span>
-                                    </div>
-                                `).join('')}
+                    const magicByRarity = {
+                        Common: magicItems.filter(item => item.rarity === 'Common'),
+                        Rare: magicItems.filter(item => item.rarity === 'Rare'),
+                        Legendary: magicItems.filter(item => item.rarity === 'Legendary')
+                    };
+                    Object.entries(magicByRarity).forEach(([rarity, items]) => {
+                        if (items.length === 0) return;
+                        const tierKey = rarity === 'Common'
+                            ? 'magicCommon'
+                            : rarity === 'Rare'
+                                ? 'magicRare'
+                                : 'magicLegendary';
+                        const magicHtml = `
+                            <div class="loot-block">
+                                <h4>${rarity} Magic</h4>
+                                <div class="loot-items">
+                                    ${items.map(item => `
+                                        <div class="loot-item">
+                                            <span class="loot-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
+                                            <span>${item.name}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                        lootTiers.push({ key: tierKey, html: buildLootTierHtml(room, tierKey, magicHtml) });
+                    });
                 }
                 if (mundaneItems.length > 0) {
-                    lootHtml += `
+                    const mundaneHtml = `
                         <div class="loot-block">
                             <h4>Supplies & Gear</h4>
                             <div class="loot-items">
@@ -1894,9 +2034,10 @@
                             </div>
                         </div>
                     `;
+                    lootTiers.push({ key: 'mundane', html: buildLootTierHtml(room, 'mundane', mundaneHtml) });
                 }
                 if (curios.length > 0) {
-                    lootHtml += `
+                    const curiosHtml = `
                         <div class="loot-block">
                             <h4>Trinkets & Gems</h4>
                             <div class="loot-items">
@@ -1904,8 +2045,14 @@
                             </div>
                         </div>
                     `;
+                    lootTiers.push({ key: 'curios', html: buildLootTierHtml(room, 'curios', curiosHtml) });
                 }
-                lootHtml += '</div>';
+                lootTiers.sort((a, b) => {
+                    const orderA = LOOT_REVEAL_TIERS[a.key]?.order ?? 99;
+                    const orderB = LOOT_REVEAL_TIERS[b.key]?.order ?? 99;
+                    return orderA - orderB;
+                });
+                lootHtml = `<div class="loot-list">${lootTiers.map(tier => tier.html).join('')}</div>`;
             }
             
             document.getElementById('roomContent').innerHTML = `
@@ -1960,6 +2107,21 @@
                 button.addEventListener('click', () => {
                     const direction = button.dataset.dir;
                     handleExitMove(direction);
+                });
+            });
+
+            document.querySelectorAll('.loot-discover').forEach(button => {
+                button.addEventListener('click', () => {
+                    const tierKey = button.dataset.tier;
+                    const requirement = getLootRevealRequirement(room, tierKey);
+                    if (requirement) {
+                        requirement.revealed = true;
+                        saveDungeonState();
+                    }
+                    const tierElement = button.closest('.loot-tier');
+                    if (tierElement) {
+                        tierElement.classList.add('revealed');
+                    }
                 });
             });
         }
