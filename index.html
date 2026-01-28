@@ -824,10 +824,10 @@
                     </div>
                 </div>
                 <div class="control-group full-width">
-                    <label>Description Filters</label>
+                    <label>Vibe Themes</label>
                     <div class="filter-row">
-                        <button type="button" id="descriptionFilterBtn">Description Categories</button>
-                        <span id="descriptionFilterSummary" class="helper-text">All description categories enabled.</span>
+                        <button type="button" id="descriptionFilterBtn">Vibe Themes</button>
+                        <span id="descriptionFilterSummary" class="helper-text">No vibe themes selected.</span>
                     </div>
                 </div>
                 <div class="control-group">
@@ -893,11 +893,11 @@
     <div id="descriptionFilterModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="descriptionFilterTitle">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title" id="descriptionFilterTitle">Description Categories</div>
+                <div class="modal-title" id="descriptionFilterTitle">Vibe Themes</div>
                 <button type="button" id="closeDescriptionFilter">Close</button>
             </div>
             <div class="modal-body">
-                <p class="helper-text">Unchecked categories will be skipped when generating room descriptions.</p>
+                <p class="helper-text">Selected themes add flavorful details to every room description.</p>
                 <div class="filter-row modal-actions">
                     <button type="button" id="selectAllDescriptions">Select All</button>
                     <button type="button" id="clearAllDescriptions">Clear All</button>
@@ -1262,43 +1262,27 @@
 
         // ==================== DESCRIPTION GENERATION ====================
         function generateDescription() {
-            const enabledFilters = new Set(dungeonState?.descriptionFilters || []);
-            const leadIns = enabledFilters.has('leadIns') ? gameData.leadIns : ['You enter'];
-            const roomTypes = enabledFilters.has('roomTypes') ? gameData.roomTypes : ['room'];
-            const underfootPool = enabledFilters.has('sensesUnderfoot') ? gameData.sensesUnderfoot : null;
-            const airPool = enabledFilters.has('sensesAir') ? gameData.sensesAir : null;
-            const soundPool = enabledFilters.has('sensesSound') ? gameData.sensesSound : null;
-            const lightPool = enabledFilters.has('sensesLight') ? gameData.sensesLight : null;
-            const anchorPool = enabledFilters.has('anchorFeatures') ? gameData.anchorFeatures : null;
-            const interactionPool = enabledFilters.has('interactions') ? gameData.interactions : null;
+            const leadIn = pick(gameData.leadIns);
+            const roomType = pick(gameData.roomTypes);
+            const underfoot = pick(gameData.sensesUnderfoot);
 
-            const leadIn = pick(leadIns && leadIns.length ? leadIns : gameData.leadIns);
-            const roomType = pick(roomTypes && roomTypes.length ? roomTypes : gameData.roomTypes);
-            const underfoot = underfootPool && underfootPool.length ? pick(underfootPool) : null;
+            // Pick one other sense type
+            const otherSenses = [gameData.sensesAir, gameData.sensesSound, gameData.sensesLight];
+            const otherSense = pick(pick(otherSenses));
 
-            const otherSensePools = [airPool, soundPool, lightPool].filter(pool => pool && pool.length);
-            const otherSense = otherSensePools.length > 0 ? pick(pick(otherSensePools)) : null;
+            const anchor = pick(gameData.anchorFeatures);
+            const interaction = pick(gameData.interactions);
 
-            const anchor = anchorPool && anchorPool.length ? pick(anchorPool) : null;
-            const interaction = interactionPool && interactionPool.length ? pick(interactionPool) : null;
+            const selectedThemes = dungeonState?.descriptionThemes || [];
+            const themeFlair = selectedThemes.flatMap(themeKey => {
+                const theme = descriptionThemeConfig.find(entry => entry.key === themeKey);
+                return theme ? theme.phrases : [];
+            });
+            const flair = themeFlair.length > 0 ? ` ${pick(themeFlair)}` : '';
 
-            const senseParts = [underfoot, otherSense].filter(Boolean);
-            let text = `${leadIn} ${article(roomType)} ${roomType}`;
-            if (senseParts.length > 0) {
-                text += `; ${senseParts.join(', ')}.`;
-            } else {
-                text += '.';
-            }
-
-            if (anchor && interaction) {
-                text += ` ${anchor} stands ${interaction}.`;
-            } else if (anchor) {
-                text += ` ${anchor} stands nearby.`;
-            } else if (interaction) {
-                text += ` Something ${interaction}.`;
-            }
-
-            return { text };
+            return {
+                text: `${leadIn} ${article(roomType)} ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}.${flair}`
+            };
         }
 
         // ==================== DOOR GENERATION ====================
@@ -2236,11 +2220,10 @@
                     updateThreatFilterSummary(getDisallowedThreatTypes());
                 }
 
-                if (Array.isArray(dungeonState.descriptionFilters)) {
-                    setEnabledDescriptionFilters(dungeonState.descriptionFilters);
+                if (Array.isArray(dungeonState.descriptionThemes)) {
+                    setEnabledDescriptionFilters(dungeonState.descriptionThemes);
                 } else {
-                    const defaultKeys = descriptionFilterConfig.map(item => item.key);
-                    setEnabledDescriptionFilters(defaultKeys);
+                    setEnabledDescriptionFilters([]);
                 }
             }
         }
@@ -2314,22 +2297,59 @@
                 : `Disallowed ${count} of ${total} threat types.`;
         }
 
-        const descriptionFilterConfig = [
-            { key: 'leadIns', label: 'Lead-ins' },
-            { key: 'roomTypes', label: 'Room types' },
-            { key: 'sensesUnderfoot', label: 'Sense: Underfoot' },
-            { key: 'sensesAir', label: 'Sense: Air' },
-            { key: 'sensesSound', label: 'Sense: Sound' },
-            { key: 'sensesLight', label: 'Sense: Light' },
-            { key: 'anchorFeatures', label: 'Anchor features' },
-            { key: 'interactions', label: 'Interactions' }
+        const descriptionThemeConfig = [
+            {
+                key: 'cavern',
+                label: 'Cavern',
+                phrases: ['The stone breathes with deep echoes.', 'Moist rock walls glitter faintly.']
+            },
+            {
+                key: 'dungeon',
+                label: 'Dungeon',
+                phrases: ['Rusting iron fixtures line the walls.', 'Old mortar and soot stain the stonework.']
+            },
+            {
+                key: 'cold',
+                label: 'Cold',
+                phrases: ['Frost creeps along the floor.', 'A biting chill cuts through the air.']
+            },
+            {
+                key: 'hot',
+                label: 'Hot',
+                phrases: ['Heat shimmers across the chamber.', 'The air tastes of ash and embers.']
+            },
+            {
+                key: 'flooded',
+                label: 'Flooded',
+                phrases: ['Cold water laps at your boots.', 'A stale, briny smell rises from pooled water.']
+            },
+            {
+                key: 'ancient',
+                label: 'Ancient',
+                phrases: ['Timeworn carvings hint at forgotten empires.', 'Dust clings to every surface like a shroud.']
+            },
+            {
+                key: 'sewer',
+                label: 'Sewer',
+                phrases: ['The stench is overpowering and wet.', 'Slime coats the stone in sickly streaks.']
+            },
+            {
+                key: 'arcane',
+                label: 'Arcane',
+                phrases: ['A low hum of magic vibrates in the air.', 'Strange glyphs flicker at the edge of sight.']
+            },
+            {
+                key: 'horror',
+                label: 'Horror',
+                phrases: ['Shadows stretch a little too far.', 'The silence feels watchful and wrong.']
+            }
         ];
 
         function populateDescriptionFilterList(selectedKeys = []) {
             const list = document.getElementById('descriptionFilterList');
             if (!list) return;
             list.innerHTML = '';
-            descriptionFilterConfig.forEach(({ key, label }) => {
+            descriptionThemeConfig.forEach(({ key, label }) => {
                 const item = document.createElement('label');
                 item.className = 'threat-type-item';
 
@@ -2368,10 +2388,10 @@
             const summary = document.getElementById('descriptionFilterSummary');
             if (!summary) return;
             const count = keys.length;
-            const total = descriptionFilterConfig.length;
-            summary.textContent = count === total
-                ? 'All description categories enabled.'
-                : `Enabled ${count} of ${total} description categories.`;
+            const total = descriptionThemeConfig.length;
+            summary.textContent = count === 0
+                ? 'No vibe themes selected.'
+                : `Selected ${count} of ${total} vibe themes.`;
         }
 
         // ==================== EVENT HANDLERS ====================
@@ -2401,7 +2421,7 @@
             ].filter(a => a);
 
             const disallowedThreatTypes = getDisallowedThreatTypes();
-            const descriptionFilters = getEnabledDescriptionFilters();
+            const descriptionThemes = getEnabledDescriptionFilters();
 
             // Reset state
             usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
@@ -2413,7 +2433,7 @@
                     ...(keyword2 ? [{ name: keyword2, abilities: keyword2Abilities }] : [])
                 ],
                 disallowedThreatTypes,
-                descriptionFilters,
+                descriptionThemes,
                 rooms: [],
                 map: {},
                 currentRoomId: null,
@@ -2560,9 +2580,8 @@
             populateAbilityDatalist();
             populateThreatTypeList();
             updateThreatFilterSummary(getDisallowedThreatTypes());
-            const defaultDescriptionKeys = descriptionFilterConfig.map(item => item.key);
-            populateDescriptionFilterList(defaultDescriptionKeys);
-            updateDescriptionFilterSummary(defaultDescriptionKeys);
+            populateDescriptionFilterList([]);
+            updateDescriptionFilterSummary([]);
             loadDungeonState();
         })();
     </script>
