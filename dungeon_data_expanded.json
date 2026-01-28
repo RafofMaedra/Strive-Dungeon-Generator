@@ -1,0 +1,1119 @@
+{
+  "_documentation": {
+    "description": "Configuration data for the Strive Dungeon Generator. This file can be loaded into the generator to customize dungeon generation.",
+    "formatNotes": {
+      "general": [
+        "All arrays use simple string values unless otherwise specified",
+        "When adding new entries, maintain consistent style with existing entries",
+        "Ensure all strings are properly quoted and arrays end with the last element (no trailing comma)",
+        "Test changes by loading this file into the generator"
+      ],
+      "roomTypes": "Simple noun phrases for room names (e.g., 'chamber', 'vault'). Used in descriptions like 'a dusty [roomType]'.",
+      "leadIns": "Opening phrases for room descriptions. Should work grammatically before a room type (e.g., 'You enter a...').",
+      "sensesUnderfoot": "Descriptions of what the floor feels like underfoot. Should be complete clauses that can follow 'where'.",
+      "sensesAir": "Descriptions of air quality/smell. Should be complete clauses.",
+      "sensesSound": "Descriptions of ambient sounds. Should be complete clauses.",
+      "sensesLight": "Descriptions of lighting conditions. Should be complete clauses.",
+      "interactions": "Verb phrases describing how anchor features appear (e.g., 'crumbling with age'). Used after anchor features.",
+      "anchorFeatures": "Major objects/features in rooms. Should start with 'A/An' or 'The' or be plural nouns.",
+      "pressures": "Environmental dangers or tension-building descriptions. Complete sentences.",
+      "mitigations": "Actions players can take to address pressures. Verb phrases that follow 'A successful check could...'.",
+      "doorStatuses": "States a door can be in. 'Open' means no check needed; others require bypass checks.",
+      "doorBypassVerbs": "Object mapping door statuses to bypass options. Each status has an array of 'verbs' (action words for bypassing). The stat used is determined contextually in-game.",
+      "typeWords": "Enemy type classifications. Each maps to an ability in wordToAbility and a range in typeRange.",
+      "wordToAbility": "Maps typeWords to their special abilities. Format: 'AbilityName: Full description of what the ability does.'",
+      "typeRange": "Maps typeWords to their attack range. Values: 'Melee', 'Ranged', 'Melee and Ranged', or an array for random selection.",
+      "striveAbilities": "Master list of all Strive TTRPG abilities. Format: 'AbilityName: Full rules description.' Used for keyword abilities.",
+      "keywordAbilityInputMax": "Maximum number of custom abilities per keyword when setting up a dungeon.",
+      "difficultyProfiles": "Object with 'Easy', 'Medium', 'Hard', 'Deadly' keys. Each profile controls enemy stats, quantities, and challenge scaling.",
+      "difficultyProfileFields": {
+        "potencyWeights": "Weighted chances for Competent/Effective/Forceful potency levels (should sum to 100)",
+        "trapDamage": "Min/max trap damage dice",
+        "successTiers": "Success thresholds for defeating (defeat) and overwhelming (overwhelm) enemies",
+        "successTiersWeak": "Optional weaker tiers for Hard/Deadly difficulty variation",
+        "baseThresholdRange": "Min/max for enemy success thresholds",
+        "damageRange": "Min/max damage dice enemies deal",
+        "threatTypesRange": "Min/max different enemy types per room",
+        "quantityRange": "Min/max enemies of each type",
+        "maxThreatsPerRoom": "Hard cap on total enemies in one room",
+        "keywordAbilityChance": "Probability (0-1) that an enemy gets a keyword ability",
+        "bossDefeatBonus": "Extra successes needed to defeat a boss",
+        "bossOverwhelmBonus": "Extra successes needed to overwhelm a boss",
+        "bossDamageBonus": "Extra damage dice for bosses"
+      },
+      "layouts": "Maps layout categories (Rooms, Halls, Dead Ends) to arrays of layout IDs. IDs reference PNG files in layouts/ folder.",
+      "entranceLayouts": "Special entrance room layouts. Maps layout ID to array of exit directions (N/E/S/W).",
+      "layoutExits": "Maps layout code prefixes to their exit directions. Code is extracted from layout ID (e.g., 'NE1' -> 'NE' -> ['N', 'E'])."
+    },
+    "addingNewEntries": {
+      "arrays": "Simply add new string entries to the end of the array, before the closing bracket. Ensure comma after previous entry.",
+      "typeWords": "When adding a new type: 1) Add to typeWords array, 2) Add corresponding entry in wordToAbility, 3) Add range in typeRange.",
+      "striveAbilities": "Format must be 'AbilityName: Description'. The colon separator is required for parsing.",
+      "difficultyProfiles": "Copy an existing profile and adjust values. All fields are required.",
+      "layouts": "Add new layout ID to appropriate category. Ensure matching PNG exists in layouts/ folder with matching filename."
+    }
+  },
+  "roomTypes": [
+    "chamber",
+    "alcove",
+    "vault",
+    "crypt",
+    "gallery",
+    "sanctum",
+    "antechamber",
+    "hall",
+    "passage",
+    "den",
+    "lair",
+    "pit",
+    "shrine",
+    "cellar",
+    "cave",
+    "ossuary",
+    "scriptorium",
+    "cistern",
+    "armoury",
+    "barracks",
+    "workshop",
+    "forge",
+    "laboratory",
+    "infirmary",
+    "observatory",
+    "library",
+    "archive",
+    "map room",
+    "refectory",
+    "kitchen",
+    "pantry",
+    "storeroom",
+    "granary",
+    "bathhouse",
+    "gaol",
+    "guardroom",
+    "watchroom",
+    "sally port",
+    "reliquary",
+    "chapel",
+    "oratory",
+    "vestry",
+    "cloister",
+    "courtyard",
+    "atrium",
+    "colonnade",
+    "dormitory",
+    "cellblock",
+    "kennel",
+    "stables",
+    "menagerie",
+    "hatchery",
+    "nursery",
+    "sluice",
+    "shaft",
+    "tunnel",
+    "catacomb",
+    "mausoleum",
+    "sepulchre",
+    "charnel house"
+  ],
+  "leadIns": [
+    "You enter",
+    "Before you lies",
+    "You step into",
+    "Ahead stretches",
+    "You discover",
+    "Opening before you is",
+    "You find yourself in",
+    "Emerging into",
+    "Through the doorway lies",
+    "Beyond the threshold is",
+    "Past the doorway is",
+    "Through the archway is",
+    "At the end of the passage is",
+    "Ahead awaits",
+    "Ahead stands",
+    "You pass into",
+    "You push into",
+    "You slip into",
+    "You descend into",
+    "You climb into",
+    "You edge into",
+    "You stride into",
+    "You press onward into",
+    "You step through into",
+    "The corridor opens onto",
+    "The passage widens into",
+    "The tunnel spills into",
+    "The stairs lead to",
+    "The stairwell ends at",
+    "A narrow opening reveals",
+    "A broken arch reveals",
+    "A collapsed wall opens into",
+    "An old hatch leads to",
+    "A carved lintel frames",
+    "A splintered door swings into",
+    "Beyond a hanging curtain is"
+  ],
+  "sensesUnderfoot": [
+    "cracked flagstones shift beneath your feet",
+    "soft earth muffles your steps",
+    "bones crunch underfoot",
+    "slick moss covers the floor",
+    "loose gravel scatters with each step",
+    "ancient tiles lie broken and uneven",
+    "thick dust coats every surface",
+    "shallow water pools on the floor",
+    "dried leaves crackle beneath you",
+    "rough-hewn stone chills your soles",
+    "worn steps dip in the centre from countless crossings",
+    "fine ash smears into grey prints behind you",
+    "sticky resin clings to your soles",
+    "shards of ceramic crunch and skitter",
+    "old straw and mouldy reeds squash underfoot",
+    "salt crust cracks like thin ice",
+    "tar-like seepage makes each step tug",
+    "cinders pop softly as you tread",
+    "iron filings glitter in the grit",
+    "wet clay sucks at your boots",
+    "oil-slick puddles rainbow in your light",
+    "chalky powder coats the stone and puffs with every step",
+    "rope fibres and splinters litter the ground",
+    "broken glass tinkles in the dust",
+    "coarse sand has drifted into knee-high dunes",
+    "frost rims the floor and bites through leather",
+    "waxy drips have hardened into treacherous lumps",
+    "beetle shells and husks crunch like brittle parchment",
+    "loose boards flex and complain under your weight",
+    "crumbling mortar falls away at each footfall",
+    "thin slime stretches in threads between stones",
+    "pebbles roll treacherously on a slight incline",
+    "seams of metal grating ring beneath your steps",
+    "blood-dark stains have dried tacky on the floor",
+    "scattered nails snag at hems and boots",
+    "thin roots lace the ground like cords",
+    "stone dust lies so thick it muffles everything",
+    "half-submerged tiles shift beneath cold water",
+    "the floor is warm in patches, as if something breathes below",
+    "sharp grit bites through the soles with every step"
+  ],
+  "sensesAir": [
+    "a musty dampness hangs in the air",
+    "cold drafts whisper through unseen cracks",
+    "stale air fills your lungs",
+    "a faint acrid smell burns your nostrils",
+    "the scent of decay lingers",
+    "dry dusty air catches in your throat",
+    "a metallic tang permeates the space",
+    "cool air suggests hidden depths nearby",
+    "warm humid air presses against you",
+    "your torch smoke clings low, refusing to rise",
+    "the air tastes faintly of soot and old incense",
+    "a sour stench turns your stomach",
+    "the smell of wet fur lingers close to the ground",
+    "a sickly sweet perfume masks something rotten beneath",
+    "ozone pricks your tongue, like after lightning",
+    "spores drift in the beam of your light and catch in your throat",
+    "the air feels charged, hairs lifting on your arms",
+    "brine and seaweed reek as if the place floods at high tide",
+    "burnt herbs and pitch hang heavy in your lungs",
+    "your breath fogs instantly in the cold",
+    "heat blooms in stale pockets, then fades",
+    "the air is so dry it cracks your lips",
+    "an ammonia sting suggests old urine and neglect",
+    "a faint smell of hot metal suggests recent work",
+    "mould blooms behind your sinuses with every inhale",
+    "the air is thick enough to feel, damp and cloying",
+    "pale dust drifts with no breeze, settling on eyelashes",
+    "the scent of lamp oil is fresh, recent",
+    "charcoal and tallow mingle in the darkness",
+    "a medicinal sharpness suggests spirits and bandages",
+    "wet stone breathes a cellar-cold chill",
+    "a coppery smell hints at old blood",
+    "something like rotting fruit sours the air",
+    "cold air pours from a crack like an exhale",
+    "warm air pushes from below, damp with rot",
+    "a faint reek of brimstone curls at the back of your throat"
+  ],
+  "sensesSound": [
+    "distant dripping echoes",
+    "an unnatural silence presses in",
+    "faint scratching sounds from the walls",
+    "your breath echoes back at you",
+    "a low hum vibrates through the stone",
+    "whispers seem to dance at the edge of hearing",
+    "creaking sounds from above",
+    "the soft rustle of unseen movement",
+    "water trickles somewhere nearby",
+    "water drips in an irregular, maddening rhythm",
+    "somewhere, stone grinds on stone with slow patience",
+    "tiny chimes tinkle as if touched by a draft",
+    "far-off chanting rises and falls, too distant to place",
+    "rats squeal and scatter behind the walls",
+    "a chain sways and clinks in the dark",
+    "your gear seems too loud, every buckle accusing",
+    "the faint hiss of escaping steam curls through cracks",
+    "loose grit trickles from the ceiling in soft avalanches",
+    "an old wheel turns somewhere, creaking once per rotation",
+    "something taps from within a pipe, answering your steps",
+    "distant footsteps mirror yours, then stop when you stop",
+    "a deep thrum pulses like a heartbeat in the stone",
+    "flies buzz in a slow, lazy cloud",
+    "the flutter of wings erupts, then dies away",
+    "wind moans through a narrow slit like a flute",
+    "scraping claws circle out of sight",
+    "the soft slap of water suggests movement just beyond light",
+    "metal ticks as it cools, then snaps",
+    "a bell tolls once—then silence, as if it never happened",
+    "whispers coil around your ears, too close and too quiet",
+    "wood creaks under strain, as if ready to give",
+    "muffled sobbing echoes from a side passage",
+    "pebbles skitter down a slope somewhere ahead",
+    "a distant roar of water suggests a hidden fall",
+    "a low, wet gurgle rises from a drain",
+    "an intermittent clicking repeats, patient and mechanical"
+  ],
+  "sensesLight": [
+    "dim light filters from cracks above",
+    "absolute darkness swallows everything",
+    "phosphorescent fungi cast an eerie glow",
+    "your torchlight barely penetrates the gloom",
+    "strange shadows dance without source",
+    "pale light seeps from the walls themselves",
+    "flickering braziers line the walls",
+    "a single shaft of light pierces the darkness",
+    "bioluminescent lichen traces the ceiling",
+    "lantern soot has blackened the ceiling in uneven halos",
+    "a dull red glow leaks from hairline cracks",
+    "your light is swallowed by a fine mist that drinks the beam",
+    "glints of mica flash like eyes in the stone",
+    "candles burn in niches, their wicks unnaturally steady",
+    "blue witch-light floats near the floor, fading when approached",
+    "starlight filters through a shaft, cold and thin",
+    "embers smoulder in a firepit that should have gone out",
+    "shattered mirrors throw your torchlight into jagged shards",
+    "the room is lit from below, as if the floor were coals",
+    "a greenish sheen slicks the walls, reflecting faintly",
+    "your shadow stretches wrong, bending away from you",
+    "light pools in one corner and refuses to spread",
+    "thin beams slip through arrow slits in bright knives",
+    "pale fungus dots the floor like scattered constellations",
+    "a curtain of drifting motes makes the air sparkle",
+    "the only light comes from a single glowing rune, dim but constant",
+    "a brazier sputters with a smokeless flame",
+    "wax-drips have built stalagmites that catch and scatter light",
+    "bioluminescent insects crawl in slow trails along the ceiling",
+    "a lantern hangs from a hook, swinging slightly though no wind blows",
+    "the walls shine with dampness, reflecting your light back at you",
+    "a faint shimmer in the air refracts your torch into rainbows",
+    "your light seems weaker here, as if drained",
+    "golden light leaks from behind a closed door",
+    "a pale halo surrounds a broken idol",
+    "dust in the air turns your torchbeam into a solid bar"
+  ],
+  "interactions": [
+    "dominating the space",
+    "crumbling with age",
+    "covered in strange markings",
+    "partially collapsed",
+    "surprisingly intact",
+    "recently disturbed",
+    "webbed with cracks",
+    "slick with moisture",
+    "scorched by ancient fire",
+    "half-buried in debris",
+    "tilted at a precarious angle",
+    "slick with congealed wax",
+    "wrapped in rotting cloth strips",
+    "pocked with old tool-marks",
+    "stitched together from mismatched stone",
+    "rimmed with salt deposits",
+    "warm to the touch despite the cold",
+    "threaded with thin roots",
+    "ringed by a scatter of broken offerings",
+    "scored by deep gouges",
+    "blackened with soot and grease",
+    "rimmed by a shallow trench",
+    "latticed with rusted ironwork",
+    "carved with prayer-scratches",
+    "partly melted, as if once heated white-hot",
+    "spattered with dried stains",
+    "crawling with pale insects",
+    "stitched with cracks that ooze moisture",
+    "ringing faintly when disturbed",
+    "surrounded by disturbed dust, as if recently moved",
+    "bound with tight wire and seals",
+    "humming softly under your gaze",
+    "glazed with a thin film of ice",
+    "covered in old tally marks",
+    "pinned in place by fallen beams",
+    "swollen from damp and rot"
+  ],
+  "anchorFeatures": [
+    "A massive stone altar",
+    "Towering pillars",
+    "A dry fountain",
+    "Collapsed scaffolding",
+    "An iron cage",
+    "Stacked crates and barrels",
+    "A ritual circle",
+    "Broken statuary",
+    "A deep pit",
+    "Thick chains",
+    "A wooden platform",
+    "Ancient machinery",
+    "Piled rubble",
+    "A raised dais",
+    "Ornate sarcophagi",
+    "A cracked bell on a timber frame",
+    "An overturned lectern",
+    "A long table set with mouldy place-settings",
+    "A heap of smashed pottery",
+    "A wall of niches filled with bones",
+    "An iron portcullis raised halfway",
+    "A stone well with a rope still attached",
+    "A tilted bookshelf of warped tomes",
+    "A row of empty manacles",
+    "A pile of discarded masks",
+    "A circle of black candles",
+    "A bronze brazier packed with ash",
+    "A rune-carved obelisk",
+    "A fallen chandelier of chained iron",
+    "A rack of rusted tools",
+    "A mound of broken shields",
+    "A tangle of thorny vines forcing its way through masonry",
+    "A basin of dark water",
+    "A narrow bridge over a fissure",
+    "A hanging net of bones and charms",
+    "An idol with its face chiselled away",
+    "A slab covered in chalk diagrams",
+    "A shattered mirror wall",
+    "A pulley lift descending into darkness",
+    "A barricade of furniture and planks",
+    "A stack of sealed jars",
+    "A stone arch inlaid with metal filigree",
+    "A cluster of stalagmites like teeth",
+    "A floor mosaic depicting a sunburst",
+    "A toppled statue, half-buried",
+    "A brazier stand with fresh soot",
+    "A chain winch bolted to the wall",
+    "A lattice of pipes and valves",
+    "A rune-etched doorframe set into bare rock",
+    "A collapsed bunk row",
+    "A wagon with one wheel missing",
+    "A shallow trench filled with burnt offerings",
+    "An armoured training dummy, split open",
+    "A low dais with a scorched centre",
+    "A cage of woven roots",
+    "A line of ward-stones set into the floor",
+    "A pile of broken arrows and fletching",
+    "A cold forge with an anvil and tongs",
+    "An open sarcophagus with clawed grooves inside",
+    "Thick ropes dangling from ceiling hooks"
+  ],
+  "pressures": [
+    "The ceiling groans ominously",
+    "Cracks spread across the floor",
+    "The air grows thin",
+    "Strange symbols pulse with light",
+    "The walls seem to close in",
+    "Noxious fumes seep from vents",
+    "Unstable magic crackles",
+    "The ground trembles faintly",
+    "Shadows move independently",
+    "Loose stone threatens to slide under your weight.",
+    "A thin crust of floor hides a drop beneath.",
+    "Something in the dark reacts to sound, growing restless.",
+    "Cold spreads in waves, numbing fingers and slowing breath.",
+    "The air carries spores that make your eyes water and vision blur.",
+    "A pressure plate sits half-exposed among the rubble.",
+    "The walls sweat a slick film that makes grips unreliable.",
+    "Faint runes flare whenever you use magic.",
+    "A slow leak fills the lowest part of the room with rising water.",
+    "The floor tilts toward a drain that gurgles hungrily.",
+    "A web of fine threads spans the space at face height.",
+    "A heavy door behind you begins to settle shut on its own.",
+    "A brittle ceiling beam creaks with each vibration.",
+    "Static prickles over your skin as if a storm were trapped indoors.",
+    "A swarm of biting insects stirs when your light passes over them.",
+    "The room’s echo carries too far, inviting attention.",
+    "A low fog conceals hazards at ankle height.",
+    "Heat builds near the centre, as if the stone is cooking.",
+    "A charm of warding hums, resisting passage beyond a line.",
+    "A pile of debris shifts, ready to collapse with one wrong step.",
+    "Your light gutters as if something is feeding on it.",
+    "A slow pulse in the walls raises your heartbeat to match.",
+    "The floor is littered with caltrop-like shards.",
+    "A hidden vent exhales scalding air in timed bursts.",
+    "The smell of gas grows stronger the deeper you go.",
+    "The room’s geometry feels wrong, disorienting distance and direction.",
+    "A distant alarm tone begins to repeat, growing louder."
+  ],
+  "mitigations": [
+    "reveal a safe path",
+    "disable the mechanism",
+    "find stable footing",
+    "dispel the effect",
+    "locate an escape route",
+    "neutralize the danger",
+    "identify the source",
+    "calm the disturbance",
+    "spot the trigger",
+    "brace the failing structure",
+    "mark the safest footing",
+    "muffle your movement",
+    "ventilate the space",
+    "clear the obstruction",
+    "jam the mechanism open",
+    "reset the trigger",
+    "counter the ward",
+    "ground the charge",
+    "chart a stable route",
+    "cover the hazard with debris",
+    "find the hidden latch",
+    "seal the leak",
+    "re-route the flow",
+    "spot the tripline",
+    "cut a safe passage",
+    "bait the reaction away",
+    "soothe the disturbance",
+    "anchor the shifting floor",
+    "test the stone for hollows",
+    "identify the pattern of bursts",
+    "time your crossing",
+    "secure a handhold line",
+    "snuff the source safely",
+    "call out the weak points",
+    "pin down the moving part",
+    "recover a key component"
+  ],
+  "doorStatuses": [
+    "Open",
+    "Stuck",
+    "Locked",
+    "Jammed",
+    "Barred",
+    "Trapped",
+    "Sealed",
+    "Collapsed",
+    "Chained",
+    "Bolted",
+    "Spiked",
+    "Swollen",
+    "Rusted",
+    "Wedged",
+    "Warped",
+    "Reinforced",
+    "Wardlocked",
+    "Runed",
+    "Frozen",
+    "Submerged",
+    "Rotting",
+    "Barricaded",
+    "Counterweighted",
+    "Greased"
+  ],
+  "doorBypassVerbs": {
+    "Stuck": {
+      "verbs": [
+        "force",
+        "pry",
+        "shoulder"
+      ]
+    },
+    "Locked": {
+      "verbs": [
+        "pick",
+        "bypass",
+        "decode"
+      ]
+    },
+    "Jammed": {
+      "verbs": [
+        "wrench",
+        "lever",
+        "force"
+      ]
+    },
+    "Barred": {
+      "verbs": [
+        "break",
+        "lift",
+        "smash"
+      ]
+    },
+    "Trapped": {
+      "verbs": [
+        "disarm",
+        "bypass",
+        "disable"
+      ]
+    },
+    "Sealed": {
+      "verbs": [
+        "decipher",
+        "unravel",
+        "break"
+      ]
+    },
+    "Collapsed": {
+      "verbs": [
+        "clear",
+        "dig through",
+        "move"
+      ]
+    },
+    "Chained": {
+      "verbs": [
+        "cut",
+        "snap",
+        "unhook"
+      ]
+    },
+    "Bolted": {
+      "verbs": [
+        "slide",
+        "lift",
+        "undo"
+      ]
+    },
+    "Spiked": {
+      "verbs": [
+        "pull",
+        "pry",
+        "remove"
+      ]
+    },
+    "Swollen": {
+      "verbs": [
+        "force",
+        "shave",
+        "loosen"
+      ]
+    },
+    "Rusted": {
+      "verbs": [
+        "wrench",
+        "oil",
+        "break"
+      ]
+    },
+    "Wedged": {
+      "verbs": [
+        "lever",
+        "pry",
+        "knock free"
+      ]
+    },
+    "Warped": {
+      "verbs": [
+        "force",
+        "shim",
+        "brace"
+      ]
+    },
+    "Reinforced": {
+      "verbs": [
+        "break",
+        "dismantle",
+        "weaken"
+      ]
+    },
+    "Wardlocked": {
+      "verbs": [
+        "unravel",
+        "disrupt",
+        "decipher"
+      ]
+    },
+    "Runed": {
+      "verbs": [
+        "smudge",
+        "break",
+        "translate"
+      ]
+    },
+    "Frozen": {
+      "verbs": [
+        "thaw",
+        "chip",
+        "break"
+      ]
+    },
+    "Submerged": {
+      "verbs": [
+        "drain",
+        "dive",
+        "pry"
+      ]
+    },
+    "Rotting": {
+      "verbs": [
+        "push",
+        "tear",
+        "shoulder"
+      ]
+    },
+    "Barricaded": {
+      "verbs": [
+        "clear",
+        "break",
+        "climb"
+      ]
+    },
+    "Counterweighted": {
+      "verbs": [
+        "lift",
+        "jam",
+        "bypass"
+      ]
+    },
+    "Greased": {
+      "verbs": [
+        "wipe",
+        "grip",
+        "slow"
+      ]
+    }
+  },
+  "typeWords": [
+    "Archer",
+    "Brute",
+    "Skirmisher",
+    "Elite",
+    "Shaman",
+    "Scout",
+    "Defender",
+    "Lurker",
+    "Caster",
+    "Zealot",
+    "Packleader",
+    "Sapper",
+    "Harrier",
+    "Trapper",
+    "Wrecker",
+    "Regenerator",
+    "Hypnotist",
+    "Smotherer",
+    "Blinker",
+    "Riftwalker",
+    "Wraithkin",
+    "Stonehide",
+    "Meatshield",
+    "Mirrorling",
+    "Pyrotouched",
+    "Frosttouched",
+    "Stormtouched",
+    "Venomfang",
+    "Blightspore",
+    "Ritualist",
+    "Wordcaster",
+    "Reassembler",
+    "Dreadlord",
+    "Skypredator",
+    "Bloodburst",
+    "Crusher"
+  ],
+  "wordToAbility": {
+    "Archer": "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
+    "Brute": "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
+    "Skirmisher": "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
+    "Elite": "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
+    "Shaman": "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
+    "Scout": "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
+    "Defender": "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
+    "Lurker": "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
+    "Caster": "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency.",
+    "Zealot": "Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.",
+    "Packleader": "Teamwork: This threat immediately deals 1d6 damage to touch range targets that attack a nearby allied threat.",
+    "Sapper": "Besiege: Instead of dealing damage, this threat forces open a gate or doorway.",
+    "Harrier": "Pursuer: An additional two successes are required to flee from this threat.",
+    "Trapper": "Grapple & Pin: Instead of dealing damage, this threat attempts to Pin a creature in Touch range. The target makes an Effective Body check against this threat's Success Threshold; on failure they are Pinned (can't move or act except in attempts to break free) until they succeed on a Forceful Body check against this threat's Success Threshold at the start of their turn.",
+    "Wrecker": "Hurl: Instead of dealing damage in melee, this threat deals its damage to one target up to Far range.",
+    "Regenerator": "Regeneration: At the end of each round, remove all accumulated successes from this threat.",
+    "Hypnotist": "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat's Success Threshold; on failure, you're Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
+    "Smotherer": "Smother: Instead of dealing damage, this threat smothers all light sources in Short range, until relit.",
+    "Blinker": "Teleport Short Range: At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
+    "Riftwalker": "Teleport Beyond: At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range.",
+    "Wraithkin": "Ethereal: Non-magical actions cannot affect this threat unless it is anchored in the physical world. A PC may Anchor it with a suitable Major Impact action (Effective potency) until the end of the next round.",
+    "Stonehide": "Stone Skin: Non-magical checks treat this threat's Success Threshold as 5 (even if it is normally lower).",
+    "Meatshield": "Meat Shield: If this threat has allies in touch range, the first success dealt against it is dealt to an ally instead.",
+    "Mirrorling": "Illusory Doubles: This threat has a number of illusions equal to its success threshold. When targeting this threat, the players roll 1d6. If the number is below the threat's Success Threshold, and has not been rolled already against this threat, they strike an illusion instead.",
+    "Pyrotouched": "Flame Aura: When you assign successes to this threat while in Touch range, you lose 1d6 Grit.",
+    "Frosttouched": "Ice Immunity: This threat ignores successes dealt with ice.",
+    "Stormtouched": "Lightning Immunity: This threat ignores successes dealt with lightning.",
+    "Venomfang": "Potent Poison: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1d6 Grit until they succeed an Effective Body check (Threshold 4) or receive treatment.",
+    "Blightspore": "Foul 2: At the start of your turn, while in Short range, make a Competent Mind check against this threat’s Success Threshold; on failure, lose 1 Focus.",
+    "Ritualist": "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
+    "Wordcaster": "Power-words: Instead of dealing damage, this threat speaks a Word at a target in Short range. The target makes an Effective Mind check against this threat's Success Threshold; on failure they suffer a Forceful-tier effect appropriate to the Word (GM call) until the end of their next turn.",
+    "Reassembler": "Reassembling: Unless this threat's remains are burned and scattered, it shortly reassembles, all successes removed.",
+    "Dreadlord": "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat's Success Threshold; on failure, you can't Push your rolls this turn.",
+    "Skypredator": "Flying: Cannot be targeted by non-ranged checks unless this threat is grounded. A PC may ground it with a suitable Major Impact action (Effective) until the end of the round.",
+    "Bloodburst": "Acidic Blood: When a PC assigns successes to this threat while in Touch range, that PC loses 2 Grit.",
+    "Crusher": "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn."
+  },
+  "typeRange": {
+    "Archer": "Ranged",
+    "Brute": "Melee",
+    "Skirmisher": "Melee and Ranged",
+    "Elite": "Melee",
+    "Shaman": "Ranged",
+    "Scout": [
+      "Melee",
+      "Ranged"
+    ],
+    "Defender": "Melee",
+    "Lurker": "Melee",
+    "Caster": "Ranged",
+    "Zealot": "Melee",
+    "Packleader": "Melee",
+    "Sapper": "Melee",
+    "Harrier": "Melee and Ranged",
+    "Trapper": "Melee",
+    "Wrecker": "Melee",
+    "Regenerator": "Melee",
+    "Hypnotist": "Ranged",
+    "Smotherer": "Ranged",
+    "Blinker": "Melee",
+    "Riftwalker": "Melee and Ranged",
+    "Wraithkin": "Melee",
+    "Stonehide": "Melee",
+    "Meatshield": "Melee",
+    "Mirrorling": "Melee and Ranged",
+    "Pyrotouched": "Melee",
+    "Frosttouched": "Melee",
+    "Stormtouched": "Ranged",
+    "Venomfang": "Melee",
+    "Blightspore": "Ranged",
+    "Ritualist": "Ranged",
+    "Wordcaster": "Ranged",
+    "Reassembler": "Melee",
+    "Dreadlord": "Melee",
+    "Skypredator": [
+      "Melee",
+      "Ranged"
+    ],
+    "Bloodburst": "Melee",
+    "Crusher": "Melee"
+  },
+  "striveAbilities": [
+    "Acidic Blood: When a PC assigns successes to this threat while in Touch range, that PC loses 2 Grit.",
+    "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
+    "Armoured (2): This Threat is unaffected by checks and successes less potent than Effective.",
+    "Armoured (3): This Threat is unaffected by checks and successes less potent than Forceful.",
+    "Anti-magic: Within Short range, magic checks require an additional success to achieve the desired potency.",
+    "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency.",
+    "Arcanist: Instead of dealing damage, this threat can wield magic to majorly impact the combat at a forceful potency.",
+    "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
+    "Besiege: Instead of dealing damage, this threat forces open a gate or doorway.",
+    "Bound: If conjured, the conjurer can command the threat at no focus cost, can use the threat's senses as if they are its own, and can communicate by taking command of it's mouth, even at beyond distance. If the threat is defeated, its conjurer takes 1 damage to their focus. A conjurer can only be bound to one threat at a time.",
+    "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
+    "Cowardly: If at least 1 success has been assigned against this threat this round, it attempts to flee instead of dealing damage—unless an allied leader or at least 3 other allies are in Short range.",
+    "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
+    "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn.",
+    "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
+    "Death Wave: When this threat is Defeated (not Overwhelmed), each PC in Touch range loses 1d6 Grit.",
+    "Enrage: This threat's damage increases by 1d6 for each round of combat.",
+    "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
+    "Ethereal: Non-magical actions cannot affect this threat unless it is anchored in the physical world. A PC may Anchor it with a suitable Major Impact action (Effective potency) until the end of the next round.",
+    "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat's Success Threshold; on failure, you can't Push your rolls this turn.",
+    "Fire Immunity: This threat ignores successes dealt with fire.",
+    "Fire Vulnerability: Attacking this threat with fire grants an additional success.",
+    "Flame Aura: When you assign successes to this threat while in Touch range, you lose 1d6 Grit.",
+    "Flaming Breath (2d6): Unless surprised, this threat opens the combat by dealing 2d6 damage against all creatures in Short range, unless they succeed on a relevant check at Effective potency.",
+    "Flaming Breath (3d6): Unless surprised, this threat opens the combat by dealing 3d6 damage against all creatures in Short range, unless they succeed on a relevant check at Forceful potency.",
+    "Flying: Cannot be targeted by non-ranged checks unless this threat is grounded. A PC may ground it with a suitable Major Impact action (Effective) until the end of the round.",
+    "Focus Fire: Instead of dealing damage to multiple targets, this threat deals 3d6 damage to a single target. This can only be used when there are no enemies in touch range of this threat.",
+    "Forest's Protection: Checks to Major Impact this threat require two additional success to achieve the desired potency.",
+    "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
+    "Foul (2): At the start of your turn, while in Short range, make a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
+    "Grapple & Pin: Instead of dealing damage, this threat attempts to Pin a creature in Touch range. The target makes an Effective Body check against this threat's Success Threshold; on failure they are Pinned (can't move or act except in attempts to break free) until they succeed on a Forceful Body check against this threat's Success Threshold at the start of their turn.",
+    "Grappler: When this threat deals damage to you in Touch range, you become Restrained (can't move away) until the end of your next turn unless you succeed on a Competent Body check against this threat's Success Threshold.",
+    "Grappler (2): Instead of dealing damage, this threat attempts to Restrain its target(s). Each target makes a Forceful Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+    "Grappler (All): Instead of dealing damage, this threat attempts to Restrain every PC in Touch range. Each target makes an Effective Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+    "Group: If this threat is part of a stack of 3 or more threats, it can use all of its non-damaging abilities in addition to dealing half of its damage to each of its targets.",
+    "Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.",
+    "Horde: This threat can use all of its non-damaging abilities and still deals half of its damage to each of its targets.",
+    "Hurl: Instead of dealing damage in melee, this threat deals its damage to one target up to Far range.",
+    "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat's Success Threshold; on failure, you're Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
+    "Ice Immunity: This threat ignores successes dealt with ice.",
+    "Ice Vulnerability: Attacking this threat with ice grants an additional success.",
+    "Ice-bite: Damage from this threat leaves the skin feeling cold and numb for days. If left untreated for several days, it turns into frostbite.",
+    "Illusory Doubles: This threat has a number of illusions equal to its success threshold. When targeting this threat, the players roll 1d6. If the number is below the threat's Success Threshold, and has not been rolled already against this threat, they strike an illusion instead.",
+    "Indulgent: So long as it isn't disturbed, this threat may let others pass without taking notice.",
+    "Lightning Immunity: This threat ignores successes dealt with lightning.",
+    "Lightning Vulnerability: Attacking this threat with lightning grants an additional success.",
+    "Meat Shield: If this threat has allies in touch range, the first success dealt against it is dealt to an ally instead.",
+    "Mental Drain: Whenever a PC within Short range makes a magic check, they lose 1 Focus.",
+    "Mind-breaker: This threat deals damage to Focus instead of Grit.",
+    "Poisonous: If a player takes damage from this threat, they take another instance of that damage after an hour.",
+    "Poisonous (1): If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1 Grit until they succeed a Competent Body check (Threshold 4) or receive treatment.",
+    "Potent Poison: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1d6 Grit until they succeed an Effective Body check (Threshold 4) or receive treatment.",
+    "Power-words: Instead of dealing damage, this threat speaks a Word at a target in Short range. The target makes an Effective Mind check against this threat's Success Threshold; on failure they suffer a Forceful-tier effect appropriate to the Word (GM call) until the end of their next turn.",
+    "Pursuer: An additional two successes are required to flee from this threat.",
+    "Reassembling: Unless this threat's remains are burned and scattered, it shortly reassembles, all successes removed.",
+    "Reflective Hide: When you assign three or more successes to this threat from a single check, you take 1d6 damage to your Grit.",
+    "Regeneration: At the end of each round, remove all accumulated successes from this threat.",
+    "Regeneration (Numerical): At the end of each round, remove accumulated successes equal to this threat's Success Threshold.",
+    "Second Stage: When this threat would be defeated, its second stage is revealed.",
+    "Second Stage (Strive): When this threat would be defeated, its second stage is revealed, and each player regains a Strive Die.",
+    "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
+    "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
+    "Slow: Defend & Flee checks to escape this threat are set to Competent (1 success), unless the GM rules otherwise.",
+    "Smother: Instead of dealing damage, this threat smothers all light sources in Short range, until relit.",
+    "Squeeze: A creature Restrained by this threat (can't move away) loses 1d6 Grit at the start of its turn.",
+    "Stone Skin: Non-magical checks treat this threat's Success Threshold as 5 (even if it is normally lower).",
+    "Suppressing Shot: The first target to push a roll within far range of this threat immediately takes 1d6 damage.",
+    "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
+    "Teamwork: This threat immediately deals 1d6 damage to touch range targets that attack a nearby allied threat.",
+    "Teleport (Short Range): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
+    "Teleport (Beyond): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range.",
+    "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
+    "Water Immunity: This threat ignores successes dealt with water.",
+    "Water Vulnerability: Attacking this threat with water grants an additional success.",
+    "Ambusher: Unless spotted beforehand by an Effective observational check against this threat’s Success Threshold, characters are Surprised when it initiates combat.",
+    "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn’t Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
+    "Escape Artist: At the end of each round, if this threat isn’t Overwhelmed and isn’t restrained (pinned, trapped, magically bound, etc.), it escapes.",
+    "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat’s Success Threshold; on failure, you can’t Push your rolls this turn.",
+    "Flaming Breath: Unless surprised, this threat opens the combat by dealing 2d6 damage against all creatures in Short range, unless they succeed on a relevant check at Effective potency.",
+    "Flaming Breath: Unless surprised, this threat opens the combat by dealing 3d6 damage against all creatures in Short range, unless they succeed on a relevant check at Forceful potency.",
+    "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat’s Success Threshold; on failure, lose 1 Focus.",
+    "Foul 2: At the start of your turn, while in Short range, make a Competent Mind check against this threat’s Success Threshold; on failure, lose 1 Focus.",
+    "Grappler 2: Instead of dealing damage, this threat attempts to Restrain its target(s). Each target makes a Forceful Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+    "Grappler All: Instead of dealing damage, this threat attempts to Restrain every PC in Touch range. Each target makes an Effective Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
+    "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat’s Success Threshold; on failure, you’re Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
+    "Poisonous 1: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1 Grit until they succeed a Competent Body check (Threshold 4) or receive treatment.",
+    "Regeneration Numerical: At the end of each round, remove accumulated successes equal to this threat’s Success Threshold.",
+    "Second Stage Strive: When this threat would be defeated, its second stage is revealed, and each player regains a Strive Die.",
+    "Teleport Short Range: At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
+    "Teleport Beyond: At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range."
+  ],
+  "keywordAbilityInputMax": 3,
+  "difficultyProfiles": {
+    "Easy": {
+      "potencyWeights": {
+        "Competent": 60,
+        "Effective": 30,
+        "Forceful": 10
+      },
+      "trapDamage": {
+        "min": 1,
+        "max": 1
+      },
+      "successTiers": {
+        "defeat": 2,
+        "overwhelm": 4
+      },
+      "baseThresholdRange": {
+        "min": 3,
+        "max": 4
+      },
+      "damageRange": {
+        "min": 1,
+        "max": 1
+      },
+      "threatTypesRange": {
+        "min": 0,
+        "max": 2
+      },
+      "quantityRange": {
+        "min": 1,
+        "max": 2
+      },
+      "maxThreatsPerRoom": 3,
+      "keywordAbilityChance": 0.1,
+      "bossDefeatBonus": 5,
+      "bossOverwhelmBonus": 6,
+      "bossDamageBonus": 1
+    },
+    "Medium": {
+      "potencyWeights": {
+        "Competent": 25,
+        "Effective": 50,
+        "Forceful": 25
+      },
+      "trapDamage": {
+        "min": 1,
+        "max": 2
+      },
+      "successTiers": {
+        "defeat": 5,
+        "overwhelm": 7
+      },
+      "baseThresholdRange": {
+        "min": 3,
+        "max": 4
+      },
+      "damageRange": {
+        "min": 1,
+        "max": 2
+      },
+      "threatTypesRange": {
+        "min": 1,
+        "max": 2
+      },
+      "quantityRange": {
+        "min": 1,
+        "max": 3
+      },
+      "maxThreatsPerRoom": 4,
+      "keywordAbilityChance": 0.25,
+      "bossDefeatBonus": 6,
+      "bossOverwhelmBonus": 8,
+      "bossDamageBonus": 1
+    },
+    "Hard": {
+      "potencyWeights": {
+        "Competent": 10,
+        "Effective": 45,
+        "Forceful": 45
+      },
+      "trapDamage": {
+        "min": 1,
+        "max": 2
+      },
+      "successTiers": {
+        "defeat": 8,
+        "overwhelm": 12
+      },
+      "successTiersWeak": {
+        "defeat": 5,
+        "overwhelm": 7
+      },
+      "baseThresholdRange": {
+        "min": 4,
+        "max": 5
+      },
+      "damageRange": {
+        "min": 1,
+        "max": 2
+      },
+      "threatTypesRange": {
+        "min": 1,
+        "max": 3
+      },
+      "quantityRange": {
+        "min": 2,
+        "max": 3
+      },
+      "maxThreatsPerRoom": 6,
+      "keywordAbilityChance": 0.5,
+      "bossDefeatBonus": 6,
+      "bossOverwhelmBonus": 8,
+      "bossDamageBonus": 2
+    },
+    "Deadly": {
+      "potencyWeights": {
+        "Competent": 5,
+        "Effective": 30,
+        "Forceful": 65
+      },
+      "trapDamage": {
+        "min": 2,
+        "max": 3
+      },
+      "successTiers": {
+        "defeat": 16,
+        "overwhelm": 24
+      },
+      "successTiersWeak": {
+        "defeat": 8,
+        "overwhelm": 12
+      },
+      "baseThresholdRange": {
+        "min": 4,
+        "max": 5
+      },
+      "damageRange": {
+        "min": 2,
+        "max": 3
+      },
+      "threatTypesRange": {
+        "min": 2,
+        "max": 3
+      },
+      "quantityRange": {
+        "min": 2,
+        "max": 4
+      },
+      "maxThreatsPerRoom": 8,
+      "keywordAbilityChance": 0.75,
+      "bossDefeatBonus": 8,
+      "bossOverwhelmBonus": 10,
+      "bossDamageBonus": 2
+    }
+  },
+  "layouts": {
+    "Rooms": [
+      "A1",
+      "A3",
+      "A4",
+      "E2",
+      "N1",
+      "N2",
+      "NE1",
+      "NE2",
+      "NS2",
+      "S4"
+    ],
+    "Halls": [
+      "A2",
+      "E1",
+      "E3",
+      "E4",
+      "N3",
+      "N4",
+      "NS1",
+      "S1",
+      "S2",
+      "S3"
+    ],
+    "Dead Ends": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+    ]
+  },
+  "entranceLayouts": {
+    "ENT_E": [
+      "E"
+    ],
+    "ENT_NS": [
+      "N",
+      "S"
+    ],
+    "ENT_NW": [
+      "N",
+      "W"
+    ],
+    "ENT_NWS": [
+      "N",
+      "W",
+      "S"
+    ]
+  },
+  "layoutExits": {
+    "A": [
+      "N",
+      "E",
+      "S"
+    ],
+    "N": [
+      "N"
+    ],
+    "E": [
+      "E"
+    ],
+    "S": [
+      "S"
+    ],
+    "NE": [
+      "N",
+      "E"
+    ],
+    "NS": [
+      "N",
+      "S"
+    ],
+    "D": []
+  }
+}
