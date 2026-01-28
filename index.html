@@ -688,7 +688,7 @@
             <p class="subtitle">GM-less Procedural Dungeon Generator</p>
         </header>
 
-        <div id="dataStatus" class="data-status default">Using default embedded data. Load a custom JSON file to override.</div>
+        <div id="dataStatus" class="data-status default">Loading dungeon data...</div>
         <div id="errorDisplay" class="error hidden"></div>
 
         <details class="setup-panel" open>
@@ -767,310 +767,12 @@
     </div>
 
     <script>
-        // ==================== DEFAULT DATA ====================
-        const DEFAULT_DATA = {
-            roomTypes: ["chamber", "alcove", "vault", "crypt", "gallery", "sanctum", "antechamber", "hall", "passage", "den", "lair", "pit", "shrine", "cellar", "cave"],
-            leadIns: ["You enter", "Before you lies", "You step into", "Ahead stretches", "You discover", "Opening before you is", "You find yourself in", "Emerging into", "Through the doorway lies"],
-            sensesUnderfoot: ["cracked flagstones shift beneath your feet", "soft earth muffles your steps", "bones crunch underfoot", "slick moss covers the floor", "loose gravel scatters with each step", "ancient tiles lie broken and uneven", "thick dust coats every surface", "shallow water pools on the floor", "dried leaves crackle beneath you", "rough-hewn stone chills your soles"],
-            sensesAir: ["a musty dampness hangs in the air", "cold drafts whisper through unseen cracks", "stale air fills your lungs", "a faint acrid smell burns your nostrils", "the scent of decay lingers", "dry dusty air catches in your throat", "a metallic tang permeates the space", "cool air suggests hidden depths nearby", "warm humid air presses against you"],
-            sensesSound: ["distant dripping echoes", "an unnatural silence presses in", "faint scratching sounds from the walls", "your breath echoes back at you", "a low hum vibrates through the stone", "whispers seem to dance at the edge of hearing", "creaking sounds from above", "the soft rustle of unseen movement", "water trickles somewhere nearby"],
-            sensesLight: ["dim light filters from cracks above", "absolute darkness swallows everything", "phosphorescent fungi cast an eerie glow", "your torchlight barely penetrates the gloom", "strange shadows dance without source", "pale light seeps from the walls themselves", "flickering braziers line the walls", "a single shaft of light pierces the darkness", "bioluminescent lichen traces the ceiling"],
-            interactions: ["dominating the space", "crumbling with age", "covered in strange markings", "partially collapsed", "surprisingly intact", "recently disturbed", "webbed with cracks", "slick with moisture", "scorched by ancient fire"],
-            anchorFeatures: ["A massive stone altar", "Towering pillars", "A dry fountain", "Collapsed scaffolding", "An iron cage", "Stacked crates and barrels", "A ritual circle", "Broken statuary", "A deep pit", "Thick chains", "A wooden platform", "Ancient machinery", "Piled rubble", "A raised dais", "Ornate sarcophagi"],
-            environmentalThreatChance: 0.3,
-            environmentalThreats: [
-                { name: "Cracking Ceiling", description: "Cracking Ceiling: The ceiling sheds rubble in unpredictable bursts.", check: "Forceful" },
-                { name: "Noxious Fumes", description: "Noxious Fumes: Toxic vapors choke the room and sting the eyes.", check: "Competent" },
-                { name: "Tripwire Snare", description: "Tripwire Snare: Thin cords yank and bind ankles when disturbed.", check: "Effective" },
-                { name: "Shifting Floor", description: "Shifting Floor: The stone tilts and slides, threatening to hurl creatures into hazards.", check: "Effective" },
-                { name: "Runed Conduit", description: "Runed Conduit: Arcane glyphs pulse, discharging surges across the chamber." },
-                { name: "Collapsing Lintel", description: "Collapsing Lintel: A cracked arch threatens to drop and block the path." },
-                { name: "Spinning Blades", description: "Spinning Blades: Hidden gears drive whirling blades along the walls." },
-                { name: "Grasping Vines", description: "Grasping Vines: Thorny growths lash out to entangle anything that passes." }
-            ],
-            doorStatuses: ["Open", "Stuck", "Locked", "Jammed", "Barred", "Trapped", "Sealed", "Collapsed"],
-            doorBypassVerbs: {
-                "Stuck": { verbs: ["force", "pry", "shoulder"] },
-                "Locked": { verbs: ["pick", "bypass", "decode"] },
-                "Jammed": { verbs: ["wrench", "lever", "force"] },
-                "Barred": { verbs: ["break", "lift", "smash"] },
-                "Trapped": { verbs: ["disarm", "bypass", "disable"] },
-                "Sealed": { verbs: ["decipher", "unravel", "break"] },
-                "Collapsed": { verbs: ["clear", "dig through", "move"] }
-            },
-            typeWords: ["Archer", "Brute", "Skirmisher", "Elite", "Shaman", "Scout", "Defender", "Lurker", "Caster"],
-            wordToAbility: {
-                "Archer": "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
-                "Brute": "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
-                "Skirmisher": "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
-                "Elite": "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
-                "Shaman": "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
-                "Scout": "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
-                "Defender": "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
-                "Lurker": "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
-                "Caster": "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency."
-            },
-            typeRange: {
-                "Archer": "Ranged",
-                "Brute": "Melee",
-                "Skirmisher": "Melee and Ranged",
-                "Elite": "Melee",
-                "Shaman": "Ranged",
-                "Scout": ["Melee", "Ranged"],
-                "Defender": "Melee",
-                "Lurker": "Melee",
-                "Caster": "Ranged"
-            },
-            striveAbilities: [
-                "Acidic Blood: When a PC assigns successes to this threat while in Touch range, that PC loses 2 Grit.",
-                "Ambusher: Unless spotted beforehand by an Effective observational check against this threat's Success Threshold, characters are Surprised when it initiates combat.",
-                "Armoured (2): This Threat is unaffected by checks and successes less potent than Effective.",
-                "Armoured (3): This Threat is unaffected by checks and successes less potent than Forceful.",
-                "Anti-magic: Within Short range, magic checks require an additional success to achieve the desired potency.",
-                "Arcane Defense: Within Short range, magic checks affecting this threat require two additional success to achieve the desired potency.",
-                "Arcanist: Instead of dealing damage, this threat can wield magic to majorly impact the combat at a forceful potency.",
-                "Berserker: Even if this threat is Overwhelmed, it still deals half of its damage (rounded up).",
-                "Besiege: Instead of dealing damage, this threat forces open a gate or doorway.",
-                "Bound: If conjured, the conjurer can command the threat at no focus cost, can use the threat's senses as if they are its own, and can communicate by taking command of it's mouth, even at beyond distance. If the threat is defeated, its conjurer takes 1 damage to their focus. A conjurer can only be bound to one threat at a time.",
-                "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
-                "Cowardly: If at least 1 success has been assigned against this threat this round, it attempts to flee instead of dealing damage—unless an allied leader or at least 3 other allies are in Short range.",
-                "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
-                "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn.",
-                "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
-                "Death Wave: When this threat is Defeated (not Overwhelmed), each PC in Touch range loses 1d6 Grit.",
-                "Enrage: This threat's damage increases by 1d6 for each round of combat.",
-                "Escape Artist: At the end of each round, if this threat isn't Overwhelmed and isn't restrained (pinned, trapped, magically bound, etc.), it escapes.",
-                "Ethereal: Non-magical actions cannot affect this threat unless it is anchored in the physical world. A PC may Anchor it with a suitable Major Impact action (Effective potency) until the end of the next round.",
-                "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat's Success Threshold; on failure, you can't Push your rolls this turn.",
-                "Fire Immunity: This threat ignores successes dealt with fire.",
-                "Fire Vulnerability: Attacking this threat with fire grants an additional success.",
-                "Flame Aura: When you assign successes to this threat while in Touch range, you lose 1d6 Grit.",
-                "Flaming Breath (2d6): Unless surprised, this threat opens the combat by dealing 2d6 damage against all creatures in Short range, unless they succeed on a relevant check at Effective potency.",
-                "Flaming Breath (3d6): Unless surprised, this threat opens the combat by dealing 3d6 damage against all creatures in Short range, unless they succeed on a relevant check at Forceful potency.",
-                "Flying: Cannot be targeted by non-ranged checks unless this threat is grounded. A PC may ground it with a suitable Major Impact action (Effective) until the end of the round.",
-                "Focus Fire: Instead of dealing damage to multiple targets, this threat deals 3d6 damage to a single target. This can only be used when there are no enemies in touch range of this threat.",
-                "Forest's Protection: Checks to Major Impact this threat require two additional success to achieve the desired potency.",
-                "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
-                "Foul (2): At the start of your turn, while in Short range, make a Competent Mind check against this threat's Success Threshold; on failure, lose 1 Focus.",
-                "Grapple & Pin: Instead of dealing damage, this threat attempts to Pin a creature in Touch range. The target makes an Effective Body check against this threat's Success Threshold; on failure they are Pinned (can't move or act except in attempts to break free) until they succeed on a Forceful Body check against this threat's Success Threshold at the start of their turn.",
-                "Grappler: When this threat deals damage to you in Touch range, you become Restrained (can't move away) until the end of your next turn unless you succeed on a Competent Body check against this threat's Success Threshold.",
-                "Grappler (2): Instead of dealing damage, this threat attempts to Restrain its target(s). Each target makes a Forceful Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
-                "Grappler (All): Instead of dealing damage, this threat attempts to Restrain every PC in Touch range. Each target makes an Effective Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
-                "Group: If this threat is part of a stack of 3 or more threats, it can use all of its non-damaging abilities in addition to dealing half of its damage to each of its targets.",
-                "Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.",
-                "Horde: This threat can use all of its non-damaging abilities and still deals half of its damage to each of its targets.",
-                "Hurl: Instead of dealing damage in melee, this threat deals its damage to one target up to Far range.",
-                "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat's Success Threshold; on failure, you're Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
-                "Ice Immunity: This threat ignores successes dealt with ice.",
-                "Ice Vulnerability: Attacking this threat with ice grants an additional success.",
-                "Ice-bite: Damage from this threat leaves the skin feeling cold and numb for days. If left untreated for several days, it turns into frostbite.",
-                "Illusory Doubles: This threat has a number of illusions equal to its success threshold. When targeting this threat, the players roll 1d6. If the number is below the threat's Success Threshold, and has not been rolled already against this threat, they strike an illusion instead.",
-                "Indulgent: So long as it isn't disturbed, this threat may let others pass without taking notice.",
-                "Lightning Immunity: This threat ignores successes dealt with lightning.",
-                "Lightning Vulnerability: Attacking this threat with lightning grants an additional success.",
-                "Meat Shield: If this threat has allies in touch range, the first success dealt against it is dealt to an ally instead.",
-                "Mental Drain: Whenever a PC within Short range makes a magic check, they lose 1 Focus.",
-                "Mind-breaker: This threat deals damage to Focus instead of Grit.",
-                "Poisonous: If a player takes damage from this threat, they take another instance of that damage after an hour.",
-                "Poisonous (1): If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1 Grit until they succeed a Competent Body check (Threshold 4) or receive treatment.",
-                "Potent Poison: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1d6 Grit until they succeed an Effective Body check (Threshold 4) or receive treatment.",
-                "Power-words: Instead of dealing damage, this threat speaks a Word at a target in Short range. The target makes an Effective Mind check against this threat's Success Threshold; on failure they suffer a Forceful-tier effect appropriate to the Word (GM call) until the end of their next turn.",
-                "Pursuer: An additional two successes are required to flee from this threat.",
-                "Reassembling: Unless this threat's remains are burned and scattered, it shortly reassembles, all successes removed.",
-                "Reflective Hide: When you assign three or more successes to this threat from a single check, you take 1d6 damage to your Grit.",
-                "Regeneration: At the end of each round, remove all accumulated successes from this threat.",
-                "Regeneration (Numerical): At the end of each round, remove accumulated successes equal to this threat's Success Threshold.",
-                "Second Stage: When this threat would be defeated, its second stage is revealed.",
-                "Second Stage (Strive): When this threat would be defeated, its second stage is revealed, and each player regains a Strive Die.",
-                "Shielded: When a check would assign successes to this threat, reduce the assigned successes by 1.",
-                "Slippery: Any attempt to restrain, pin, or otherwise immobilise this threat requires an additional success.",
-                "Slow: Defend & Flee checks to escape this threat are set to Competent (1 success), unless the GM rules otherwise.",
-                "Smother: Instead of dealing damage, this threat smothers all light sources in Short range, until relit.",
-                "Squeeze: A creature Restrained by this threat (can't move away) loses 1d6 Grit at the start of its turn.",
-                "Stone Skin: Non-magical checks treat this threat's Success Threshold as 5 (even if it is normally lower).",
-                "Suppressing Shot: The first target to push a roll within far range of this threat immediately takes 1d6 damage.",
-                "Sword-master: When you Push a Fight roll against this threat while in Touch range, you immediately lose 1d6 Grit.",
-                "Teamwork: This threat immediately deals 1d6 damage to touch range targets that attack a nearby allied threat.",
-                "Teleport (Short Range): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
-                "Teleport (Beyond): At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range.",
-                "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
-                "Water Immunity: This threat ignores successes dealt with water.",
-                "Water Vulnerability: Attacking this threat with water grants an additional success."
-            ],
-            keywordAbilityInputMax: 3,
-            difficultyProfiles: {
-                "Easy": {
-                    potencyWeights: { "Competent": 60, "Effective": 30, "Forceful": 10 },
-                    trapDamage: { min: 1, max: 1 },
-                    successTiers: { defeat: 2, overwhelm: 4 },
-                    baseThresholdRange: { min: 3, max: 4 },
-                    damageRange: { min: 1, max: 1 },
-                    threatTypesRange: { min: 0, max: 2 },
-                    quantityRange: { min: 1, max: 2 },
-                    maxThreatsPerRoom: 3,
-                    keywordAbilityChance: 0.1,
-                    bossDefeatBonus: 5,
-                    bossOverwhelmBonus: 6,
-                    bossDamageBonus: 1
-                },
-                "Medium": {
-                    potencyWeights: { "Competent": 25, "Effective": 50, "Forceful": 25 },
-                    trapDamage: { min: 1, max: 2 },
-                    successTiers: { defeat: 5, overwhelm: 7 },
-                    baseThresholdRange: { min: 3, max: 4 },
-                    damageRange: { min: 1, max: 2 },
-                    threatTypesRange: { min: 1, max: 2 },
-                    quantityRange: { min: 1, max: 3 },
-                    maxThreatsPerRoom: 4,
-                    keywordAbilityChance: 0.25,
-                    bossDefeatBonus: 6,
-                    bossOverwhelmBonus: 8,
-                    bossDamageBonus: 1
-                },
-                "Hard": {
-                    potencyWeights: { "Competent": 10, "Effective": 45, "Forceful": 45 },
-                    trapDamage: { min: 1, max: 2 },
-                    successTiers: { defeat: 8, overwhelm: 12 },
-                    successTiersWeak: { defeat: 5, overwhelm: 7 },
-                    baseThresholdRange: { min: 4, max: 5 },
-                    damageRange: { min: 1, max: 2 },
-                    threatTypesRange: { min: 1, max: 3 },
-                    quantityRange: { min: 2, max: 3 },
-                    maxThreatsPerRoom: 6,
-                    keywordAbilityChance: 0.5,
-                    bossDefeatBonus: 6,
-                    bossOverwhelmBonus: 8,
-                    bossDamageBonus: 2
-                },
-                "Deadly": {
-                    potencyWeights: { "Competent": 5, "Effective": 30, "Forceful": 65 },
-                    trapDamage: { min: 2, max: 3 },
-                    successTiers: { defeat: 16, overwhelm: 24 },
-                    successTiersWeak: { defeat: 8, overwhelm: 12 },
-                    baseThresholdRange: { min: 4, max: 5 },
-                    damageRange: { min: 2, max: 3 },
-                    threatTypesRange: { min: 2, max: 3 },
-                    maxThreatsPerRoom: 8,
-                    quantityRange: { min: 2, max: 4 },
-                    keywordAbilityChance: 0.75,
-                    bossDefeatBonus: 8,
-                    bossOverwhelmBonus: 10,
-                    bossDamageBonus: 2
-                }
-            },
-            layouts: {
-                Rooms: ["A1", "A3", "A4", "E2", "N1", "N2", "NE1", "NE2", "NS2", "S4"],
-                Halls: ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
-                "Dead Ends": ["D1", "D2", "D3", "D4"]
-            },
-            entranceLayouts: {
-                "ENT_E": ["E"],
-                "ENT_NS": ["N", "S"],
-                "ENT_NW": ["N", "W"],
-                "ENT_NWS": ["N", "W", "S"]
-            },
-            layoutExits: {
-                "A": ["N", "E", "S"],
-                "N": ["N"],
-                "E": ["E"],
-                "S": ["S"],
-                "NE": ["N", "E"],
-                "NS": ["N", "S"],
-                "D": []
-            }
-        };
-
-        const LOOT_DATA = {
-            magic: {
-                Common: {
-                    potions: ["Focus Potion", "Healing Potion"],
-                    items: [
-                        "Focus Beads", "Grit Gloves", "Grappling Hook Gauntlet", "Common Arcane Conduit",
-                        "Torch-stone", "Discouraging Fragrance", "Hunter’s Toxin", "Keen-Eye Lens",
-                        "Soft-Step Wax", "Smoke Pellet", "Quicklime Chalk", "Climbing Spikes",
-                        "Flash-Glass", "Field Stitch Kit", "Whisper-Coin", "Rust-Eater Vial"
-                    ]
-                },
-                Rare: {
-                    potions: ["Potent Focus Potion", "Potent Healing Potion", "Wound-Salve"],
-                    items: [
-                        "Ring of Featherlight", "Rare Arcane Conduit", "Cloak of Shadows",
-                        "Warding Aegis", "Venom-strike (Weapon)", "Extradimensional Storage Pouch",
-                        "Warded Cloak", "Arcane Armour", "Lantern of True Forms",
-                        "Blink Charm", "Spell-Sunder Bindings", "Oath-Thread Bracelet",
-                        "Mindward Circlet", "Grasping Chain", "Siphoning Vambrace"
-                    ]
-                },
-                Legendary: {
-                    potions: ["Legendary Focus Potion", "Legendary Healing Potion"],
-                    items: [
-                        "Legendary Arcane Conduit", "Storm-enchanted Weapon", "Legendary Arcane Armour",
-                        "Crown of the Unbroken", "Gatekey", "Blade of Echoes (Weapon)",
-                        "Mantle of the Deep Step", "Hourglass Locket",
-                        "Sigil of Dominion", "Aegis of Iron Vows"
-                    ]
-                }
-            },
-            mundane: {
-                equipment: [
-                    "Shield and arm strap", "Steel longsword", "Hardened spear",
-                    "Shortbow with 20 arrows", "Chain shirt", "Leather armor",
-                    "Iron lantern", "Crowbar", "Lockpick set",
-                    "Grapple and rope (50 ft)", "Piton kit (10 spikes + hammer)",
-                    "Wooden buckler", "Spare dagger", "Travel cloak",
-                    "Whetstone and oil", "Iron rations tin", "Hand mirror",
-                    "Signal whistle", "Oilskin cloak", "Rope net",
-                    "Glass vial set", "Metal canteen", "Small toolkit"
-                ],
-                supplies: [
-                    "Rations (3 days)", "Water skin", "Torch bundle (6)",
-                    "Oil flask", "Bandages and salves", "Chalk sticks",
-                    "Bedroll", "Climbing harness", "Tinderbox",
-                    "Herbal poultice kit", "Needle and thread",
-                    "Small sack of salt", "Soap bar", "Map case",
-                    "Spare flint", "Candle stubs (5)",
-                    "Fishing line and hooks", "Empty jars (3)"
-                ],
-                trinkets: [
-                    "Silvered locket with a faded portrait", "Carved bone die",
-                    "Tiny brass astrolabe", "Ring of braided copper wire",
-                    "Faded battle pennant", "Ivory comb with sigil",
-                    "Glass vial of glittering sand", "Child’s tin whistle",
-                    "Miniature stone idol", "Copper coin with a hole",
-                    "Threadbare ribbon of office", "Sealed love letter",
-                    "Tiny compass that jitters", "Lucky rabbit paw",
-                    "Pressed flower in wax", "Smudged charcoal sketch"
-                ],
-                gemstones: [
-                    "Polished agate (10 coins)", "Deep-blue lapis (25 coins)",
-                    "Cracked ruby chip (50 coins)", "Moonstone shard (40 coins)",
-                    "Cut emerald sliver (75 coins)", "Amber bead with fossil (30 coins)",
-                    "Smoky quartz nugget (20 coins)", "Citrine shard (35 coins)",
-                    "Garnet fragment (45 coins)", "Pearl button (60 coins)"
-                ]
-            }
-        };
-
-        const LOOT_RARITY_WEIGHTS = {
-            Easy: { Common: 85, Rare: 13, Legendary: 2 },
-            Medium: { Common: 72, Rare: 23, Legendary: 5 },
-            Hard: { Common: 58, Rare: 32, Legendary: 10 },
-            Deadly: { Common: 45, Rare: 38, Legendary: 17 }
-        };
-
-        const LOOT_REVEAL_THRESHOLD_RANGE = { min: 3, max: 5 };
-
-        const LOOT_REVEAL_TIERS = {
-            coins: { order: 1, successes: 1 },
-            mundane: { order: 2, successes: 2 },
-            curios: { order: 3, successes: 3 },
-            magicCommon: { order: 4, successes: 4 },
-            magicRare: { order: 5, successes: 5 },
-            magicLegendary: { order: 6, successes: 6 }
-        };
+        // ==================== DATA LOADING ====================
+        const DEFAULT_DATA_PATH = 'dungeon_data_expanded.json';
+        let baseGameData = null;
 
         // ==================== STATE ====================
-        let gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        let gameData = null;
         let dungeonState = null;
         let usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
         const pngCache = {};
@@ -1122,6 +824,47 @@
                 adjusted.Legendary += 5;
             }
             return clampRarityWeights(adjusted);
+        }
+
+        function getLootData() {
+            return gameData?.lootData || { magic: {}, mundane: {} };
+        }
+
+        function getLootRarityWeights() {
+            return gameData?.lootRarityWeights || {};
+        }
+
+        function getLootRevealThresholdRange() {
+            return gameData?.lootRevealThresholdRange || { min: 3, max: 5 };
+        }
+
+        function getLootRevealTiers() {
+            return gameData?.lootRevealTiers || {};
+        }
+
+        async function loadBaseGameData() {
+            const dataStatus = document.getElementById('dataStatus');
+            dataStatus.textContent = 'Loading dungeon data...';
+            dataStatus.className = 'data-status default';
+
+            try {
+                const response = await fetch(DEFAULT_DATA_PATH, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${DEFAULT_DATA_PATH}`);
+                }
+                const data = await response.json();
+                baseGameData = data;
+                gameData = JSON.parse(JSON.stringify(baseGameData));
+                dataStatus.textContent = `Loaded: ${DEFAULT_DATA_PATH}`;
+                dataStatus.className = 'data-status loaded';
+            } catch (err) {
+                dataStatus.textContent = `Failed to load ${DEFAULT_DATA_PATH}`;
+                dataStatus.className = 'data-status warning';
+                document.getElementById('errorDisplay').textContent = `Error loading data: ${err.message}`;
+                document.getElementById('errorDisplay').classList.remove('hidden');
+                baseGameData = null;
+                gameData = null;
+            }
         }
 
         function formatCoins(coins) {
@@ -1590,13 +1333,21 @@
 
         // ==================== LOOT GENERATION ====================
         function rollLootRarity(hasEncounter, isBoss) {
-            const baseWeights = LOOT_RARITY_WEIGHTS[dungeonState.difficulty] || LOOT_RARITY_WEIGHTS.Medium;
+            const lootRarityWeights = getLootRarityWeights();
+            const baseWeights = lootRarityWeights[dungeonState.difficulty] || lootRarityWeights.Medium;
+            if (!baseWeights) {
+                return "Common";
+            }
             const adjusted = adjustRarityWeights(baseWeights, hasEncounter, isBoss);
             return weightedPick(adjusted);
         }
 
         function pickMagicItem(rarity, potionChance) {
-            const pool = LOOT_DATA.magic[rarity] || LOOT_DATA.magic.Common;
+            const lootData = getLootData();
+            const pool = lootData.magic?.[rarity] || lootData.magic?.Common;
+            if (!pool) {
+                return { name: "Unknown Relic", category: "Magic", rarity };
+            }
             const usePotion = pool.potions.length > 0 && Math.random() < potionChance;
             const name = usePotion ? pick(pool.potions) : pick(pool.items);
             return {
@@ -1631,9 +1382,10 @@
 
             const mundaneCount = isBoss ? randInt(3, 5) : hasEncounter ? randInt(2, 3) : randInt(1, 2);
             for (let i = 0; i < mundaneCount; i++) {
-                const pool = Math.random() < 0.55 ? LOOT_DATA.mundane.equipment : LOOT_DATA.mundane.supplies;
+                const lootData = getLootData();
+                const pool = Math.random() < 0.55 ? lootData.mundane?.equipment : lootData.mundane?.supplies;
                 loot.items.push({
-                    name: pick(pool),
+                    name: pick(pool || []),
                     category: "Mundane"
                 });
             }
@@ -1641,14 +1393,14 @@
             const trinketChance = isBoss ? 0.85 : hasEncounter ? 0.65 : 0.45;
             if (Math.random() < trinketChance) {
                 loot.items.push({
-                    name: pick(LOOT_DATA.mundane.trinkets),
+                    name: pick(getLootData().mundane?.trinkets || []),
                     category: "Trinket"
                 });
             }
             const gemChance = isBoss ? 0.75 : hasEncounter ? 0.6 : 0.35;
             if (Math.random() < gemChance) {
                 loot.items.push({
-                    name: pick(LOOT_DATA.mundane.gemstones),
+                    name: pick(getLootData().mundane?.gemstones || []),
                     category: "Gemstone"
                 });
             }
@@ -1691,13 +1443,14 @@
 
         function getLootRevealThreshold(room) {
             if (room.lootRevealThreshold) return room.lootRevealThreshold;
-            room.lootRevealThreshold = randInt(LOOT_REVEAL_THRESHOLD_RANGE.min, LOOT_REVEAL_THRESHOLD_RANGE.max);
+            const revealThresholdRange = getLootRevealThresholdRange();
+            room.lootRevealThreshold = randInt(revealThresholdRange.min, revealThresholdRange.max);
             saveDungeonState();
             return room.lootRevealThreshold;
         }
 
         function getLootRevealRequirement(room, tierKey) {
-            const config = LOOT_REVEAL_TIERS[tierKey];
+            const config = getLootRevealTiers()[tierKey];
             if (!config) return null;
             let created = false;
             if (!room.lootReveal) {
@@ -2048,8 +1801,9 @@
                     lootTiers.push({ key: 'curios', html: buildLootTierHtml(room, 'curios', curiosHtml) });
                 }
                 lootTiers.sort((a, b) => {
-                    const orderA = LOOT_REVEAL_TIERS[a.key]?.order ?? 99;
-                    const orderB = LOOT_REVEAL_TIERS[b.key]?.order ?? 99;
+                    const lootRevealTiers = getLootRevealTiers();
+                    const orderA = lootRevealTiers[a.key]?.order ?? 99;
+                    const orderB = lootRevealTiers[b.key]?.order ?? 99;
                     return orderA - orderB;
                 });
                 lootHtml = `<div class="loot-list">${lootTiers.map(tier => tier.html).join('')}</div>`;
@@ -2241,6 +1995,9 @@
         }
 
         function loadDungeonState() {
+            if (!gameData) {
+                return;
+            }
             const saved = localStorage.getItem('striveDungeon');
             const savedLayouts = localStorage.getItem('striveUsedLayouts');
             
@@ -2300,6 +2057,9 @@
         function populateAbilityDatalist() {
             const datalist = document.getElementById('abilityList');
             datalist.innerHTML = '';
+            if (!gameData || !Array.isArray(gameData.striveAbilities)) {
+                return;
+            }
             gameData.striveAbilities.forEach(ability => {
                 const option = document.createElement('option');
                 // Extract just the ability name for the dropdown value
@@ -2310,11 +2070,13 @@
             });
         }
 
-        // Populate datalist on page load
-        populateAbilityDatalist();
-
         // ==================== EVENT HANDLERS ====================
         document.getElementById('startBtn').addEventListener('click', () => {
+            if (!gameData) {
+                document.getElementById('errorDisplay').textContent = 'Dungeon data is not loaded yet.';
+                document.getElementById('errorDisplay').classList.remove('hidden');
+                return;
+            }
             const difficulty = document.getElementById('difficulty').value;
             const totalRooms = parseInt(document.getElementById('dungeonLength').value) || 10;
 
@@ -2395,17 +2157,17 @@
                     throw new Error(`Missing required fields: ${missing.join(', ')}`);
                 }
                 
-                // Merge with defaults (so partial files work)
-                gameData = { ...DEFAULT_DATA, ...data };
-                
+                gameData = data;
+
                 document.getElementById('dataStatus').textContent = `Loaded: ${file.name}`;
                 document.getElementById('dataStatus').className = 'data-status loaded';
                 document.getElementById('errorDisplay').classList.add('hidden');
+                populateAbilityDatalist();
                 
             } catch (err) {
                 document.getElementById('errorDisplay').textContent = `Error loading file: ${err.message}`;
                 document.getElementById('errorDisplay').classList.remove('hidden');
-                gameData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                gameData = baseGameData ? JSON.parse(JSON.stringify(baseGameData)) : null;
             }
         });
 
@@ -2422,7 +2184,11 @@
         });
 
         // ==================== INIT ====================
-        loadDungeonState();
+        (async () => {
+            await loadBaseGameData();
+            populateAbilityDatalist();
+            loadDungeonState();
+        })();
     </script>
 </body>
 </html>
