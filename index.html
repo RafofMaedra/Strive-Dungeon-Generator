@@ -447,6 +447,285 @@
             margin-top: 0.25rem;
         }
 
+        /* Dice Roller */
+        .dice-roller {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .dice-roller-title {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-gold);
+        }
+
+        .dice-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .dice-control-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .dice-control-btn:hover:not(:disabled) {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .dice-control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .die {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3), inset 1px 1px 2px rgba(255,255,255,0.2);
+            transition: transform 0.1s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .die:hover {
+            transform: scale(1.05);
+        }
+
+        .die.rolling {
+            animation: diceRoll 0.4s ease-out;
+        }
+
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .die.red {
+            background: linear-gradient(135deg, #c0392b, #8b2635);
+            border: 2px solid #e74c3c;
+        }
+
+        .die.blue {
+            background: linear-gradient(135deg, #2980b9, #1e3a5f);
+            border: 2px solid #3498db;
+        }
+
+        .die.green {
+            background: linear-gradient(135deg, #27ae60, #2d5a27);
+            border: 2px solid #2ecc71;
+        }
+
+        .die.black {
+            background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+            border: 2px solid #444;
+        }
+
+        .die.purple {
+            background: linear-gradient(135deg, #8e44ad, #5b2c6f);
+            border: 2px solid #9b59b6;
+        }
+
+        .die-value {
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .roll-button, .rest-button {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border: 1px solid var(--accent-gold);
+            color: var(--bg-dark);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .roll-button:hover, .rest-button:hover {
+            background: var(--accent-gold);
+            box-shadow: 0 0 10px rgba(201, 162, 39, 0.4);
+        }
+
+        .dice-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        /* Rest Modal */
+        .rest-time-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .rest-time-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .rest-time-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            min-width: 80px;
+        }
+
+        .rest-time-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rest-time-input input {
+            width: 60px;
+            padding: 0.5rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .rest-time-input span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .rest-quarters {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: 1rem;
+        }
+
+        .rest-quarter-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rest-quarter-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .rest-quarter-btn.selected {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        .rest-total {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            padding: 0.75rem;
+            background: rgba(201, 162, 39, 0.1);
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .rest-warning {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .rest-result {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .rest-result.success {
+            background: rgba(39, 174, 96, 0.15);
+            border: 1px solid rgba(39, 174, 96, 0.4);
+        }
+
+        .rest-result.interrupted {
+            background: rgba(192, 57, 43, 0.15);
+            border: 1px solid rgba(192, 57, 43, 0.4);
+        }
+
+        .rest-result-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+        }
+
+        .rest-result.success .rest-result-title {
+            color: var(--accent-green);
+        }
+
+        .rest-result.interrupted .rest-result-title {
+            color: var(--accent-red);
+        }
+
+        .rest-result-detail {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .rest-recovery {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
         .threats {
             margin-bottom: 1rem;
         }
@@ -625,6 +904,121 @@
 
         .resolve-toggle input {
             accent-color: var(--accent-gold);
+        }
+
+        /* Hidden Section - Success Threshold System */
+        .hidden-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(201, 162, 39, 0.05);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-radius: 4px;
+            flex-wrap: wrap;
+        }
+
+        .hidden-threshold {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-gold);
+        }
+
+        .hidden-threshold-value {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .hidden-successes {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hidden-successes-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .success-checkboxes {
+            display: flex;
+            gap: 0.35rem;
+        }
+
+        .success-checkbox {
+            width: 24px;
+            height: 24px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--bg-dark);
+            border: 2px solid rgba(201, 162, 39, 0.4);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .success-checkbox:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .success-checkbox:checked {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        .success-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 6px;
+            height: 12px;
+            border: solid var(--bg-dark);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .success-checkbox-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            width: 24px;
+        }
+
+        .success-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        /* Visible loot (not hidden) */
+        .visible-loot {
+            margin-bottom: 0.75rem;
+        }
+
+        .visible-loot-title {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Hidden items with reveal levels */
+        .hidden-item-entry {
+            display: none;
+        }
+
+        .hidden-item-entry.revealed {
+            display: block;
         }
 
         .threat-list {
@@ -938,6 +1332,21 @@
             </div>
         </details>
 
+        <div class="dice-roller">
+            <span class="dice-roller-title">Dice Roller</span>
+            <div class="dice-section">
+                <button class="dice-control-btn" id="removeDieBtn" title="Remove die">−</button>
+                <div class="dice-container" id="diceContainer">
+                    <!-- Dice will be dynamically generated -->
+                </div>
+                <button class="dice-control-btn" id="addDieBtn" title="Add die">+</button>
+            </div>
+            <div class="dice-actions">
+                <button class="roll-button" id="rollDiceBtn">Roll Dice</button>
+                <button class="rest-button" id="restBtn">Rest</button>
+            </div>
+        </div>
+
         <div class="main-content">
             <div class="current-room" id="currentRoomPanel">
                 <div class="empty-state" id="emptyState">
@@ -1018,6 +1427,38 @@
         </div>
     </div>
 
+    <div id="restModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="restTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="restTitle">Rest</div>
+                <button type="button" id="closeRestModal">Close</button>
+            </div>
+            <div class="modal-body">
+                <p class="helper-text">Choose how long you wish to rest. Longer rests have a higher chance of being interrupted by wandering threats.</p>
+                <div class="rest-time-selector">
+                    <div class="rest-time-row">
+                        <span class="rest-time-label">Hours:</span>
+                        <div class="rest-time-input">
+                            <input type="number" id="restHours" min="0" max="12" value="0">
+                        </div>
+                        <div class="rest-quarters">
+                            <button type="button" class="rest-quarter-btn" data-quarters="0">:00</button>
+                            <button type="button" class="rest-quarter-btn" data-quarters="1">:15</button>
+                            <button type="button" class="rest-quarter-btn" data-quarters="2">:30</button>
+                            <button type="button" class="rest-quarter-btn" data-quarters="3">:45</button>
+                        </div>
+                    </div>
+                    <div class="rest-total" id="restTotal">Total: 0 minutes</div>
+                    <p class="rest-warning">Hidden threats and traps not yet discovered may also interrupt your rest.</p>
+                </div>
+                <div id="restResult" class="hidden"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="restNowBtn" class="primary">Rest Now</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==================== DATA LOADING ====================
         const DEFAULT_DATA_PATH = 'dungeon_data_expanded.json';
@@ -1045,6 +1486,302 @@
         // ==================== UTILITIES ====================
         function randInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // ==================== DICE ROLLER ====================
+        const DICE_COLORS = ['blue', 'red', 'green', 'black', 'purple'];
+        const DEFAULT_DICE = ['red', 'blue', 'green'];
+        const MIN_DICE = 1;
+        const MAX_DICE = 6;
+
+        // Dice state (reset on page reload)
+        let diceState = DEFAULT_DICE.map(color => ({ color, value: '-' }));
+
+        function rollD6() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function getNextColor(currentColor) {
+            const currentIndex = DICE_COLORS.indexOf(currentColor);
+            const nextIndex = (currentIndex + 1) % DICE_COLORS.length;
+            return DICE_COLORS[nextIndex];
+        }
+
+        function renderDice() {
+            const container = document.getElementById('diceContainer');
+            container.innerHTML = '';
+
+            diceState.forEach((die, index) => {
+                const dieEl = document.createElement('div');
+                dieEl.className = `die ${die.color}`;
+                dieEl.dataset.index = index;
+                dieEl.innerHTML = `<span class="die-value">${die.value}</span>`;
+                dieEl.addEventListener('click', () => cycleDieColor(index));
+                container.appendChild(dieEl);
+            });
+
+            updateDiceControls();
+        }
+
+        function cycleDieColor(index) {
+            diceState[index].color = getNextColor(diceState[index].color);
+            renderDice();
+        }
+
+        function addDie() {
+            if (diceState.length < MAX_DICE) {
+                diceState.push({ color: 'black', value: '-' });
+                renderDice();
+            }
+        }
+
+        function removeDie() {
+            if (diceState.length > MIN_DICE) {
+                diceState.pop();
+                renderDice();
+            }
+        }
+
+        function updateDiceControls() {
+            const addBtn = document.getElementById('addDieBtn');
+            const removeBtn = document.getElementById('removeDieBtn');
+
+            if (addBtn) addBtn.disabled = diceState.length >= MAX_DICE;
+            if (removeBtn) removeBtn.disabled = diceState.length <= MIN_DICE;
+        }
+
+        function rollAllDice() {
+            const diceElements = document.querySelectorAll('.dice-container .die');
+
+            // Add rolling animation
+            diceElements.forEach(die => {
+                die.classList.add('rolling');
+            });
+
+            // Roll after animation
+            setTimeout(() => {
+                diceState.forEach((die, index) => {
+                    die.value = rollD6();
+                });
+
+                diceElements.forEach((dieEl, index) => {
+                    dieEl.querySelector('.die-value').textContent = diceState[index].value;
+                    dieEl.classList.remove('rolling');
+                });
+            }, 400);
+        }
+
+        function initDiceRoller() {
+            renderDice();
+
+            document.getElementById('addDieBtn').addEventListener('click', addDie);
+            document.getElementById('removeDieBtn').addEventListener('click', removeDie);
+            document.getElementById('rollDiceBtn').addEventListener('click', rollAllDice);
+        }
+
+        // ==================== REST SYSTEM ====================
+        let restState = {
+            hours: 0,
+            quarters: 0
+        };
+
+        function getRestTotalMinutes() {
+            return restState.hours * 60 + restState.quarters * 15;
+        }
+
+        function updateRestTotal() {
+            const totalMinutes = getRestTotalMinutes();
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            let displayText = '';
+            if (hours > 0 && minutes > 0) {
+                displayText = `Total: ${hours} hour${hours > 1 ? 's' : ''} ${minutes} minutes`;
+            } else if (hours > 0) {
+                displayText = `Total: ${hours} hour${hours > 1 ? 's' : ''}`;
+            } else if (minutes > 0) {
+                displayText = `Total: ${minutes} minutes`;
+            } else {
+                displayText = 'Total: 0 minutes';
+            }
+
+            document.getElementById('restTotal').textContent = displayText;
+        }
+
+        function hasUndiscoveredDangers() {
+            if (!dungeonState || !dungeonState.currentRoomId) return false;
+            const room = dungeonState.rooms.find(r => r.id === dungeonState.currentRoomId);
+            if (!room) return false;
+
+            const revealedLevel = room.revealedSuccessLevel || 0;
+
+            // Check for hidden threats
+            for (let i = 0; i < room.threats.length; i++) {
+                const threat = room.threats[i];
+                if (isHiddenThreat(threat)) {
+                    const hiddenId = `threat-${i}`;
+                    const requirement = room.hiddenReveal?.[hiddenId];
+                    const threatHiddenLevel = requirement?.successes || 2;
+                    if (threatHiddenLevel > revealedLevel && !requirement?.revealed) {
+                        return true;
+                    }
+                }
+            }
+
+            // Check for trapped doors
+            for (const [direction, door] of Object.entries(room.doors || {})) {
+                if (door.status === 'Trapped') {
+                    const hiddenId = `door-trap-${direction}`;
+                    const requirement = room.hiddenReveal?.[hiddenId];
+                    const trapHiddenLevel = requirement?.successes || 1;
+                    if (trapHiddenLevel > revealedLevel && !requirement?.revealed) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function calculateRestInterruption(totalMinutes) {
+            // Hidden dangers always interrupt
+            if (hasUndiscoveredDangers()) {
+                // Interrupt immediately (or at a random early point)
+                const interruptTime = Math.min(totalMinutes, randInt(5, Math.max(15, Math.floor(totalMinutes / 4))));
+                return {
+                    interrupted: true,
+                    reason: 'hidden_danger',
+                    timeRested: interruptTime
+                };
+            }
+
+            // Calculate wandering monster chance
+            // First 15 min: 1/6, at 1 hour mark: 1/6, then 2/6 per hour after
+            let currentTime = 0;
+            const checkPoints = [];
+
+            // First 15 minutes check
+            if (totalMinutes >= 15) {
+                checkPoints.push({ time: 15, chance: 1/6 });
+            }
+
+            // Hour marks
+            for (let hour = 1; hour <= Math.ceil(totalMinutes / 60); hour++) {
+                const checkTime = hour * 60;
+                if (checkTime <= totalMinutes) {
+                    // First hour: 1/6, subsequent hours: 2/6
+                    const chance = hour === 1 ? 1/6 : 2/6;
+                    checkPoints.push({ time: checkTime, chance });
+                }
+            }
+
+            // Roll for each checkpoint
+            for (const checkpoint of checkPoints) {
+                if (Math.random() < checkpoint.chance) {
+                    // Interrupted at this checkpoint
+                    return {
+                        interrupted: true,
+                        reason: 'wandering',
+                        timeRested: checkpoint.time
+                    };
+                }
+            }
+
+            // No interruption
+            return {
+                interrupted: false,
+                timeRested: totalMinutes
+            };
+        }
+
+        function calculateRecovery(minutes) {
+            const recoveryPoints = Math.floor(minutes / 15);
+            const striveDice = Math.floor(minutes / 30);
+            return { recoveryPoints, striveDice };
+        }
+
+        function performRest() {
+            const totalMinutes = getRestTotalMinutes();
+
+            if (totalMinutes <= 0) {
+                return;
+            }
+
+            const result = calculateRestInterruption(totalMinutes);
+            const recovery = calculateRecovery(result.timeRested);
+
+            const resultDiv = document.getElementById('restResult');
+            resultDiv.classList.remove('hidden');
+
+            if (result.interrupted) {
+                const reasonText = result.reason === 'hidden_danger'
+                    ? 'Your rest was interrupted by a hidden danger!'
+                    : 'Your rest was interrupted by wandering threats!';
+
+                resultDiv.innerHTML = `
+                    <div class="rest-result interrupted">
+                        <div class="rest-result-title">Rest Interrupted!</div>
+                        <div class="rest-result-detail">${reasonText}</div>
+                        <div class="rest-result-detail">You rested for ${result.timeRested} minutes before the interruption.</div>
+                        <div class="rest-recovery">
+                            <strong>${recovery.recoveryPoints} Recovery Points</strong> and <strong>${recovery.striveDice} Strive Dice</strong>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="rest-result success">
+                        <div class="rest-result-title">Rest Complete</div>
+                        <div class="rest-result-detail">You rested undisturbed for ${result.timeRested} minutes.</div>
+                        <div class="rest-recovery">
+                            <strong>${recovery.recoveryPoints} Recovery Points</strong> and <strong>${recovery.striveDice} Strive Dice</strong>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function openRestModal() {
+            restState = { hours: 0, quarters: 0 };
+            document.getElementById('restHours').value = 0;
+            document.querySelectorAll('.rest-quarter-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.rest-quarter-btn[data-quarters="0"]').classList.add('selected');
+            document.getElementById('restResult').classList.add('hidden');
+            document.getElementById('restResult').innerHTML = '';
+            updateRestTotal();
+            document.getElementById('restModal').classList.remove('hidden');
+        }
+
+        function closeRestModal() {
+            document.getElementById('restModal').classList.add('hidden');
+        }
+
+        function initRestSystem() {
+            document.getElementById('restBtn').addEventListener('click', openRestModal);
+            document.getElementById('closeRestModal').addEventListener('click', closeRestModal);
+            document.getElementById('restNowBtn').addEventListener('click', performRest);
+
+            document.getElementById('restHours').addEventListener('input', (e) => {
+                restState.hours = Math.max(0, Math.min(12, parseInt(e.target.value) || 0));
+                e.target.value = restState.hours;
+                updateRestTotal();
+            });
+
+            document.querySelectorAll('.rest-quarter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.rest-quarter-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    restState.quarters = parseInt(btn.dataset.quarters);
+                    updateRestTotal();
+                });
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('restModal').addEventListener('click', (e) => {
+                if (e.target.id === 'restModal') {
+                    closeRestModal();
+                }
+            });
         }
 
         function pick(arr) {
@@ -1761,10 +2498,71 @@
 
         function getLootRevealThreshold(room) {
             if (room.lootRevealThreshold) return room.lootRevealThreshold;
-            const revealThresholdRange = getLootRevealThresholdRange();
-            room.lootRevealThreshold = randInt(revealThresholdRange.min, revealThresholdRange.max);
+            // Success threshold is always +3 or +4 (never 2, 5, or 6)
+            room.lootRevealThreshold = Math.random() < 0.5 ? 3 : 4;
             saveDungeonState();
             return room.lootRevealThreshold;
+        }
+
+        // Assign hidden level to an item (0 = visible, 1-4 = hidden at that success level)
+        function assignItemHiddenLevel(item) {
+            // Check if it's a magic item
+            if (item.category === 'Magic') {
+                // Potions are hidden at 2-3 successes
+                if (item.name && item.name.toLowerCase().includes('potion')) {
+                    return Math.random() < 0.3 ? 0 : randInt(2, 3); // 30% visible, otherwise 2-3
+                }
+                // Rare or Legendary non-potion magic items hidden at 4 successes
+                if (item.rarity === 'Rare' || item.rarity === 'Legendary') {
+                    return 4;
+                }
+                // Common magic items hidden at 2-3 successes
+                return randInt(2, 3);
+            }
+            // Coins - mostly visible or low hidden level
+            if (item.category === 'Coins') {
+                return Math.random() < 0.5 ? 0 : randInt(1, 2); // 50% visible, otherwise 1-2
+            }
+            // Mundane items - often visible
+            if (item.category === 'Mundane') {
+                return Math.random() < 0.4 ? 0 : randInt(1, 2); // 40% visible, otherwise 1-2
+            }
+            // Trinkets and Gemstones - sometimes visible, otherwise 2-3
+            if (item.category === 'Trinket' || item.category === 'Gemstone') {
+                return Math.random() < 0.25 ? 0 : randInt(2, 3); // 25% visible, otherwise 2-3
+            }
+            // Default: hidden at 2-3
+            return randInt(2, 3);
+        }
+
+        // Ensure all items in room have hidden levels assigned
+        function ensureRoomHiddenLevels(room) {
+            if (!room.loot) return false;
+            let updated = false;
+
+            // Assign hidden level to coins
+            if (room.loot.coins && room.loot.coins.hiddenLevel === undefined) {
+                room.loot.coins.hiddenLevel = assignItemHiddenLevel({ category: 'Coins' });
+                updated = true;
+            }
+
+            // Assign hidden levels to items
+            if (room.loot.items) {
+                room.loot.items.forEach(item => {
+                    if (item.hiddenLevel === undefined) {
+                        item.hiddenLevel = assignItemHiddenLevel(item);
+                        updated = true;
+                    }
+                });
+            }
+
+            // Initialize the room's revealed success level (how many successes have been achieved)
+            if (room.revealedSuccessLevel === undefined) {
+                room.revealedSuccessLevel = 0;
+                updated = true;
+            }
+
+            return updated;
         }
 
         function getLootRevealRequirement(room, tierKey) {
@@ -2168,133 +2966,242 @@
                 threatsHtml += '</div>';
             }
 
-            const hiddenEntries = [];
-            const loot = room.loot;
-            if (loot && (loot.coins || (loot.items && loot.items.length > 0))) {
-                const magicItems = (loot.items || []).filter(item => item.category === 'Magic');
-                const mundaneItems = (loot.items || []).filter(item => item.category === 'Mundane');
-                const curios = (loot.items || []).filter(item => ['Trinket', 'Gemstone'].includes(item.category));
-
-                const lootTiers = [];
-                if (loot.coins) {
-                    const coinsHtml = `
-                        <div class="hidden-block">
-                            <h4>Coins</h4>
-                            <div class="hidden-items">
-                                <div class="hidden-item">${formatCoins(loot.coins)}</div>
-                            </div>
-                        </div>
-                    `;
-                    const requirement = getLootRevealRequirement(room, 'coins');
-                    lootTiers.push({
-                        key: 'coins',
-                        concealment: requirement?.concealment ?? 0,
-                        html: buildHiddenTierHtml({ id: 'coins', requirement, contentHtml: coinsHtml, isLoot: true })
-                    });
-                }
-                if (magicItems.length > 0) {
-                    const magicByRarity = {
-                        Common: magicItems.filter(item => item.rarity === 'Common'),
-                        Rare: magicItems.filter(item => item.rarity === 'Rare'),
-                        Legendary: magicItems.filter(item => item.rarity === 'Legendary')
-                    };
-                    Object.entries(magicByRarity).forEach(([rarity, items]) => {
-                        if (items.length === 0) return;
-                        const tierKey = rarity === 'Common'
-                            ? 'magicCommon'
-                            : rarity === 'Rare'
-                                ? 'magicRare'
-                                : 'magicLegendary';
-                        const magicHtml = `
-                            <div class="hidden-block">
-                                <h4>${rarity} Magic</h4>
-                                <div class="hidden-items">
-                                    ${items.map(item => `
-                                        <div class="hidden-item">
-                                            <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
-                                            <span>${item.name}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        `;
-                        const requirement = getLootRevealRequirement(room, tierKey);
-                        lootTiers.push({
-                            key: tierKey,
-                            concealment: requirement?.concealment ?? 0,
-                            html: buildHiddenTierHtml({ id: tierKey, requirement, contentHtml: magicHtml, isLoot: true })
-                        });
-                    });
-                }
-                if (mundaneItems.length > 0) {
-                    const mundaneHtml = `
-                        <div class="hidden-block">
-                            <h4>Supplies & Gear</h4>
-                            <div class="hidden-items">
-                                ${mundaneItems.map(item => `<div class="hidden-item">${item.name}</div>`).join('')}
-                            </div>
-                        </div>
-                    `;
-                    const requirement = getLootRevealRequirement(room, 'mundane');
-                    lootTiers.push({
-                        key: 'mundane',
-                        concealment: requirement?.concealment ?? 0,
-                        html: buildHiddenTierHtml({ id: 'mundane', requirement, contentHtml: mundaneHtml, isLoot: true })
-                    });
-                }
-                if (curios.length > 0) {
-                    const curiosHtml = `
-                        <div class="hidden-block">
-                            <h4>Trinkets & Gems</h4>
-                            <div class="hidden-items">
-                                ${curios.map(item => `<div class="hidden-item">${item.name}</div>`).join('')}
-                            </div>
-                        </div>
-                    `;
-                    const requirement = getLootRevealRequirement(room, 'curios');
-                    lootTiers.push({
-                        key: 'curios',
-                        concealment: requirement?.concealment ?? 0,
-                        html: buildHiddenTierHtml({ id: 'curios', requirement, contentHtml: curiosHtml, isLoot: true })
-                    });
-                }
-                lootTiers.forEach(tier => hiddenEntries.push(tier));
+            // Ensure hidden levels are assigned to all loot items
+            const hiddenLevelsUpdated = ensureRoomHiddenLevels(room);
+            if (hiddenLevelsUpdated) {
+                saveDungeonState();
             }
 
-            room.threats.forEach((threat, index) => {
-                if (!isHiddenThreat(threat)) return;
-                const hiddenId = `threat-${index}`;
-                const requirement = getHiddenRequirement(room, hiddenId, { threshold: threat.threshold, successes: 1 });
-                const threatHtml = buildThreatBlockHtml(threat, index);
-                hiddenEntries.push({
-                    key: hiddenId,
-                    concealment: requirement.concealment ?? 0,
-                    html: buildHiddenTierHtml({ id: hiddenId, requirement, contentHtml: threatHtml, isLoot: false })
-                });
-            });
+            const loot = room.loot;
+            const threshold = getLootRevealThreshold(room);
+            const revealedLevel = room.revealedSuccessLevel || 0;
 
-            Object.entries(room.doors || {}).forEach(([direction, door]) => {
-                if (door.status !== 'Trapped') return;
-                const hiddenId = `door-trap-${direction}`;
-                const threshold = door.bypass?.threshold ?? getLootRevealThreshold(room);
-                const requirement = getHiddenRequirement(room, hiddenId, { threshold, successes: 1 });
-                const trapHtml = buildDoorTrapHtml({
-                    id: hiddenId,
-                    direction: directionLabels[direction] || direction,
-                    door,
-                    requirement
-                });
-                hiddenEntries.push({
-                    key: hiddenId,
-                    concealment: requirement.concealment ?? 0,
-                    html: buildHiddenTierHtml({ id: hiddenId, requirement, contentHtml: trapHtml, isLoot: false })
-                });
-            });
+            // Helper to render an item with its hidden level
+            function renderLootItem(item, index = 0) {
+                const isRevealed = item.hiddenLevel === 0 || item.hiddenLevel <= revealedLevel;
+                const revealClass = isRevealed ? 'revealed' : '';
 
-            hiddenEntries.sort((a, b) => b.concealment - a.concealment);
-            const hiddenHtml = hiddenEntries.length === 0
-                ? '<div class="no-threats">No hidden loot, traps, or ambushers are immediately apparent.</div>'
-                : `<div class="hidden-list">${hiddenEntries.map(entry => entry.html).join('')}</div>`;
+                if (item.category === 'Magic') {
+                    return `
+                        <div class="hidden-item-entry ${revealClass}" data-hidden-level="${item.hiddenLevel}">
+                            <div class="hidden-item">
+                                <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
+                                <span>${item.name}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="hidden-item-entry ${revealClass}" data-hidden-level="${item.hiddenLevel}">
+                            <div class="hidden-item">${item.name}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Build visible loot section (hiddenLevel = 0)
+            let visibleLootHtml = '';
+            if (loot) {
+                const visibleItems = [];
+
+                if (loot.coins && loot.coins.hiddenLevel === 0) {
+                    visibleItems.push(`<div class="hidden-item">${formatCoins(loot.coins)}</div>`);
+                }
+
+                (loot.items || []).forEach(item => {
+                    if (item.hiddenLevel === 0) {
+                        if (item.category === 'Magic') {
+                            visibleItems.push(`
+                                <div class="hidden-item">
+                                    <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
+                                    <span>${item.name}</span>
+                                </div>
+                            `);
+                        } else {
+                            visibleItems.push(`<div class="hidden-item">${item.name}</div>`);
+                        }
+                    }
+                });
+
+                if (visibleItems.length > 0) {
+                    visibleLootHtml = `
+                        <div class="visible-loot">
+                            <div class="visible-loot-title">Visible Loot</div>
+                            <div class="hidden-block">
+                                <div class="hidden-items">
+                                    ${visibleItems.join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Build hidden section header with threshold and tick boxes
+            const hiddenHeaderHtml = `
+                <div class="hidden-header">
+                    <div class="hidden-threshold">
+                        Search Threshold: <span class="hidden-threshold-value">+${threshold}</span>
+                    </div>
+                    <div class="hidden-successes">
+                        <span class="hidden-successes-label">Successes:</span>
+                        <div class="success-checkboxes">
+                            ${[1, 2, 3, 4].map(level => `
+                                <div class="success-box">
+                                    <input type="checkbox" class="success-checkbox" data-level="${level}" ${level <= revealedLevel ? 'checked' : ''}>
+                                    <span class="success-checkbox-label">${level}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Build hidden items list (items with hiddenLevel > 0)
+            let hiddenItemsHtml = '';
+            if (loot) {
+                const hiddenItemsList = [];
+
+                // Coins
+                if (loot.coins && loot.coins.hiddenLevel > 0) {
+                    const isRevealed = loot.coins.hiddenLevel <= revealedLevel;
+                    hiddenItemsList.push({
+                        level: loot.coins.hiddenLevel,
+                        html: `
+                            <div class="hidden-item-entry ${isRevealed ? 'revealed' : ''}" data-hidden-level="${loot.coins.hiddenLevel}">
+                                <div class="hidden-block">
+                                    <h4>Coins</h4>
+                                    <div class="hidden-items">
+                                        <div class="hidden-item">${formatCoins(loot.coins)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    });
+                }
+
+                // Group items by category
+                const magicItems = (loot.items || []).filter(item => item.category === 'Magic' && item.hiddenLevel > 0);
+                const mundaneItems = (loot.items || []).filter(item => item.category === 'Mundane' && item.hiddenLevel > 0);
+                const curios = (loot.items || []).filter(item => ['Trinket', 'Gemstone'].includes(item.category) && item.hiddenLevel > 0);
+
+                // Magic items grouped by rarity
+                const magicByRarity = {
+                    Common: magicItems.filter(item => item.rarity === 'Common'),
+                    Rare: magicItems.filter(item => item.rarity === 'Rare'),
+                    Legendary: magicItems.filter(item => item.rarity === 'Legendary')
+                };
+
+                Object.entries(magicByRarity).forEach(([rarity, items]) => {
+                    items.forEach(item => {
+                        const isRevealed = item.hiddenLevel <= revealedLevel;
+                        hiddenItemsList.push({
+                            level: item.hiddenLevel,
+                            html: `
+                                <div class="hidden-item-entry ${isRevealed ? 'revealed' : ''}" data-hidden-level="${item.hiddenLevel}">
+                                    <div class="hidden-block">
+                                        <h4>${rarity} Magic</h4>
+                                        <div class="hidden-items">
+                                            <div class="hidden-item">
+                                                <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
+                                                <span>${item.name}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `
+                        });
+                    });
+                });
+
+                // Mundane items (each individually)
+                mundaneItems.forEach(item => {
+                    const isRevealed = item.hiddenLevel <= revealedLevel;
+                    hiddenItemsList.push({
+                        level: item.hiddenLevel,
+                        html: `
+                            <div class="hidden-item-entry ${isRevealed ? 'revealed' : ''}" data-hidden-level="${item.hiddenLevel}">
+                                <div class="hidden-block">
+                                    <h4>Supplies</h4>
+                                    <div class="hidden-items">
+                                        <div class="hidden-item">${item.name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    });
+                });
+
+                // Curios (each individually)
+                curios.forEach(item => {
+                    const isRevealed = item.hiddenLevel <= revealedLevel;
+                    const label = item.category === 'Gemstone' ? 'Gemstone' : 'Trinket';
+                    hiddenItemsList.push({
+                        level: item.hiddenLevel,
+                        html: `
+                            <div class="hidden-item-entry ${isRevealed ? 'revealed' : ''}" data-hidden-level="${item.hiddenLevel}">
+                                <div class="hidden-block">
+                                    <h4>${label}</h4>
+                                    <div class="hidden-items">
+                                        <div class="hidden-item">${item.name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    });
+                });
+
+                // Hidden threats (ambushers)
+                room.threats.forEach((threat, index) => {
+                    if (!isHiddenThreat(threat)) return;
+                    const hiddenId = `threat-${index}`;
+                    const requirement = getHiddenRequirement(room, hiddenId, { threshold: threat.threshold, successes: 2 });
+                    const threatHiddenLevel = requirement.successes || 2;
+                    const isRevealed = threatHiddenLevel <= revealedLevel || requirement.revealed;
+                    hiddenItemsList.push({
+                        level: threatHiddenLevel,
+                        html: `
+                            <div class="hidden-item-entry ${isRevealed ? 'revealed' : ''}" data-hidden-level="${threatHiddenLevel}" data-hidden-id="${hiddenId}">
+                                ${buildThreatBlockHtml(threat, index)}
+                            </div>
+                        `
+                    });
+                });
+
+                // Trapped doors
+                Object.entries(room.doors || {}).forEach(([direction, door]) => {
+                    if (door.status !== 'Trapped') return;
+                    const hiddenId = `door-trap-${direction}`;
+                    const requirement = getHiddenRequirement(room, hiddenId, { threshold, successes: 1 });
+                    const trapHiddenLevel = requirement.successes || 1;
+                    const isRevealed = trapHiddenLevel <= revealedLevel || requirement.revealed;
+                    hiddenItemsList.push({
+                        level: trapHiddenLevel,
+                        html: `
+                            <div class="hidden-item-entry ${isRevealed ? 'revealed' : ''}" data-hidden-level="${trapHiddenLevel}" data-hidden-id="${hiddenId}">
+                                ${buildDoorTrapHtml({
+                                    id: hiddenId,
+                                    direction: directionLabels[direction] || direction,
+                                    door,
+                                    requirement
+                                })}
+                            </div>
+                        `
+                    });
+                });
+
+                // Sort by level
+                hiddenItemsList.sort((a, b) => a.level - b.level);
+                hiddenItemsHtml = hiddenItemsList.map(item => item.html).join('');
+            }
+
+            const hiddenHtml = `
+                ${visibleLootHtml}
+                ${hiddenHeaderHtml}
+                <div class="hidden-list">
+                    ${hiddenItemsHtml || '<div class="no-threats" style="display: block;">Search to discover what may be hidden here.</div>'}
+                </div>
+            `;
             
             document.getElementById('roomContent').innerHTML = `
                 <div class="room-header">
@@ -2352,28 +3259,52 @@
                 });
             });
 
-            document.querySelectorAll('.hidden-discover').forEach(button => {
-                button.addEventListener('click', () => {
-                    const type = button.dataset.hiddenType;
-                    if (type === 'loot') {
-                        const tierKey = button.dataset.tier;
-                        const requirement = getLootRevealRequirement(room, tierKey);
-                        if (requirement) {
-                            requirement.revealed = true;
-                            saveDungeonState();
+            // Handle success checkbox changes
+            document.querySelectorAll('.success-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const level = parseInt(checkbox.dataset.level);
+
+                    // If checking a box, also check all lower levels
+                    // If unchecking, also uncheck all higher levels
+                    document.querySelectorAll('.success-checkbox').forEach(cb => {
+                        const cbLevel = parseInt(cb.dataset.level);
+                        if (checkbox.checked) {
+                            if (cbLevel <= level) cb.checked = true;
+                        } else {
+                            if (cbLevel >= level) cb.checked = false;
                         }
-                    } else {
-                        const hiddenId = button.dataset.hiddenId;
+                    });
+
+                    // Calculate new revealed level (highest checked box)
+                    let newRevealedLevel = 0;
+                    document.querySelectorAll('.success-checkbox:checked').forEach(cb => {
+                        const cbLevel = parseInt(cb.dataset.level);
+                        if (cbLevel > newRevealedLevel) newRevealedLevel = cbLevel;
+                    });
+
+                    // Update room state
+                    room.revealedSuccessLevel = newRevealedLevel;
+                    saveDungeonState();
+
+                    // Reveal/hide items based on new level
+                    document.querySelectorAll('.hidden-item-entry').forEach(entry => {
+                        const itemLevel = parseInt(entry.dataset.hiddenLevel);
+                        if (itemLevel <= newRevealedLevel) {
+                            entry.classList.add('revealed');
+                        } else {
+                            entry.classList.remove('revealed');
+                        }
+                    });
+
+                    // Also mark hidden dangers as revealed in their requirement
+                    document.querySelectorAll('.hidden-item-entry[data-hidden-id]').forEach(entry => {
+                        const hiddenId = entry.dataset.hiddenId;
+                        const itemLevel = parseInt(entry.dataset.hiddenLevel);
                         const requirement = getHiddenRevealMap(room)[hiddenId];
-                        if (requirement) {
+                        if (requirement && itemLevel <= newRevealedLevel) {
                             requirement.revealed = true;
-                            saveDungeonState();
                         }
-                    }
-                    const tierElement = button.closest('.hidden-tier');
-                    if (tierElement) {
-                        tierElement.classList.add('revealed');
-                    }
+                    });
                 });
             });
 
@@ -2809,6 +3740,9 @@
         }
 
         // ==================== EVENT HANDLERS ====================
+        initDiceRoller();
+        initRestSystem();
+
         document.getElementById('startBtn').addEventListener('click', () => {
             if (!gameData) {
                 document.getElementById('errorDisplay').textContent = 'Dungeon data is not loaded yet.';
