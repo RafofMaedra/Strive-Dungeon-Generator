@@ -173,6 +173,25 @@
             margin-bottom: 2rem;
         }
 
+        .threat-filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .helper-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
         button {
             font-family: var(--font-display);
             font-size: 0.8rem;
@@ -206,6 +225,77 @@
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            z-index: 100;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            width: min(680px, 92vw);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .modal-footer {
+            border-bottom: none;
+            border-top: 1px solid var(--border);
+            justify-content: flex-end;
+        }
+
+        .modal-body {
+            padding: 1rem 1.5rem 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .modal-title {
+            font-family: var(--font-display);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+        }
+
+        .threat-type-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.5rem 1rem;
+        }
+
+        .threat-type-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
         }
 
         .main-content {
@@ -726,6 +816,20 @@
                     </div>
                 </div>
                 <datalist id="abilityList"></datalist>
+                <div class="control-group full-width">
+                    <label>Threat Type Filters</label>
+                    <div class="threat-filter-row">
+                        <button type="button" id="threatFilterBtn">Disallowed Threat Types</button>
+                        <span id="threatFilterSummary" class="helper-text">No disallowed threat types.</span>
+                    </div>
+                </div>
+                <div class="control-group full-width">
+                    <label>Vibe Themes</label>
+                    <div class="filter-row">
+                        <button type="button" id="descriptionFilterBtn">Vibe Themes</button>
+                        <span id="descriptionFilterSummary" class="helper-text">No vibe themes selected.</span>
+                    </div>
+                </div>
                 <div class="control-group">
                     <label for="dataFile">Import Data File</label>
                     <input type="file" id="dataFile" accept=".json">
@@ -762,6 +866,46 @@
                         <div id="mapRooms" class="map-rooms"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="threatFilterModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="threatFilterTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="threatFilterTitle">Disallowed Threat Types</div>
+                <button type="button" id="closeThreatFilter">Close</button>
+            </div>
+            <div class="modal-body">
+                <p class="helper-text">Checked types will never appear in generated encounters (including bosses).</p>
+                <div class="threat-filter-row modal-actions">
+                    <button type="button" id="selectAllThreats">Select All</button>
+                    <button type="button" id="clearAllThreats">Clear All</button>
+                </div>
+                <div id="threatTypeList" class="threat-type-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="applyThreatFilter">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="descriptionFilterModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="descriptionFilterTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="descriptionFilterTitle">Vibe Themes</div>
+                <button type="button" id="closeDescriptionFilter">Close</button>
+            </div>
+            <div class="modal-body">
+                <p class="helper-text">Selected themes add flavorful details to every room description.</p>
+                <div class="filter-row modal-actions">
+                    <button type="button" id="selectAllDescriptions">Select All</button>
+                    <button type="button" id="clearAllDescriptions">Clear All</button>
+                </div>
+                <div id="descriptionFilterList" class="threat-type-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="applyDescriptionFilter">Done</button>
             </div>
         </div>
     </div>
@@ -1117,20 +1261,49 @@
         }
 
         // ==================== DESCRIPTION GENERATION ====================
+        function getDescriptionPool(categoryKey) {
+            const selectedThemes = dungeonState?.descriptionThemes || [];
+            const themeBuckets = gameData.descriptionThemes || {};
+            if (selectedThemes.length > 0 && Object.keys(themeBuckets).length > 0) {
+                const themedEntries = selectedThemes.flatMap(themeKey => {
+                    const themeData = themeBuckets[themeKey];
+                    if (!themeData || !Array.isArray(themeData[categoryKey])) {
+                        return [];
+                    }
+                    return themeData[categoryKey];
+                });
+                if (themedEntries.length > 0) {
+                    return themedEntries;
+                }
+            }
+            return gameData[categoryKey] || [];
+        }
+
         function generateDescription() {
-            const leadIn = pick(gameData.leadIns);
-            const roomType = pick(gameData.roomTypes);
-            const underfoot = pick(gameData.sensesUnderfoot);
-            
+            const leadIn = pick(getDescriptionPool('leadIns'));
+            const roomType = pick(getDescriptionPool('roomTypes'));
+            const underfoot = pick(getDescriptionPool('sensesUnderfoot'));
+
             // Pick one other sense type
-            const otherSenses = [gameData.sensesAir, gameData.sensesSound, gameData.sensesLight];
+            const otherSenses = [
+                getDescriptionPool('sensesAir'),
+                getDescriptionPool('sensesSound'),
+                getDescriptionPool('sensesLight')
+            ];
             const otherSense = pick(pick(otherSenses));
-            
-            const anchor = pick(gameData.anchorFeatures);
-            const interaction = pick(gameData.interactions);
-            
+
+            const anchor = pick(getDescriptionPool('anchorFeatures'));
+            const interaction = pick(getDescriptionPool('interactions'));
+
+            const selectedThemes = dungeonState?.descriptionThemes || [];
+            const themeFlair = selectedThemes.flatMap(themeKey => {
+                const theme = descriptionThemeConfig.find(entry => entry.key === themeKey);
+                return theme ? theme.phrases : [];
+            });
+            const flair = themeFlair.length > 0 ? ` ${pick(themeFlair)}` : '';
+
             return {
-                text: `${leadIn} ${article(roomType)} ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}.`
+                text: `${leadIn} ${article(roomType)} ${roomType}; ${underfoot}, ${otherSense}. ${anchor} stands ${interaction}.${flair}`
             };
         }
 
@@ -1215,11 +1388,20 @@
         function generateThreats(isBoss) {
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
             const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
+            const disallowedTypes = new Set(dungeonState.disallowedThreatTypes || []);
+            const allowedTypes = (gameData.typeWords || []).filter(type => !disallowedTypes.has(type));
+
+            if (allowedTypes.length === 0) {
+                const threats = [];
+                maybeAddEnvironmentalThreat(threats, profile);
+                return threats;
+            }
 
             if (isBoss) {
                 // Boss uses the first keyword
                 const keywordData = keywords[0];
-                const bossThreats = [generateBossThreat(profile, keywordData.name, keywordData.abilities)];
+                const bossThreat = generateBossThreat(profile, keywordData.name, keywordData.abilities, allowedTypes);
+                const bossThreats = bossThreat ? [bossThreat] : [];
                 maybeAddEnvironmentalThreat(bossThreats, profile);
                 return bossThreats;
             }
@@ -1239,7 +1421,7 @@
             for (let i = 0; i < numTypes; i++) {
                 if (totalThreatCount >= maxThreats) break;
 
-                const availableTypes = gameData.typeWords.filter(t => !usedTypes.includes(t));
+                const availableTypes = allowedTypes.filter(t => !usedTypes.includes(t));
                 if (availableTypes.length === 0) break;
 
                 const type = pick(availableTypes);
@@ -1297,8 +1479,11 @@
             return threats;
         }
 
-        function generateBossThreat(profile, keyword, keywordAbilities) {
-            const type = pick(gameData.typeWords);
+        function generateBossThreat(profile, keyword, keywordAbilities, allowedTypes) {
+            if (!allowedTypes || allowedTypes.length === 0) {
+                return null;
+            }
+            const type = pick(allowedTypes);
             const baseDamage = profile.damageRange.max;
             const damage = baseDamage + profile.bossDamageBonus;
             const threshold = profile.baseThresholdRange.max;
@@ -2050,6 +2235,18 @@
                         }
                     }
                 }
+
+                if (Array.isArray(dungeonState.disallowedThreatTypes)) {
+                    setDisallowedThreatTypes(dungeonState.disallowedThreatTypes);
+                } else {
+                    updateThreatFilterSummary(getDisallowedThreatTypes());
+                }
+
+                if (Array.isArray(dungeonState.descriptionThemes)) {
+                    setEnabledDescriptionFilters(dungeonState.descriptionThemes);
+                } else {
+                    setEnabledDescriptionFilters([]);
+                }
             }
         }
 
@@ -2068,6 +2265,155 @@
                 option.textContent = ability;
                 datalist.appendChild(option);
             });
+        }
+
+        function populateThreatTypeList(selectedTypes = []) {
+            const list = document.getElementById('threatTypeList');
+            if (!list) return;
+            list.innerHTML = '';
+            if (!gameData || !Array.isArray(gameData.typeWords)) {
+                return;
+            }
+            gameData.typeWords.forEach(type => {
+                const label = document.createElement('label');
+                label.className = 'threat-type-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = type;
+                checkbox.checked = selectedTypes.includes(type);
+                checkbox.addEventListener('change', () => {
+                    updateThreatFilterSummary(getDisallowedThreatTypes());
+                });
+
+                const text = document.createElement('span');
+                text.textContent = type;
+
+                label.appendChild(checkbox);
+                label.appendChild(text);
+                list.appendChild(label);
+            });
+        }
+
+        function getDisallowedThreatTypes() {
+            const checkboxes = Array.from(document.querySelectorAll('#threatTypeList input[type="checkbox"]'));
+            return checkboxes.filter(box => box.checked).map(box => box.value);
+        }
+
+        function setDisallowedThreatTypes(types) {
+            const selected = new Set(types || []);
+            const checkboxes = Array.from(document.querySelectorAll('#threatTypeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = selected.has(box.value);
+            });
+            updateThreatFilterSummary(types || []);
+        }
+
+        function updateThreatFilterSummary(types) {
+            const summary = document.getElementById('threatFilterSummary');
+            if (!summary || !gameData || !Array.isArray(gameData.typeWords)) return;
+            const count = types.length;
+            const total = gameData.typeWords.length;
+            summary.textContent = count === 0
+                ? 'No disallowed threat types.'
+                : `Disallowed ${count} of ${total} threat types.`;
+        }
+
+        const descriptionThemeConfig = [
+            {
+                key: 'cavern',
+                label: 'Cavern',
+                phrases: ['The stone breathes with deep echoes.', 'Moist rock walls glitter faintly.']
+            },
+            {
+                key: 'dungeon',
+                label: 'Dungeon',
+                phrases: ['Rusting iron fixtures line the walls.', 'Old mortar and soot stain the stonework.']
+            },
+            {
+                key: 'cold',
+                label: 'Cold',
+                phrases: ['Frost creeps along the floor.', 'A biting chill cuts through the air.']
+            },
+            {
+                key: 'hot',
+                label: 'Hot',
+                phrases: ['Heat shimmers across the chamber.', 'The air tastes of ash and embers.']
+            },
+            {
+                key: 'flooded',
+                label: 'Flooded',
+                phrases: ['Cold water laps at your boots.', 'A stale, briny smell rises from pooled water.']
+            },
+            {
+                key: 'ancient',
+                label: 'Ancient',
+                phrases: ['Timeworn carvings hint at forgotten empires.', 'Dust clings to every surface like a shroud.']
+            },
+            {
+                key: 'sewer',
+                label: 'Sewer',
+                phrases: ['The stench is overpowering and wet.', 'Slime coats the stone in sickly streaks.']
+            },
+            {
+                key: 'arcane',
+                label: 'Arcane',
+                phrases: ['A low hum of magic vibrates in the air.', 'Strange glyphs flicker at the edge of sight.']
+            },
+            {
+                key: 'horror',
+                label: 'Horror',
+                phrases: ['Shadows stretch a little too far.', 'The silence feels watchful and wrong.']
+            }
+        ];
+
+        function populateDescriptionFilterList(selectedKeys = []) {
+            const list = document.getElementById('descriptionFilterList');
+            if (!list) return;
+            list.innerHTML = '';
+            descriptionThemeConfig.forEach(({ key, label }) => {
+                const item = document.createElement('label');
+                item.className = 'threat-type-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = key;
+                checkbox.checked = selectedKeys.includes(key);
+                checkbox.addEventListener('change', () => {
+                    updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+                });
+
+                const text = document.createElement('span');
+                text.textContent = label;
+
+                item.appendChild(checkbox);
+                item.appendChild(text);
+                list.appendChild(item);
+            });
+        }
+
+        function getEnabledDescriptionFilters() {
+            const checkboxes = Array.from(document.querySelectorAll('#descriptionFilterList input[type="checkbox"]'));
+            return checkboxes.filter(box => box.checked).map(box => box.value);
+        }
+
+        function setEnabledDescriptionFilters(keys) {
+            const selected = new Set(keys || []);
+            const checkboxes = Array.from(document.querySelectorAll('#descriptionFilterList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = selected.has(box.value);
+            });
+            updateDescriptionFilterSummary(keys || []);
+        }
+
+        function updateDescriptionFilterSummary(keys) {
+            const summary = document.getElementById('descriptionFilterSummary');
+            if (!summary) return;
+            const count = keys.length;
+            const total = descriptionThemeConfig.length;
+            summary.textContent = count === 0
+                ? 'No vibe themes selected.'
+                : `Selected ${count} of ${total} vibe themes.`;
         }
 
         // ==================== EVENT HANDLERS ====================
@@ -2096,6 +2442,9 @@
                 document.getElementById('keywordAbility2_3').value.trim()
             ].filter(a => a);
 
+            const disallowedThreatTypes = getDisallowedThreatTypes();
+            const descriptionThemes = getEnabledDescriptionFilters();
+
             // Reset state
             usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
             dungeonState = {
@@ -2105,6 +2454,8 @@
                     { name: keyword1, abilities: keyword1Abilities },
                     ...(keyword2 ? [{ name: keyword2, abilities: keyword2Abilities }] : [])
                 ],
+                disallowedThreatTypes,
+                descriptionThemes,
                 rooms: [],
                 map: {},
                 currentRoomId: null,
@@ -2141,6 +2492,64 @@
             URL.revokeObjectURL(url);
         });
 
+        document.getElementById('threatFilterBtn').addEventListener('click', () => {
+            document.getElementById('threatFilterModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeThreatFilter').addEventListener('click', () => {
+            document.getElementById('threatFilterModal').classList.add('hidden');
+        });
+
+        document.getElementById('applyThreatFilter').addEventListener('click', () => {
+            document.getElementById('threatFilterModal').classList.add('hidden');
+            updateThreatFilterSummary(getDisallowedThreatTypes());
+        });
+
+        document.getElementById('selectAllThreats').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#threatTypeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = true;
+            });
+            updateThreatFilterSummary(getDisallowedThreatTypes());
+        });
+
+        document.getElementById('clearAllThreats').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#threatTypeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = false;
+            });
+            updateThreatFilterSummary([]);
+        });
+
+        document.getElementById('descriptionFilterBtn').addEventListener('click', () => {
+            document.getElementById('descriptionFilterModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeDescriptionFilter').addEventListener('click', () => {
+            document.getElementById('descriptionFilterModal').classList.add('hidden');
+        });
+
+        document.getElementById('applyDescriptionFilter').addEventListener('click', () => {
+            document.getElementById('descriptionFilterModal').classList.add('hidden');
+            updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+        });
+
+        document.getElementById('selectAllDescriptions').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#descriptionFilterList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = true;
+            });
+            updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+        });
+
+        document.getElementById('clearAllDescriptions').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#descriptionFilterList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = false;
+            });
+            updateDescriptionFilterSummary([]);
+        });
+
         document.getElementById('dataFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -2163,6 +2572,10 @@
                 document.getElementById('dataStatus').className = 'data-status loaded';
                 document.getElementById('errorDisplay').classList.add('hidden');
                 populateAbilityDatalist();
+                populateThreatTypeList(getDisallowedThreatTypes());
+                updateThreatFilterSummary(getDisallowedThreatTypes());
+                populateDescriptionFilterList(getEnabledDescriptionFilters());
+                updateDescriptionFilterSummary(getEnabledDescriptionFilters());
                 
             } catch (err) {
                 document.getElementById('errorDisplay').textContent = `Error loading file: ${err.message}`;
@@ -2187,6 +2600,10 @@
         (async () => {
             await loadBaseGameData();
             populateAbilityDatalist();
+            populateThreatTypeList();
+            updateThreatFilterSummary(getDisallowedThreatTypes());
+            populateDescriptionFilterList([]);
+            updateDescriptionFilterSummary([]);
             loadDungeonState();
         })();
     </script>
