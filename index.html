@@ -1843,6 +1843,17 @@
             return generateThreats(false, { minTypes: 1, allowEnvironmental: false, excludedTypes: ['Trap'] });
         }
 
+        function buildHiddenDangerListHtml(dangers) {
+            if (!dangers || dangers.length === 0) {
+                return '<div class="no-threats">No hidden dangers were revealed.</div>';
+            }
+            return `
+                <div class="threat-list">
+                    ${dangers.map(danger => danger.html).join('')}
+                </div>
+            `;
+        }
+
         function performRest() {
             const totalMinutes = getRestTotalMinutes();
 
@@ -1855,6 +1866,17 @@
             const wanderingThreats = result.interrupted && result.reason === 'wandering'
                 ? generateWanderingThreats()
                 : [];
+            const room = result.reason === 'hidden_danger' ? getCurrentRoom() : null;
+            const hiddenDangers = result.reason === 'hidden_danger' && room
+                ? getHiddenDangers(room, { onlyUnrevealed: true })
+                : [];
+            if (hiddenDangers.length > 0) {
+                hiddenDangers.forEach(danger => {
+                    danger.requirement.revealed = true;
+                });
+                saveDungeonState();
+                renderRoom(room);
+            }
 
             const resultDiv = document.getElementById('restResult');
             resultDiv.classList.remove('hidden');
@@ -1874,6 +1896,9 @@
                         </div>
                         ${result.reason === 'wandering'
                             ? `<div class="section-title" style="margin-top: 1rem;">Wandering Threats</div>${renderWanderingThreats(wanderingThreats)}`
+                            : ''}
+                        ${result.reason === 'hidden_danger'
+                            ? `<div class="section-title" style="margin-top: 1rem;">Hidden Dangers Revealed</div>${buildHiddenDangerListHtml(hiddenDangers)}`
                             : ''}
                     </div>
                 `;
@@ -3462,16 +3487,16 @@
                     
                     <div class="room-description">${room.description}</div>
                     
-                    <div class="exits">
-                        <div class="section-title">Exits & Doors</div>
-                        ${exitsHtml}
-                    </div>
-                    
                     <div class="threats">
                         <div class="section-title">Threats</div>
                         ${threatsHtml}
                     </div>
 
+                    <div class="exits">
+                        <div class="section-title">Exits & Doors</div>
+                        ${exitsHtml}
+                    </div>
+                    
                     <div class="hidden-section">
                         <div class="section-title">Hidden</div>
                         ${hiddenHtml}
