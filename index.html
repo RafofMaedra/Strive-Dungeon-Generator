@@ -1261,17 +1261,39 @@
         }
 
         // ==================== DESCRIPTION GENERATION ====================
+        function getDescriptionPool(categoryKey) {
+            const selectedThemes = dungeonState?.descriptionThemes || [];
+            const themeBuckets = gameData.descriptionThemes || {};
+            if (selectedThemes.length > 0 && Object.keys(themeBuckets).length > 0) {
+                const themedEntries = selectedThemes.flatMap(themeKey => {
+                    const themeData = themeBuckets[themeKey];
+                    if (!themeData || !Array.isArray(themeData[categoryKey])) {
+                        return [];
+                    }
+                    return themeData[categoryKey];
+                });
+                if (themedEntries.length > 0) {
+                    return themedEntries;
+                }
+            }
+            return gameData[categoryKey] || [];
+        }
+
         function generateDescription() {
-            const leadIn = pick(gameData.leadIns);
-            const roomType = pick(gameData.roomTypes);
-            const underfoot = pick(gameData.sensesUnderfoot);
+            const leadIn = pick(getDescriptionPool('leadIns'));
+            const roomType = pick(getDescriptionPool('roomTypes'));
+            const underfoot = pick(getDescriptionPool('sensesUnderfoot'));
 
             // Pick one other sense type
-            const otherSenses = [gameData.sensesAir, gameData.sensesSound, gameData.sensesLight];
+            const otherSenses = [
+                getDescriptionPool('sensesAir'),
+                getDescriptionPool('sensesSound'),
+                getDescriptionPool('sensesLight')
+            ];
             const otherSense = pick(pick(otherSenses));
 
-            const anchor = pick(gameData.anchorFeatures);
-            const interaction = pick(gameData.interactions);
+            const anchor = pick(getDescriptionPool('anchorFeatures'));
+            const interaction = pick(getDescriptionPool('interactions'));
 
             const selectedThemes = dungeonState?.descriptionThemes || [];
             const themeFlair = selectedThemes.flatMap(themeKey => {

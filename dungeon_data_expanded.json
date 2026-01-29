@@ -60,6 +60,314 @@
       "layouts": "Add new layout ID to appropriate category. Ensure matching PNG exists in layouts/ folder with matching filename."
     }
   },
+  "descriptionThemes": {
+    "cavern": {
+      "leadIns": [
+        "You enter",
+        "You step into"
+      ],
+      "roomTypes": [
+        "cave",
+        "tunnel"
+      ],
+      "sensesUnderfoot": [
+        "the ground is damp and uneven",
+        "slick stone bites at your boots"
+      ],
+      "sensesAir": [
+        "the air is cool and mineral-rich",
+        "a wet chill clings to every breath"
+      ],
+      "sensesSound": [
+        "water drips in distant echoes",
+        "pebbles skitter under unseen movement"
+      ],
+      "sensesLight": [
+        "your light fractures on glittering walls",
+        "darkness pools in jagged seams"
+      ],
+      "anchorFeatures": [
+        "Jagged stalagmites",
+        "A collapsed ledge"
+      ],
+      "interactions": [
+        "jutted with mineral crust",
+        "slick with condensation"
+      ]
+    },
+    "dungeon": {
+      "leadIns": [
+        "Before you lies",
+        "You discover"
+      ],
+      "roomTypes": [
+        "cell",
+        "guardroom"
+      ],
+      "sensesUnderfoot": [
+        "the floor is worn smooth by chains",
+        "dust gathers in cold stone grooves"
+      ],
+      "sensesAir": [
+        "stale air tastes of iron and soot",
+        "a dry draft carries old smoke"
+      ],
+      "sensesSound": [
+        "metal groans with every shift",
+        "somewhere a door rattles in its frame"
+      ],
+      "sensesLight": [
+        "torchlight throws harsh bars across the walls",
+        "the room sits in hard, unforgiving shadows"
+      ],
+      "anchorFeatures": [
+        "Rusting iron fixtures",
+        "A heavy portcullis"
+      ],
+      "interactions": [
+        "pitted with age",
+        "looming in oppressive silence"
+      ]
+    },
+    "cold": {
+      "leadIns": [
+        "A chill greets you as",
+        "You step into"
+      ],
+      "roomTypes": [
+        "vault",
+        "chamber"
+      ],
+      "sensesUnderfoot": [
+        "a thin rime cracks beneath each step",
+        "your boots scrape across frozen stone"
+      ],
+      "sensesAir": [
+        "frost fogs every breath",
+        "the air bites at exposed skin"
+      ],
+      "sensesSound": [
+        "ice creaks in slow, steady rhythms",
+        "silence rings with crystalline sharpness"
+      ],
+      "sensesLight": [
+        "pale light glints off frosted surfaces",
+        "a wan glow makes the cold feel deeper"
+      ],
+      "anchorFeatures": [
+        "An ice-crusted altar",
+        "A frozen pool"
+      ],
+      "interactions": [
+        "locked in a brittle sheen",
+        "rimmed with delicate frost"
+      ]
+    },
+    "hot": {
+      "leadIns": [
+        "Heat wafts as",
+        "You enter"
+      ],
+      "roomTypes": [
+        "forge",
+        "workshop"
+      ],
+      "sensesUnderfoot": [
+        "the stone radiates heat",
+        "embers crunch underfoot"
+      ],
+      "sensesAir": [
+        "the air shimmers with oppressive warmth",
+        "smoke and ash sting your throat"
+      ],
+      "sensesSound": [
+        "metal pops as it cools",
+        "a low rumble vibrates through the floor"
+      ],
+      "sensesLight": [
+        "a furnace glow washes everything in amber",
+        "heat haze distorts the edges of your light"
+      ],
+      "anchorFeatures": [
+        "A cracked furnace",
+        "A heap of blackened coals"
+      ],
+      "interactions": [
+        "bleeding residual heat",
+        "glowing faintly from within"
+      ]
+    },
+    "flooded": {
+      "leadIns": [
+        "Cold water laps as",
+        "You wade into"
+      ],
+      "roomTypes": [
+        "cistern",
+        "sluice"
+      ],
+      "sensesUnderfoot": [
+        "the floor disappears beneath murky water",
+        "slippery algae coats every step"
+      ],
+      "sensesAir": [
+        "a damp, briny smell hangs heavy",
+        "mold and moisture cling to the air"
+      ],
+      "sensesSound": [
+        "water ripples with every movement",
+        "a distant trickle keeps time"
+      ],
+      "sensesLight": [
+        "reflections dance across the ceiling",
+        "your light fractures on the water's surface"
+      ],
+      "anchorFeatures": [
+        "A half-submerged stair",
+        "A broken drain grate"
+      ],
+      "interactions": [
+        "vanishing beneath the waterline",
+        "slick with dripping moss"
+      ]
+    },
+    "ancient": {
+      "leadIns": [
+        "You step into",
+        "Ahead stretches"
+      ],
+      "roomTypes": [
+        "crypt",
+        "sanctum"
+      ],
+      "sensesUnderfoot": [
+        "dust rises in slow swirls",
+        "timeworn tiles shift underfoot"
+      ],
+      "sensesAir": [
+        "the air tastes of dry parchment and age",
+        "a faint scent of old incense lingers"
+      ],
+      "sensesSound": [
+        "your steps echo like distant bells",
+        "silence settles with ceremonial weight"
+      ],
+      "sensesLight": [
+        "dim light reveals faded murals",
+        "long shadows drape the relics"
+      ],
+      "anchorFeatures": [
+        "A cracked sarcophagus",
+        "An ancient reliquary"
+      ],
+      "interactions": [
+        "etched with forgotten prayers",
+        "crumbling under the weight of ages"
+      ]
+    },
+    "sewer": {
+      "leadIns": [
+        "You trudge into",
+        "A foul stench signals"
+      ],
+      "roomTypes": [
+        "sluice",
+        "tunnel"
+      ],
+      "sensesUnderfoot": [
+        "sludge pulls at your boots",
+        "grates rattle under slick grime"
+      ],
+      "sensesAir": [
+        "the air is thick with rot",
+        "noxious fumes burn your lungs"
+      ],
+      "sensesSound": [
+        "water gurgles through pipes",
+        "rats skitter in the dark"
+      ],
+      "sensesLight": [
+        "your light struggles against oily mist",
+        "murk swallows every glow"
+      ],
+      "anchorFeatures": [
+        "A clogged runoff channel",
+        "A slime-coated walkway"
+      ],
+      "interactions": [
+        "dripping with filth",
+        "streaked in sickly residue"
+      ]
+    },
+    "arcane": {
+      "leadIns": [
+        "You enter",
+        "A strange hum fills"
+      ],
+      "roomTypes": [
+        "laboratory",
+        "observatory"
+      ],
+      "sensesUnderfoot": [
+        "runes pulse faintly beneath your feet",
+        "the floor vibrates with latent power"
+      ],
+      "sensesAir": [
+        "ozone and incense mingle in the air",
+        "magic prickles along your skin"
+      ],
+      "sensesSound": [
+        "arcane energy crackles softly",
+        "glassware chimes with unseen force"
+      ],
+      "sensesLight": [
+        "glowing sigils paint the walls",
+        "your shadow warps as light bends"
+      ],
+      "anchorFeatures": [
+        "A suspended crystal array",
+        "A circle of inscribed glyphs"
+      ],
+      "interactions": [
+        "thrumming with eldritch rhythm",
+        "etched in shimmering ink"
+      ]
+    },
+    "horror": {
+      "leadIns": [
+        "You step into",
+        "A dread hush blankets"
+      ],
+      "roomTypes": [
+        "den",
+        "vault"
+      ],
+      "sensesUnderfoot": [
+        "the floor feels tacky and wrong",
+        "splinters crunch in a dark residue"
+      ],
+      "sensesAir": [
+        "the air is stale and breathless",
+        "a coppery tang lingers in your throat"
+      ],
+      "sensesSound": [
+        "something scrapes just out of sight",
+        "your heartbeat sounds too loud"
+      ],
+      "sensesLight": [
+        "shadows cling to every corner",
+        "your light seems to dim in fear"
+      ],
+      "anchorFeatures": [
+        "A tattered curtain",
+        "A cracked mirror"
+      ],
+      "interactions": [
+        "warped into unsettling shapes",
+        "half-hidden behind dripping shadows"
+      ]
+    }
+  },
   "roomTypes": [
     "chamber",
     "alcove",
