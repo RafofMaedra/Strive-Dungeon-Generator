@@ -1364,7 +1364,7 @@
                 <div class="control-group">
                     <label for="timePressure">Time Pressure</label>
                     <div class="range-input">
-                        <input type="range" id="timePressure" min="0.5" max="2" step="0.5" value="1">
+                        <input type="range" id="timePressure" min="0.5" max="2" step="0.25" value="1">
                         <span id="timePressureValue" class="range-value">x1</span>
                     </div>
                     <span class="helper-text">Higher values make wandering interruptions more likely during rests.</span>
@@ -1542,6 +1542,7 @@
                 <div id="restResult" class="hidden"></div>
             </div>
             <div class="modal-footer">
+                <button type="button" id="addWanderingThreatsBtn" disabled>Add to Room Threats</button>
                 <button type="button" id="restNowBtn" class="primary">Rest Now</button>
             </div>
         </div>
@@ -1577,7 +1578,11 @@
         }
 
         function formatTimePressure(value) {
-            return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+            if (Number.isInteger(value)) {
+                return value.toString();
+            }
+            const formatted = value.toFixed(2);
+            return formatted.replace(/\.?0+$/, '');
         }
 
         // ==================== DICE ROLLER ====================
@@ -1674,7 +1679,8 @@
         // ==================== REST SYSTEM ====================
         let restState = {
             hours: 0,
-            quarters: 0
+            quarters: 0,
+            lastWanderingThreats: []
         };
 
         function getTimePressureMultiplier() {
@@ -1866,6 +1872,7 @@
             const wanderingThreats = result.interrupted && result.reason === 'wandering'
                 ? generateWanderingThreats()
                 : [];
+            restState.lastWanderingThreats = result.reason === 'wandering' ? wanderingThreats : [];
             const room = result.reason === 'hidden_danger' ? getCurrentRoom() : null;
             const hiddenDangers = result.reason === 'hidden_danger' && room
                 ? getHiddenDangers(room, { onlyUnrevealed: true })
@@ -1880,6 +1887,7 @@
 
             const resultDiv = document.getElementById('restResult');
             resultDiv.classList.remove('hidden');
+            updateRestActionButtons();
 
             if (result.interrupted) {
                 const reasonText = result.reason === 'hidden_danger'
@@ -1916,12 +1924,13 @@
         }
 
         function openRestModal() {
-            restState = { hours: 0, quarters: 0 };
+            restState = { hours: 0, quarters: 0, lastWanderingThreats: [] };
             document.getElementById('restHours').value = 0;
             document.querySelectorAll('.rest-quarter-btn').forEach(btn => btn.classList.remove('selected'));
             document.querySelector('.rest-quarter-btn[data-quarters="0"]').classList.add('selected');
             document.getElementById('restResult').classList.add('hidden');
             document.getElementById('restResult').innerHTML = '';
+            updateRestActionButtons();
             updateRestTotal();
             document.getElementById('restModal').classList.remove('hidden');
         }
@@ -1934,6 +1943,7 @@
             document.getElementById('restBtn').addEventListener('click', openRestModal);
             document.getElementById('closeRestModal').addEventListener('click', closeRestModal);
             document.getElementById('restNowBtn').addEventListener('click', performRest);
+            document.getElementById('addWanderingThreatsBtn').addEventListener('click', addWanderingThreatsToRoom);
 
             document.getElementById('restHours').addEventListener('input', (e) => {
                 restState.hours = Math.max(0, Math.min(12, parseInt(e.target.value) || 0));
@@ -1956,6 +1966,25 @@
                     closeRestModal();
                 }
             });
+        }
+
+        function updateRestActionButtons() {
+            const addBtn = document.getElementById('addWanderingThreatsBtn');
+            if (!addBtn) return;
+            addBtn.disabled = !restState.lastWanderingThreats || restState.lastWanderingThreats.length === 0;
+        }
+
+        function addWanderingThreatsToRoom() {
+            if (!restState.lastWanderingThreats || restState.lastWanderingThreats.length === 0) {
+                return;
+            }
+            const room = getCurrentRoom();
+            if (!room) return;
+            room.threats = [...(room.threats || []), ...restState.lastWanderingThreats];
+            restState.lastWanderingThreats = [];
+            saveDungeonState();
+            renderRoom(room);
+            updateRestActionButtons();
         }
 
         function pick(arr) {
