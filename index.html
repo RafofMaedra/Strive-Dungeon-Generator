@@ -1537,7 +1537,7 @@
 
         function removeDie() {
             if (diceState.length > MIN_DICE) {
-                diceState.shift();
+                diceState.pop();
                 renderDice();
             }
         }
