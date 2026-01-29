@@ -690,6 +690,25 @@
             text-align: center;
         }
 
+        .range-input {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .range-input input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-gold);
+        }
+
+        .range-value {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+            min-width: 70px;
+            text-align: right;
+        }
+
         .rest-time-input span {
             color: var(--text-muted);
             font-size: 0.85rem;
@@ -1342,6 +1361,14 @@
                     <label for="dungeonLength">Dungeon Length (rooms)</label>
                     <input type="number" id="dungeonLength" min="6" max="30" value="10">
                 </div>
+                <div class="control-group">
+                    <label for="timePressure">Time Pressure</label>
+                    <div class="range-input">
+                        <input type="range" id="timePressure" min="1" max="3" step="1" value="1">
+                        <span id="timePressureValue" class="range-value">x1</span>
+                    </div>
+                    <span class="helper-text">Higher values make wandering interruptions more likely during rests.</span>
+                </div>
                 <div class="control-group full-width keyword-group">
                     <label>Threat Keyword 1</label>
                     <div class="keyword-row">
@@ -1644,6 +1671,11 @@
             quarters: 0
         };
 
+        function getTimePressureMultiplier() {
+            const value = Number(dungeonState?.timePressure ?? 1);
+            return Math.min(3, Math.max(1, value));
+        }
+
         function getRestTotalMinutes() {
             return restState.hours * 60 + restState.quarters * 15;
         }
@@ -1718,10 +1750,11 @@
             // First 15 min: 1/6, at 1 hour mark: 1/6, then 2/6 per hour after
             let currentTime = 0;
             const checkPoints = [];
+            const timePressure = getTimePressureMultiplier();
 
             // First 15 minutes check
             if (totalMinutes >= 15) {
-                checkPoints.push({ time: 15, chance: 1/6 });
+                checkPoints.push({ time: 15, chance: Math.min(1, (1/6) * timePressure) });
             }
 
             // Hour marks
@@ -1729,7 +1762,8 @@
                 const checkTime = hour * 60;
                 if (checkTime <= totalMinutes) {
                     // First hour: 1/6, subsequent hours: 2/6
-                    const chance = hour === 1 ? 1/6 : 2/6;
+                    const baseChance = hour === 1 ? 1/6 : 2/6;
+                    const chance = Math.min(1, baseChance * timePressure);
                     checkPoints.push({ time: checkTime, chance });
                 }
             }
@@ -1759,6 +1793,46 @@
             return { recoveryPoints, striveDice };
         }
 
+        function buildWanderingThreatBlockHtml(threat) {
+            const bossClass = threat.isBoss ? 'boss' : '';
+            const abilitiesHtml = threat.abilities.length > 0
+                ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
+                : '<div class="ability">• None</div>';
+            const resolutionHtml = threat.checkRequirement
+                ? `<div class="threat-stat"><span class="stat-label">Check:</span> ${threat.checkRequirement}</div>`
+                : `<div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>`;
+            const rangeValue = threat.range ?? 'Melee';
+            const title = `${threat.isBoss ? '👑 BOSS: ' : ''}${threat.keyword} ${threat.type} x${threat.quantity}`;
+
+            return `
+                <div class="threat-block ${bossClass}">
+                    <div class="threat-header">
+                        <span>${title}</span>
+                    </div>
+                    <div class="threat-stats">
+                        <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
+                        <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
+                        ${resolutionHtml}
+                        <div class="threat-stat"><span class="stat-label">Range:</span> ${rangeValue}</div>
+                    </div>
+                    <div class="threat-abilities">
+                        ${abilitiesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWanderingThreats(threats) {
+            if (!threats || threats.length === 0) {
+                return '<div class="no-threats">No wandering threats appeared.</div>';
+            }
+            return `
+                <div class="threat-list">
+                    ${threats.map(threat => buildWanderingThreatBlockHtml(threat)).join('')}
+                </div>
+            `;
+        }
+
         function performRest() {
             const totalMinutes = getRestTotalMinutes();
 
@@ -1768,6 +1842,9 @@
 
             const result = calculateRestInterruption(totalMinutes);
             const recovery = calculateRecovery(result.timeRested);
+            const wanderingThreats = result.interrupted && result.reason === 'wandering'
+                ? generateThreats(false)
+                : [];
 
             const resultDiv = document.getElementById('restResult');
             resultDiv.classList.remove('hidden');
@@ -1785,6 +1862,9 @@
                         <div class="rest-recovery">
                             <strong>${recovery.recoveryPoints} Recovery Points</strong> and <strong>${recovery.striveDice} Strive Dice</strong>
                         </div>
+                        ${result.reason === 'wandering'
+                            ? `<div class="section-title" style="margin-top: 1rem;">Wandering Threats</div>${renderWanderingThreats(wanderingThreats)}`
+                            : ''}
                     </div>
                 `;
             } else {
@@ -2416,6 +2496,7 @@
             const baseDamage = profile.damageRange.max;
             const damage = baseDamage + profile.bossDamageBonus;
             const threshold = profile.baseThresholdRange.max;
+            const hasHeedless = Math.random() < 0.5;
 
             const abilities = [];
             if (gameData.wordToAbility[type]) {
@@ -2426,7 +2507,9 @@
                 const abilityName = pick(keywordAbilities);
                 abilities.push(getAbilityDescription(abilityName));
             }
-            abilities.push("Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.");
+            if (hasHeedless) {
+                abilities.push("Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.");
+            }
 
             // Boss range - typically melee (all) or ranged (2)
             const bossRange = Math.random() < 0.5 ? "Melee (All)" : "Ranged (2)";
@@ -3579,6 +3662,9 @@
             if (saved) {
                 dungeonState = JSON.parse(saved);
                 usedLayouts = savedLayouts ? JSON.parse(savedLayouts) : { Rooms: [], Halls: [], "Dead Ends": [] };
+                if (!dungeonState.timePressure) {
+                    dungeonState.timePressure = 1;
+                }
 
                 if (!dungeonState.map || dungeonState.rooms.some(room => !room.position)) {
                     localStorage.removeItem('striveDungeon');
@@ -3604,6 +3690,9 @@
                 // Restore UI values
                 document.getElementById('difficulty').value = dungeonState.difficulty;
                 document.getElementById('dungeonLength').value = dungeonState.totalRooms;
+                const timePressure = Math.min(3, Math.max(1, Number(dungeonState.timePressure ?? 1)));
+                document.getElementById('timePressure').value = timePressure;
+                document.getElementById('timePressureValue').textContent = `x${timePressure}`;
 
                 // Restore keywords and abilities
                 if (dungeonState.keywords && dungeonState.keywords.length > 0) {
@@ -3838,6 +3927,16 @@
         initDiceRoller();
         initRestSystem();
 
+        document.getElementById('timePressure').addEventListener('input', (e) => {
+            const value = Math.min(3, Math.max(1, parseInt(e.target.value, 10) || 1));
+            e.target.value = value;
+            document.getElementById('timePressureValue').textContent = `x${value}`;
+            if (dungeonState) {
+                dungeonState.timePressure = value;
+                saveDungeonState();
+            }
+        });
+
         document.getElementById('startBtn').addEventListener('click', () => {
             if (!gameData) {
                 document.getElementById('errorDisplay').textContent = 'Dungeon data is not loaded yet.';
@@ -3846,6 +3945,7 @@
             }
             const difficulty = document.getElementById('difficulty').value;
             const totalRooms = parseInt(document.getElementById('dungeonLength').value) || 10;
+            const timePressure = Math.min(3, Math.max(1, parseInt(document.getElementById('timePressure').value, 10) || 1));
 
             // Get keyword 1 and its abilities
             const keyword1 = document.getElementById('threatKeyword1').value.trim() || "Enemy";
@@ -3871,6 +3971,7 @@
             dungeonState = {
                 difficulty,
                 totalRooms: Math.max(6, Math.min(30, totalRooms)),
+                timePressure,
                 keywords: [
                     { name: keyword1, abilities: keyword1Abilities },
                     ...(keyword2 ? [{ name: keyword2, abilities: keyword2Abilities }] : [])
