@@ -1759,25 +1759,15 @@
             }
 
             // Calculate wandering monster chance
-            // First 15 min: 1/6, at 1 hour mark: 1/6, then 2/6 per hour after
-            let currentTime = 0;
+            // 5% every 15 minutes, escalating to 10% after a random 1.25-4 hour threshold
             const checkPoints = [];
             const timePressure = getTimePressureMultiplier();
+            const escalationMinutes = randInt(75, 240);
 
-            // First 15 minutes check
-            if (totalMinutes >= 15) {
-                checkPoints.push({ time: 15, chance: Math.min(1, (1/6) * timePressure) });
-            }
-
-            // Hour marks
-            for (let hour = 1; hour <= Math.ceil(totalMinutes / 60); hour++) {
-                const checkTime = hour * 60;
-                if (checkTime <= totalMinutes) {
-                    // First hour: 1/6, subsequent hours: 2/6
-                    const baseChance = hour === 1 ? 1/6 : 2/6;
-                    const chance = Math.min(1, baseChance * timePressure);
-                    checkPoints.push({ time: checkTime, chance });
-                }
+            for (let time = 15; time <= totalMinutes; time += 15) {
+                const baseChance = time >= escalationMinutes ? 0.1 : 0.05;
+                const chance = Math.min(1, baseChance * timePressure);
+                checkPoints.push({ time, chance });
             }
 
             // Roll for each checkpoint
@@ -1803,6 +1793,19 @@
             const recoveryPoints = Math.floor(minutes / 15);
             const striveDice = Math.floor(minutes / 30);
             return { recoveryPoints, striveDice };
+        }
+
+        function formatRestDuration(totalMinutes) {
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (hours > 0 && minutes > 0) {
+                return `${hours} hour${hours > 1 ? 's' : ''} ${minutes} minutes`;
+            }
+            if (hours > 0) {
+                return `${hours} hour${hours > 1 ? 's' : ''}`;
+            }
+            return `${minutes} minutes`;
         }
 
         function buildWanderingThreatBlockHtml(threat) {
@@ -1888,6 +1891,7 @@
             const resultDiv = document.getElementById('restResult');
             resultDiv.classList.remove('hidden');
             updateRestActionButtons();
+            const restedTimeText = formatRestDuration(result.timeRested);
 
             if (result.interrupted) {
                 const reasonText = result.reason === 'hidden_danger'
@@ -1895,10 +1899,10 @@
                     : 'Your rest was interrupted by wandering threats!';
 
                 resultDiv.innerHTML = `
-                    <div class="rest-result interrupted">
-                        <div class="rest-result-title">Rest Interrupted!</div>
-                        <div class="rest-result-detail">${reasonText}</div>
-                        <div class="rest-result-detail">You rested for ${result.timeRested} minutes before the interruption.</div>
+                        <div class="rest-result interrupted">
+                            <div class="rest-result-title">Rest Interrupted!</div>
+                            <div class="rest-result-detail">${reasonText}</div>
+                        <div class="rest-result-detail">You rested for ${restedTimeText} before the interruption.</div>
                         <div class="rest-recovery">
                             <strong>${recovery.recoveryPoints} Recovery Points</strong> and <strong>${recovery.striveDice} Strive Dice</strong>
                         </div>
@@ -1914,7 +1918,7 @@
                 resultDiv.innerHTML = `
                     <div class="rest-result success">
                         <div class="rest-result-title">Rest Complete</div>
-                        <div class="rest-result-detail">You rested undisturbed for ${result.timeRested} minutes.</div>
+                        <div class="rest-result-detail">You rested undisturbed for ${restedTimeText}.</div>
                         <div class="rest-recovery">
                             <strong>${recovery.recoveryPoints} Recovery Points</strong> and <strong>${recovery.striveDice} Strive Dice</strong>
                         </div>
