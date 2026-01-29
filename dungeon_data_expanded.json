@@ -1412,7 +1412,7 @@
   },
   "lootRevealThresholdRange": {
     "min": 3,
-    "max": 5
+    "max": 4
   },
   "lootRevealTiers": {
     "coins": {
