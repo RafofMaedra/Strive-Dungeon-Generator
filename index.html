@@ -451,28 +451,28 @@
             margin-bottom: 1rem;
         }
 
-        .loot {
+        .hidden-section {
             margin-bottom: 1rem;
         }
 
-        .loot-list {
+        .hidden-list {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
         }
 
-        .loot-tier {
+        .hidden-tier {
             position: relative;
             flex: 1 1 240px;
             min-width: 220px;
         }
 
-        .loot-tier.revealed .loot-cover {
+        .hidden-tier.revealed .hidden-cover {
             opacity: 0;
             pointer-events: none;
         }
 
-        .loot-cover {
+        .hidden-cover {
             position: absolute;
             inset: 0;
             z-index: 2;
@@ -486,7 +486,7 @@
             transition: opacity 0.3s ease;
         }
 
-        .loot-discover {
+        .hidden-discover {
             width: 100%;
             height: 100%;
             border: 1px solid rgba(201, 162, 39, 0.4);
@@ -499,7 +499,7 @@
             font-size: 0.75rem;
         }
 
-        .loot-discover-title {
+        .hidden-discover-title {
             font-family: var(--font-display);
             font-size: 0.78rem;
             letter-spacing: 0.12em;
@@ -507,7 +507,7 @@
             color: var(--accent-gold);
         }
 
-        .loot-discover-detail {
+        .hidden-discover-detail {
             font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: none;
@@ -515,7 +515,7 @@
             text-align: center;
         }
 
-        .loot-block {
+        .hidden-block {
             background: rgba(201, 162, 39, 0.08);
             border: 1px solid rgba(201, 162, 39, 0.3);
             border-radius: 4px;
@@ -526,7 +526,7 @@
             flex-wrap: wrap;
         }
 
-        .loot-block h4 {
+        .hidden-block h4 {
             font-family: var(--font-display);
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -535,7 +535,7 @@
             margin: 0;
         }
 
-        .loot-items {
+        .hidden-items {
             display: flex;
             flex-wrap: wrap;
             gap: 0.25rem 0.5rem;
@@ -543,13 +543,13 @@
             color: var(--text-primary);
         }
 
-        .loot-item {
+        .hidden-item {
             display: inline-flex;
             gap: 0.35rem;
             align-items: baseline;
         }
 
-        .loot-tag {
+        .hidden-tag {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -559,9 +559,55 @@
             color: var(--text-muted);
         }
 
-        .loot-tag.common { color: #e5d7a3; }
-        .loot-tag.rare { color: #9fd1ff; }
-        .loot-tag.legendary { color: #f4b4ff; }
+        .hidden-tag.common { color: #e5d7a3; }
+        .hidden-tag.rare { color: #9fd1ff; }
+        .hidden-tag.legendary { color: #f4b4ff; }
+
+        .hidden-danger-block {
+            background: rgba(139, 38, 53, 0.08);
+            border: 1px solid rgba(139, 38, 53, 0.4);
+            border-radius: 4px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .hidden-danger-title {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-red);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .hidden-danger-detail {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .hidden-danger-block.resolved .hidden-danger-detail {
+            display: none;
+        }
+
+        .resolve-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .resolve-toggle input {
+            accent-color: var(--accent-gold);
+        }
 
         .threat-list {
             display: flex;
@@ -587,6 +633,11 @@
             font-size: 1.1rem;
             color: var(--text-primary);
             margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .threat-stats {
@@ -609,6 +660,29 @@
         .threat-abilities {
             padding-top: 0.5rem;
             border-top: 1px solid rgba(139, 38, 53, 0.3);
+        }
+
+        .threat-block.resolved {
+            padding: 0.75rem;
+        }
+
+        .threat-block.resolved .threat-stats,
+        .threat-block.resolved .threat-abilities {
+            display: none;
+        }
+
+        .threat-block.resolved .threat-header {
+            margin-bottom: 0;
+        }
+
+        .danger-reveal-box {
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 4px;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .ability {
@@ -910,6 +984,22 @@
         </div>
     </div>
 
+    <div id="dangerRevealModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="dangerRevealTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="dangerRevealTitle">Hidden Danger Revealed</div>
+                <button type="button" id="closeDangerReveal">Close</button>
+            </div>
+            <div class="modal-body">
+                <p class="helper-text" id="dangerRevealIntro">Hidden dangers emerge as you attempt to move on.</p>
+                <div id="dangerRevealList" class="danger-reveal-box"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="dismissDangerReveal">Understood</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==================== DATA LOADING ====================
         const DEFAULT_DATA_PATH = 'dungeon_data_expanded.json';
@@ -926,6 +1016,12 @@
             E: { x: 1, y: 0 },
             S: { x: 0, y: 1 },
             W: { x: -1, y: 0 }
+        };
+        const directionLabels = {
+            N: 'North',
+            E: 'East',
+            S: 'South',
+            W: 'West'
         };
 
         // ==================== UTILITIES ====================
@@ -1650,27 +1746,167 @@
                 };
                 created = true;
             }
+            if (room.lootReveal[tierKey].concealment === undefined) {
+                room.lootReveal[tierKey].concealment = room.lootReveal[tierKey].threshold + randInt(0, 2);
+                created = true;
+            }
             if (created) {
                 saveDungeonState();
             }
             return room.lootReveal[tierKey];
         }
 
-        function buildLootTierHtml(room, tierKey, contentHtml) {
-            const requirement = getLootRevealRequirement(room, tierKey);
+        function getHiddenRevealMap(room) {
+            if (!room.hiddenReveal) {
+                room.hiddenReveal = {};
+            }
+            return room.hiddenReveal;
+        }
+
+        function getHiddenRequirement(room, hiddenId, { threshold, successes }) {
+            const hiddenReveal = getHiddenRevealMap(room);
+            let created = false;
+            if (!hiddenReveal[hiddenId]) {
+                hiddenReveal[hiddenId] = {
+                    threshold,
+                    successes,
+                    revealed: false,
+                    resolved: false,
+                    concealment: threshold + randInt(0, 2)
+                };
+                created = true;
+            }
+            if (hiddenReveal[hiddenId].concealment === undefined) {
+                hiddenReveal[hiddenId].concealment = hiddenReveal[hiddenId].threshold + randInt(0, 2);
+                created = true;
+            }
+            if (created) {
+                saveDungeonState();
+            }
+            return hiddenReveal[hiddenId];
+        }
+
+        function buildHiddenTierHtml({ id, requirement, contentHtml, isLoot }) {
             if (!requirement) return contentHtml;
             const revealedClass = requirement.revealed ? 'revealed' : '';
+            const dataAttr = isLoot
+                ? `data-tier="${id}" data-hidden-type="loot"`
+                : `data-hidden-id="${id}" data-hidden-type="danger"`;
             return `
-                <div class="loot-tier ${revealedClass}" data-tier="${tierKey}">
-                    <div class="loot-cover">
-                        <button class="loot-discover" data-tier="${tierKey}">
-                            <span class="loot-discover-title">Find this loot:</span>
-                            <span class="loot-discover-detail">${requirement.successes} Successes at Threshold +${requirement.threshold}</span>
+                <div class="hidden-tier ${revealedClass}">
+                    <div class="hidden-cover">
+                        <button class="hidden-discover" ${dataAttr}>
+                            <span class="hidden-discover-title">Search to reveal:</span>
+                            <span class="hidden-discover-detail">${requirement.successes} Successes at Threshold +${requirement.threshold}</span>
                         </button>
                     </div>
                     ${contentHtml}
                 </div>
             `;
+        }
+
+        function isAmbusherThreat(threat) {
+            return (threat.abilities || []).some(ability => ability.toLowerCase().startsWith('ambusher'));
+        }
+
+        function isHiddenThreat(threat) {
+            if (isAmbusherThreat(threat)) return true;
+            if (threat.isHazard) {
+                return (threat.threshold ?? 0) >= 3;
+            }
+            return false;
+        }
+
+        function buildThreatBlockHtml(threat, index) {
+            const bossClass = threat.isBoss ? 'boss' : '';
+            const resolvedClass = threat.resolved ? 'resolved' : '';
+            const abilitiesHtml = threat.abilities.length > 0
+                ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
+                : '<div class="ability">—</div>';
+
+            const resolutionHtml = threat.checkRequirement
+                ? `<div class="threat-stat"><span class="stat-label">Check:</span> ${threat.checkRequirement}</div>`
+                : `<div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>`;
+            const rangeValue = threat.range ?? 'Melee';
+            const title = `${threat.isBoss ? '👑 BOSS: ' : ''}${threat.keyword} ${threat.type} x${threat.quantity}`;
+
+            return `
+                <div class="threat-block ${bossClass} ${resolvedClass}">
+                    <div class="threat-header">
+                        <span>${title}</span>
+                        <label class="resolve-toggle">
+                            <input type="checkbox" class="threat-resolve-toggle" data-threat-index="${index}" ${threat.resolved ? 'checked' : ''}>
+                            Resolved
+                        </label>
+                    </div>
+                    <div class="threat-stats">
+                        <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
+                        <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
+                        ${resolutionHtml}
+                        <div class="threat-stat"><span class="stat-label">Range:</span> ${rangeValue}</div>
+                    </div>
+                    <div class="threat-abilities">
+                        <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>
+                        ${abilitiesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function buildDoorTrapHtml({ id, direction, door, requirement }) {
+            const trapDamageHtml = door.trapDamage
+                ? `<div class="hidden-danger-detail">Trap Damage: ${door.trapDamage}d6</div>`
+                : '';
+            const bypassHtml = door.bypass
+                ? `<div class="hidden-danger-detail">Bypass: <span class="potency-${door.bypass.potency.toLowerCase()}">${door.bypass.potency}</span> check to ${door.bypass.verb}, Threshold +${door.bypass.threshold}</div>`
+                : '';
+            const resolvedClass = requirement.resolved ? 'resolved' : '';
+
+            return `
+                <div class="hidden-danger-block ${resolvedClass}">
+                    <div class="hidden-danger-title">
+                        <span>${direction} Door Trap</span>
+                        <label class="resolve-toggle">
+                            <input type="checkbox" class="hidden-resolve-toggle" data-hidden-id="${id}" ${requirement.resolved ? 'checked' : ''}>
+                            Resolved
+                        </label>
+                    </div>
+                    ${bypassHtml}
+                    ${trapDamageHtml}
+                </div>
+            `;
+        }
+
+        function attachResolutionHandlers(room, scope) {
+            if (!scope) return;
+            scope.querySelectorAll('.threat-resolve-toggle').forEach(toggle => {
+                toggle.addEventListener('change', () => {
+                    const index = Number(toggle.dataset.threatIndex);
+                    const threat = room.threats?.[index];
+                    if (!threat) return;
+                    threat.resolved = toggle.checked;
+                    saveDungeonState();
+                    const block = toggle.closest('.threat-block');
+                    if (block) {
+                        block.classList.toggle('resolved', toggle.checked);
+                    }
+                });
+            });
+
+            scope.querySelectorAll('.hidden-resolve-toggle').forEach(toggle => {
+                toggle.addEventListener('change', () => {
+                    const hiddenId = toggle.dataset.hiddenId;
+                    if (!hiddenId) return;
+                    const hiddenReveal = getHiddenRevealMap(room);
+                    if (!hiddenReveal[hiddenId]) return;
+                    hiddenReveal[hiddenId].resolved = toggle.checked;
+                    saveDungeonState();
+                    const block = toggle.closest('.hidden-danger-block');
+                    if (block) {
+                        block.classList.toggle('resolved', toggle.checked);
+                    }
+                });
+            });
         }
 
         // ==================== ROOM GENERATION ====================
@@ -1837,20 +2073,17 @@
                 exitsHtml = '<div class="no-threats">No exits — Dead End. Retrace your steps.</div>';
             } else {
                 exitsHtml = '<div class="exit-list">';
-                const dirNames = { N: 'North', E: 'East', S: 'South', W: 'West' };
                 displayExits.forEach(exit => {
                     const baseDoor = room.doors[exit] || { status: 'Open' };
                     const door = baseDoor;
-                    const statusClass = door.status === 'Open' ? 'open' : 'blocked';
+                    const isTrapped = door.status === 'Trapped';
+                    const displayStatus = isTrapped ? 'Open' : door.status;
+                    const statusClass = displayStatus === 'Open' ? 'open' : 'blocked';
                     let bypassHtml = '';
-                    if (door.bypass) {
-                        const trapDamageHtml = door.trapDamage
-                            ? `<div class="trap-damage">Trap Damage: ${door.trapDamage}d6</div>`
-                            : '';
+                    if (door.bypass && !isTrapped) {
                         bypassHtml = `<div class="bypass-info">
                             Bypass: <span class="potency-${door.bypass.potency.toLowerCase()}">${door.bypass.potency}</span>
                             check to ${door.bypass.verb}, Threshold +${door.bypass.threshold}
-                            ${trapDamageHtml}
                         </div>`;
                     }
                     const vec = directionVectors[exit];
@@ -1861,13 +2094,14 @@
                         ? roomHasExit(room, exit) && roomHasExit(targetRoom, oppositeDir)
                         : true;
                     const canCreate = (!!targetRoom && canLink) || (!targetRoom && dungeonState.rooms.length < dungeonState.totalRooms);
-                    const buttonLabel = targetRoom ? 'Return' : 'Go this way';
+                    const isReturn = Boolean(targetRoom);
+                    const buttonLabel = isReturn ? 'Return' : 'Go this way';
                     exitsHtml += `
                         <div class="exit-item">
-                            <span class="exit-direction">${dirNames[exit]}</span>
-                            <span class="exit-status ${statusClass}">${door.status}</span>
+                            <span class="exit-direction">${directionLabels[exit]}</span>
+                            <span class="exit-status ${statusClass}">${displayStatus}</span>
                             <div class="exit-actions">
-                                <button class="exit-action" data-dir="${exit}" ${canCreate ? '' : 'disabled'}>${buttonLabel}</button>
+                                <button class="exit-action" data-dir="${exit}" data-return="${isReturn}" ${canCreate ? '' : 'disabled'}>${buttonLabel}</button>
                             </div>
                             ${bypassHtml}
                         </div>
@@ -1877,47 +2111,21 @@
             }
             
             let threatsHtml = '';
-            if (room.threats.length === 0) {
+            const hasVisibleThreats = room.threats.some(threat => !isHiddenThreat(threat));
+            if (!hasVisibleThreats) {
                 threatsHtml = '<div class="no-threats">The room appears empty of immediate threats.</div>';
             } else {
                 threatsHtml = '<div class="threat-list">';
-                room.threats.forEach(threat => {
-                    const bossClass = threat.isBoss ? 'boss' : '';
-                    const abilitiesHtml = threat.abilities.length > 0
-                        ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
-                        : '<div class="ability">—</div>';
-
-                    const resolutionHtml = threat.checkRequirement
-                        ? `<div class="threat-stat"><span class="stat-label">Check:</span> ${threat.checkRequirement}</div>`
-                        : `<div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>`;
-                    const rangeValue = threat.range ?? 'Melee';
-
-                    threatsHtml += `
-                        <div class="threat-block ${bossClass}">
-                            <div class="threat-header">
-                                ${threat.isBoss ? '👑 BOSS: ' : ''}${threat.keyword} ${threat.type} x${threat.quantity}
-                            </div>
-                            <div class="threat-stats">
-                                <div class="threat-stat"><span class="stat-label">Damage:</span> ${threat.damage}d6</div>
-                                <div class="threat-stat"><span class="stat-label">Threshold:</span> +${threat.threshold}</div>
-                                ${resolutionHtml}
-                                <div class="threat-stat"><span class="stat-label">Range:</span> ${rangeValue}</div>
-                            </div>
-                            <div class="threat-abilities">
-                                <div class="ability" style="color: var(--text-muted); margin-bottom: 0.25rem;">Abilities:</div>
-                                ${abilitiesHtml}
-                            </div>
-                        </div>
-                    `;
+                room.threats.forEach((threat, index) => {
+                    if (isHiddenThreat(threat)) return;
+                    threatsHtml += buildThreatBlockHtml(threat, index);
                 });
                 threatsHtml += '</div>';
             }
 
+            const hiddenEntries = [];
             const loot = room.loot;
-            let lootHtml = '';
-            if (!loot || (!loot.coins && (!loot.items || loot.items.length === 0))) {
-                lootHtml = '<div class="no-threats">No notable loot stands out at the moment.</div>';
-            } else {
+            if (loot && (loot.coins || (loot.items && loot.items.length > 0))) {
                 const magicItems = (loot.items || []).filter(item => item.category === 'Magic');
                 const mundaneItems = (loot.items || []).filter(item => item.category === 'Mundane');
                 const curios = (loot.items || []).filter(item => ['Trinket', 'Gemstone'].includes(item.category));
@@ -1925,14 +2133,19 @@
                 const lootTiers = [];
                 if (loot.coins) {
                     const coinsHtml = `
-                        <div class="loot-block">
+                        <div class="hidden-block">
                             <h4>Coins</h4>
-                            <div class="loot-items">
-                                <div class="loot-item">${formatCoins(loot.coins)}</div>
+                            <div class="hidden-items">
+                                <div class="hidden-item">${formatCoins(loot.coins)}</div>
                             </div>
                         </div>
                     `;
-                    lootTiers.push({ key: 'coins', html: buildLootTierHtml(room, 'coins', coinsHtml) });
+                    const requirement = getLootRevealRequirement(room, 'coins');
+                    lootTiers.push({
+                        key: 'coins',
+                        concealment: requirement?.concealment ?? 0,
+                        html: buildHiddenTierHtml({ id: 'coins', requirement, contentHtml: coinsHtml, isLoot: true })
+                    });
                 }
                 if (magicItems.length > 0) {
                     const magicByRarity = {
@@ -1948,51 +2161,95 @@
                                 ? 'magicRare'
                                 : 'magicLegendary';
                         const magicHtml = `
-                            <div class="loot-block">
+                            <div class="hidden-block">
                                 <h4>${rarity} Magic</h4>
-                                <div class="loot-items">
+                                <div class="hidden-items">
                                     ${items.map(item => `
-                                        <div class="loot-item">
-                                            <span class="loot-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
+                                        <div class="hidden-item">
+                                            <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
                                             <span>${item.name}</span>
                                         </div>
                                     `).join('')}
                                 </div>
                             </div>
                         `;
-                        lootTiers.push({ key: tierKey, html: buildLootTierHtml(room, tierKey, magicHtml) });
+                        const requirement = getLootRevealRequirement(room, tierKey);
+                        lootTiers.push({
+                            key: tierKey,
+                            concealment: requirement?.concealment ?? 0,
+                            html: buildHiddenTierHtml({ id: tierKey, requirement, contentHtml: magicHtml, isLoot: true })
+                        });
                     });
                 }
                 if (mundaneItems.length > 0) {
                     const mundaneHtml = `
-                        <div class="loot-block">
+                        <div class="hidden-block">
                             <h4>Supplies & Gear</h4>
-                            <div class="loot-items">
-                                ${mundaneItems.map(item => `<div class="loot-item">${item.name}</div>`).join('')}
+                            <div class="hidden-items">
+                                ${mundaneItems.map(item => `<div class="hidden-item">${item.name}</div>`).join('')}
                             </div>
                         </div>
                     `;
-                    lootTiers.push({ key: 'mundane', html: buildLootTierHtml(room, 'mundane', mundaneHtml) });
+                    const requirement = getLootRevealRequirement(room, 'mundane');
+                    lootTiers.push({
+                        key: 'mundane',
+                        concealment: requirement?.concealment ?? 0,
+                        html: buildHiddenTierHtml({ id: 'mundane', requirement, contentHtml: mundaneHtml, isLoot: true })
+                    });
                 }
                 if (curios.length > 0) {
                     const curiosHtml = `
-                        <div class="loot-block">
+                        <div class="hidden-block">
                             <h4>Trinkets & Gems</h4>
-                            <div class="loot-items">
-                                ${curios.map(item => `<div class="loot-item">${item.name}</div>`).join('')}
+                            <div class="hidden-items">
+                                ${curios.map(item => `<div class="hidden-item">${item.name}</div>`).join('')}
                             </div>
                         </div>
                     `;
-                    lootTiers.push({ key: 'curios', html: buildLootTierHtml(room, 'curios', curiosHtml) });
+                    const requirement = getLootRevealRequirement(room, 'curios');
+                    lootTiers.push({
+                        key: 'curios',
+                        concealment: requirement?.concealment ?? 0,
+                        html: buildHiddenTierHtml({ id: 'curios', requirement, contentHtml: curiosHtml, isLoot: true })
+                    });
                 }
-                lootTiers.sort((a, b) => {
-                    const lootRevealTiers = getLootRevealTiers();
-                    const orderA = lootRevealTiers[a.key]?.order ?? 99;
-                    const orderB = lootRevealTiers[b.key]?.order ?? 99;
-                    return orderA - orderB;
-                });
-                lootHtml = `<div class="loot-list">${lootTiers.map(tier => tier.html).join('')}</div>`;
+                lootTiers.forEach(tier => hiddenEntries.push(tier));
             }
+
+            room.threats.forEach((threat, index) => {
+                if (!isHiddenThreat(threat)) return;
+                const hiddenId = `threat-${index}`;
+                const requirement = getHiddenRequirement(room, hiddenId, { threshold: threat.threshold, successes: 1 });
+                const threatHtml = buildThreatBlockHtml(threat, index);
+                hiddenEntries.push({
+                    key: hiddenId,
+                    concealment: requirement.concealment ?? 0,
+                    html: buildHiddenTierHtml({ id: hiddenId, requirement, contentHtml: threatHtml, isLoot: false })
+                });
+            });
+
+            Object.entries(room.doors || {}).forEach(([direction, door]) => {
+                if (door.status !== 'Trapped') return;
+                const hiddenId = `door-trap-${direction}`;
+                const threshold = door.bypass?.threshold ?? getLootRevealThreshold(room);
+                const requirement = getHiddenRequirement(room, hiddenId, { threshold, successes: 1 });
+                const trapHtml = buildDoorTrapHtml({
+                    id: hiddenId,
+                    direction: directionLabels[direction] || direction,
+                    door,
+                    requirement
+                });
+                hiddenEntries.push({
+                    key: hiddenId,
+                    concealment: requirement.concealment ?? 0,
+                    html: buildHiddenTierHtml({ id: hiddenId, requirement, contentHtml: trapHtml, isLoot: false })
+                });
+            });
+
+            hiddenEntries.sort((a, b) => b.concealment - a.concealment);
+            const hiddenHtml = hiddenEntries.length === 0
+                ? '<div class="no-threats">No hidden loot, traps, or ambushers are immediately apparent.</div>'
+                : `<div class="hidden-list">${hiddenEntries.map(entry => entry.html).join('')}</div>`;
             
             document.getElementById('roomContent').innerHTML = `
                 <div class="room-header">
@@ -2035,9 +2292,9 @@
                         ${threatsHtml}
                     </div>
 
-                    <div class="loot">
-                        <div class="section-title">Loot</div>
-                        ${lootHtml}
+                    <div class="hidden-section">
+                        <div class="section-title">Hidden</div>
+                        ${hiddenHtml}
                     </div>
                 </div>
             `;
@@ -2045,24 +2302,37 @@
             document.querySelectorAll('.exit-action').forEach(button => {
                 button.addEventListener('click', () => {
                     const direction = button.dataset.dir;
-                    handleExitMove(direction);
+                    const isReturn = button.dataset.return === 'true';
+                    handleExitMove(direction, { isReturn });
                 });
             });
 
-            document.querySelectorAll('.loot-discover').forEach(button => {
+            document.querySelectorAll('.hidden-discover').forEach(button => {
                 button.addEventListener('click', () => {
-                    const tierKey = button.dataset.tier;
-                    const requirement = getLootRevealRequirement(room, tierKey);
-                    if (requirement) {
-                        requirement.revealed = true;
-                        saveDungeonState();
+                    const type = button.dataset.hiddenType;
+                    if (type === 'loot') {
+                        const tierKey = button.dataset.tier;
+                        const requirement = getLootRevealRequirement(room, tierKey);
+                        if (requirement) {
+                            requirement.revealed = true;
+                            saveDungeonState();
+                        }
+                    } else {
+                        const hiddenId = button.dataset.hiddenId;
+                        const requirement = getHiddenRevealMap(room)[hiddenId];
+                        if (requirement) {
+                            requirement.revealed = true;
+                            saveDungeonState();
+                        }
                     }
-                    const tierElement = button.closest('.loot-tier');
+                    const tierElement = button.closest('.hidden-tier');
                     if (tierElement) {
                         tierElement.classList.add('revealed');
                     }
                 });
             });
+
+            attachResolutionHandlers(room, document.getElementById('roomContent'));
         }
 
         function renderMap() {
@@ -2131,10 +2401,75 @@
             });
         }
 
-        function handleExitMove(direction) {
+        function getHiddenDangers(room, { onlyUnrevealed = false } = {}) {
+            const dangers = [];
+            room.threats.forEach((threat, index) => {
+                if (!isHiddenThreat(threat)) return;
+                const hiddenId = `threat-${index}`;
+                const requirement = getHiddenRequirement(room, hiddenId, { threshold: threat.threshold, successes: 1 });
+                if (onlyUnrevealed && requirement.revealed) return;
+                const label = isAmbusherThreat(threat) ? 'Ambush' : 'Trap';
+                dangers.push({
+                    id: hiddenId,
+                    label,
+                    requirement,
+                    html: buildThreatBlockHtml(threat, index)
+                });
+            });
+
+            Object.entries(room.doors || {}).forEach(([direction, door]) => {
+                if (door.status !== 'Trapped') return;
+                const hiddenId = `door-trap-${direction}`;
+                const threshold = door.bypass?.threshold ?? getLootRevealThreshold(room);
+                const requirement = getHiddenRequirement(room, hiddenId, { threshold, successes: 1 });
+                if (onlyUnrevealed && requirement.revealed) return;
+                dangers.push({
+                    id: hiddenId,
+                    label: 'Trap',
+                    requirement,
+                    html: buildDoorTrapHtml({
+                        id: hiddenId,
+                        direction: directionLabels[direction] || direction,
+                        door,
+                        requirement
+                    })
+                });
+            });
+
+            return dangers;
+        }
+
+        function showDangerRevealModal(room, dangers) {
+            const modal = document.getElementById('dangerRevealModal');
+            const title = document.getElementById('dangerRevealTitle');
+            const intro = document.getElementById('dangerRevealIntro');
+            const list = document.getElementById('dangerRevealList');
+            const labels = Array.from(new Set(dangers.map(danger => danger.label)));
+            const titleText = labels.length === 1 ? labels[0] : 'Hidden Dangers';
+
+            title.textContent = titleText;
+            intro.textContent = 'Hidden dangers surface as you attempt to move on.';
+            list.innerHTML = dangers.map(danger => danger.html).join('');
+            modal.classList.remove('hidden');
+            attachResolutionHandlers(room, modal);
+        }
+
+        function handleExitMove(direction, { isReturn = false } = {}) {
             if (!dungeonState) return;
             const currentRoom = getCurrentRoom();
             if (!currentRoom) return;
+            if (!isReturn) {
+                const hiddenDangers = getHiddenDangers(currentRoom, { onlyUnrevealed: true });
+                if (hiddenDangers.length > 0) {
+                    hiddenDangers.forEach(danger => {
+                        danger.requirement.revealed = true;
+                    });
+                    saveDungeonState();
+                    renderRoom(currentRoom);
+                    showDangerRevealModal(currentRoom, hiddenDangers);
+                    return;
+                }
+            }
             const vec = directionVectors[direction];
             const nextPos = { x: currentRoom.position.x + vec.x, y: currentRoom.position.y + vec.y };
             const existingRoom = getRoomByPosition(nextPos);
@@ -2533,6 +2868,13 @@
             document.getElementById('descriptionFilterModal').classList.add('hidden');
             updateDescriptionFilterSummary(getEnabledDescriptionFilters());
         });
+
+        function closeDangerRevealModal() {
+            document.getElementById('dangerRevealModal').classList.add('hidden');
+        }
+
+        document.getElementById('closeDangerReveal').addEventListener('click', closeDangerRevealModal);
+        document.getElementById('dismissDangerReveal').addEventListener('click', closeDangerRevealModal);
 
         document.getElementById('selectAllDescriptions').addEventListener('click', () => {
             const checkboxes = Array.from(document.querySelectorAll('#descriptionFilterList input[type="checkbox"]'));
