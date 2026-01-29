@@ -1364,7 +1364,7 @@
                 <div class="control-group">
                     <label for="timePressure">Time Pressure</label>
                     <div class="range-input">
-                        <input type="range" id="timePressure" min="1" max="3" step="1" value="1">
+                        <input type="range" id="timePressure" min="0.5" max="2" step="0.5" value="1">
                         <span id="timePressureValue" class="range-value">x1</span>
                     </div>
                     <span class="helper-text">Higher values make wandering interruptions more likely during rests.</span>
@@ -1414,7 +1414,9 @@
 
             <div class="buttons">
                 <button class="primary" id="startBtn">Start New Dungeon</button>
-                <button id="exportBtn" disabled>Export Dungeon (JSON)</button>
+                <button id="saveDungeonBtn" disabled>Save Dungeon</button>
+                <button id="loadDungeonBtn">Load Dungeon</button>
+                <input type="file" id="loadDungeonFile" accept=".json" class="hidden">
             </div>
         </details>
 
@@ -1574,6 +1576,10 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        function formatTimePressure(value) {
+            return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+        }
+
         // ==================== DICE ROLLER ====================
         const DICE_COLORS = ['blue', 'red', 'green', 'black', 'purple'];
         const DEFAULT_DICE = ['red', 'blue', 'green'];
@@ -1673,7 +1679,7 @@
 
         function getTimePressureMultiplier() {
             const value = Number(dungeonState?.timePressure ?? 1);
-            return Math.min(3, Math.max(1, value));
+            return Math.min(2, Math.max(0.5, value));
         }
 
         function getRestTotalMinutes() {
@@ -1833,6 +1839,10 @@
             `;
         }
 
+        function generateWanderingThreats() {
+            return generateThreats(false, { minTypes: 1, allowEnvironmental: false, excludedTypes: ['Trap'] });
+        }
+
         function performRest() {
             const totalMinutes = getRestTotalMinutes();
 
@@ -1843,7 +1853,7 @@
             const result = calculateRestInterruption(totalMinutes);
             const recovery = calculateRecovery(result.timeRested);
             const wanderingThreats = result.interrupted && result.reason === 'wandering'
-                ? generateThreats(false)
+                ? generateWanderingThreats()
                 : [];
 
             const resultDiv = document.getElementById('restResult');
@@ -2346,8 +2356,50 @@
         }
 
         // ==================== THREAT GENERATION ====================
+        const KEYWORD_ABILITY_CHANCES = [1, 0.5, 0.25];
+
+        function normalizeKeywordAbilities(abilities = []) {
+            return abilities
+                .map((ability, index) => {
+                    if (!ability) return null;
+                    if (typeof ability === 'string') {
+                        return { name: ability, chance: KEYWORD_ABILITY_CHANCES[index] ?? 0.25 };
+                    }
+                    const name = ability.name || ability.ability || '';
+                    const chance = typeof ability.chance === 'number'
+                        ? ability.chance
+                        : (KEYWORD_ABILITY_CHANCES[index] ?? 0.25);
+                    return name ? { name, chance } : null;
+                })
+                .filter(Boolean);
+        }
+
+        function getKeywordStrengthBonus(keywordIndex) {
+            if (keywordIndex === 1) {
+                return { quantity: 1, damage: 1, threshold: 1 };
+            }
+            return { quantity: 0, damage: 0, threshold: 0 };
+        }
+
+        function applyKeywordStrengthModifiers({ quantity, damage, threshold }, profile, keywordIndex) {
+            const bonus = getKeywordStrengthBonus(keywordIndex);
+            const maxDamage = profile.damageRange.max + bonus.damage;
+            const boostedQuantity = Math.min(quantity + bonus.quantity, profile.quantityRange.max + bonus.quantity);
+            const boostedDamage = Math.min(damage + bonus.damage, maxDamage);
+            const boostedThreshold = threshold + bonus.threshold;
+
+            return {
+                quantity: boostedQuantity,
+                damage: boostedDamage,
+                threshold: boostedThreshold
+            };
+        }
+
         function getAbilityDescription(abilityName) {
             // Look up the full ability description from the striveAbilities list
+            if (!gameData || !Array.isArray(gameData.striveAbilities)) {
+                return abilityName;
+            }
             const ability = gameData.striveAbilities.find(a => a.startsWith(abilityName + ':'));
             return ability || abilityName;
         }
@@ -2394,15 +2446,20 @@
             }
         }
 
-        function generateThreats(isBoss) {
+        function generateThreats(isBoss, options = {}) {
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
             const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
             const disallowedTypes = new Set(dungeonState.disallowedThreatTypes || []);
-            const allowedTypes = (gameData.typeWords || []).filter(type => !disallowedTypes.has(type));
+            const excludedTypes = new Set(options.excludedTypes || []);
+            const allowedTypes = (gameData.typeWords || []).filter(type => !disallowedTypes.has(type) && !excludedTypes.has(type));
+            const minTypes = typeof options.minTypes === 'number' ? options.minTypes : null;
+            const allowEnvironmental = options.allowEnvironmental !== false;
 
             if (allowedTypes.length === 0) {
                 const threats = [];
-                maybeAddEnvironmentalThreat(threats, profile);
+                if (allowEnvironmental) {
+                    maybeAddEnvironmentalThreat(threats, profile);
+                }
                 return threats;
             }
 
@@ -2411,14 +2468,21 @@
                 const keywordData = keywords[0];
                 const bossThreat = generateBossThreat(profile, keywordData.name, keywordData.abilities, allowedTypes);
                 const bossThreats = bossThreat ? [bossThreat] : [];
-                maybeAddEnvironmentalThreat(bossThreats, profile);
+                if (allowEnvironmental) {
+                    maybeAddEnvironmentalThreat(bossThreats, profile);
+                }
                 return bossThreats;
             }
 
-            const numTypes = randInt(profile.threatTypesRange.min, profile.threatTypesRange.max);
+            let numTypes = randInt(profile.threatTypesRange.min, profile.threatTypesRange.max);
+            if (minTypes !== null) {
+                numTypes = Math.max(numTypes, minTypes);
+            }
             if (numTypes === 0) {
                 const threats = [];
-                maybeAddEnvironmentalThreat(threats, profile);
+                if (allowEnvironmental) {
+                    maybeAddEnvironmentalThreat(threats, profile);
+                }
                 return threats;
             }
 
@@ -2437,17 +2501,23 @@
                 usedTypes.push(type);
 
                 // Pick a random keyword for this threat
-                const keywordData = pick(keywords);
+                const keywordIndex = Math.floor(Math.random() * keywords.length);
+                const keywordData = keywords[keywordIndex];
                 const keyword = keywordData.name;
-                const keywordAbilities = keywordData.abilities;
+                const keywordAbilities = normalizeKeywordAbilities(keywordData.abilities);
 
                 // Calculate quantity, respecting max threats limit
                 const remainingSlots = maxThreats - totalThreatCount;
                 const maxQuantity = Math.min(profile.quantityRange.max, remainingSlots);
                 const quantity = randInt(profile.quantityRange.min, maxQuantity);
                 totalThreatCount += quantity;
-                const damage = randInt(profile.damageRange.min, profile.damageRange.max);
-                const threshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
+                const baseDamage = randInt(profile.damageRange.min, profile.damageRange.max);
+                const baseThreshold = randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max);
+                const adjustedStats = applyKeywordStrengthModifiers(
+                    { quantity, damage: baseDamage, threshold: baseThreshold },
+                    profile,
+                    keywordIndex
+                );
 
                 // Determine success tiers - Hard/Deadly may use weaker tiers for variety
                 let successTiers = profile.successTiers;
@@ -2459,9 +2529,12 @@
                 if (gameData.wordToAbility[type]) {
                     abilities.push(gameData.wordToAbility[type]);
                 }
-                if (keywordAbilities.length > 0 && Math.random() < profile.keywordAbilityChance) {
-                    const abilityName = pick(keywordAbilities);
-                    abilities.push(getAbilityDescription(abilityName));
+                if (keywordAbilities.length > 0) {
+                    keywordAbilities.forEach(entry => {
+                        if (entry.name && Math.random() < entry.chance) {
+                            abilities.push(getAbilityDescription(entry.name));
+                        }
+                    });
                 }
 
                 // Get range for this type - pick randomly if array
@@ -2471,9 +2544,9 @@
                 const threat = {
                     keyword,
                     type,
-                    quantity,
-                    damage,
-                    threshold,
+                    quantity: adjustedStats.quantity,
+                    damage: adjustedStats.damage,
+                    threshold: adjustedStats.threshold,
                     defeat: successTiers.defeat,
                     overwhelm: successTiers.overwhelm,
                     range,
@@ -2484,7 +2557,9 @@
                 threats.push(threat);
             }
 
-            maybeAddEnvironmentalThreat(threats, profile);
+            if (allowEnvironmental) {
+                maybeAddEnvironmentalThreat(threats, profile);
+            }
             return threats;
         }
 
@@ -2502,10 +2577,13 @@
             if (gameData.wordToAbility[type]) {
                 abilities.push(gameData.wordToAbility[type]);
             }
-            // Boss always gets a keyword ability if available
-            if (keywordAbilities.length > 0) {
-                const abilityName = pick(keywordAbilities);
-                abilities.push(getAbilityDescription(abilityName));
+            const normalizedAbilities = normalizeKeywordAbilities(keywordAbilities);
+            if (normalizedAbilities.length > 0) {
+                normalizedAbilities.forEach(entry => {
+                    if (entry.name && Math.random() < entry.chance) {
+                        abilities.push(getAbilityDescription(entry.name));
+                    }
+                });
             }
             if (hasHeedless) {
                 abilities.push("Heedless: This threat has no Defeat Tier and must be Overwhelmed to be defeated.");
@@ -3643,7 +3721,7 @@
 
         function updateButtons() {
             const hasState = dungeonState !== null;
-            document.getElementById('exportBtn').disabled = !hasState || dungeonState.rooms.length === 0;
+            document.getElementById('saveDungeonBtn').disabled = !hasState || dungeonState.rooms.length === 0;
         }
 
         // ==================== PERSISTENCE ====================
@@ -3652,79 +3730,93 @@
             localStorage.setItem('striveUsedLayouts', JSON.stringify(usedLayouts));
         }
 
+        function applyDungeonState(loadedState, loadedLayouts) {
+            if (!loadedState) {
+                return false;
+            }
+            dungeonState = loadedState;
+            usedLayouts = loadedLayouts || { Rooms: [], Halls: [], "Dead Ends": [], "Exits": [] };
+            if (!dungeonState.timePressure) {
+                dungeonState.timePressure = 1;
+            }
+            dungeonState.timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
+
+            if (!dungeonState.map || dungeonState.rooms.some(room => !room.position)) {
+                dungeonState = null;
+                usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [], "Exits": [] };
+                return false;
+            }
+
+            if (!dungeonState.currentRoomId && dungeonState.rooms.length > 0) {
+                dungeonState.currentRoomId = dungeonState.rooms[dungeonState.rooms.length - 1].id;
+            }
+
+            if (dungeonState.rooms.length > 0) {
+                if (!dungeonState.bossRoomId) {
+                    assignBossRoom();
+                }
+                renderRoom(getCurrentRoom());
+            }
+            renderMap();
+            updateButtons();
+
+            // Restore UI values
+            document.getElementById('difficulty').value = dungeonState.difficulty;
+            document.getElementById('dungeonLength').value = dungeonState.totalRooms;
+            const timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
+            document.getElementById('timePressure').value = timePressure;
+            document.getElementById('timePressureValue').textContent = `x${formatTimePressure(timePressure)}`;
+
+            // Restore keywords and abilities
+            if (dungeonState.keywords && dungeonState.keywords.length > 0) {
+                const kw1 = dungeonState.keywords[0];
+                document.getElementById('threatKeyword1').value = kw1.name || '';
+                if (kw1.abilities) {
+                    if (kw1.abilities[0]) document.getElementById('keywordAbility1_1').value = getAbilityEntryName(kw1.abilities[0]);
+                    if (kw1.abilities[1]) document.getElementById('keywordAbility1_2').value = getAbilityEntryName(kw1.abilities[1]);
+                    if (kw1.abilities[2]) document.getElementById('keywordAbility1_3').value = getAbilityEntryName(kw1.abilities[2]);
+                }
+
+                if (dungeonState.keywords.length > 1) {
+                    const kw2 = dungeonState.keywords[1];
+                    document.getElementById('threatKeyword2').value = kw2.name || '';
+                    if (kw2.abilities) {
+                        if (kw2.abilities[0]) document.getElementById('keywordAbility2_1').value = getAbilityEntryName(kw2.abilities[0]);
+                        if (kw2.abilities[1]) document.getElementById('keywordAbility2_2').value = getAbilityEntryName(kw2.abilities[1]);
+                        if (kw2.abilities[2]) document.getElementById('keywordAbility2_3').value = getAbilityEntryName(kw2.abilities[2]);
+                    }
+                }
+            }
+
+            if (Array.isArray(dungeonState.disallowedThreatTypes)) {
+                setDisallowedThreatTypes(dungeonState.disallowedThreatTypes);
+            } else {
+                updateThreatFilterSummary(getDisallowedThreatTypes());
+            }
+
+            if (Array.isArray(dungeonState.descriptionThemes)) {
+                setEnabledDescriptionFilters(dungeonState.descriptionThemes);
+            } else {
+                setEnabledDescriptionFilters([]);
+            }
+
+            saveDungeonState();
+            return true;
+        }
+
         function loadDungeonState() {
             if (!gameData) {
                 return;
             }
             const saved = localStorage.getItem('striveDungeon');
             const savedLayouts = localStorage.getItem('striveUsedLayouts');
-            
-            if (saved) {
-                dungeonState = JSON.parse(saved);
-                usedLayouts = savedLayouts ? JSON.parse(savedLayouts) : { Rooms: [], Halls: [], "Dead Ends": [] };
-                if (!dungeonState.timePressure) {
-                    dungeonState.timePressure = 1;
-                }
 
-                if (!dungeonState.map || dungeonState.rooms.some(room => !room.position)) {
+            if (saved) {
+                const loadedState = JSON.parse(saved);
+                const loadedLayouts = savedLayouts ? JSON.parse(savedLayouts) : { Rooms: [], Halls: [], "Dead Ends": [], "Exits": [] };
+                if (!applyDungeonState(loadedState, loadedLayouts)) {
                     localStorage.removeItem('striveDungeon');
                     localStorage.removeItem('striveUsedLayouts');
-                    dungeonState = null;
-                    usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
-                    return;
-                }
-
-                if (!dungeonState.currentRoomId && dungeonState.rooms.length > 0) {
-                    dungeonState.currentRoomId = dungeonState.rooms[dungeonState.rooms.length - 1].id;
-                }
-                
-                if (dungeonState.rooms.length > 0) {
-                    if (!dungeonState.bossRoomId) {
-                        assignBossRoom();
-                    }
-                    renderRoom(getCurrentRoom());
-                }
-                renderMap();
-                updateButtons();
-                
-                // Restore UI values
-                document.getElementById('difficulty').value = dungeonState.difficulty;
-                document.getElementById('dungeonLength').value = dungeonState.totalRooms;
-                const timePressure = Math.min(3, Math.max(1, Number(dungeonState.timePressure ?? 1)));
-                document.getElementById('timePressure').value = timePressure;
-                document.getElementById('timePressureValue').textContent = `x${timePressure}`;
-
-                // Restore keywords and abilities
-                if (dungeonState.keywords && dungeonState.keywords.length > 0) {
-                    const kw1 = dungeonState.keywords[0];
-                    document.getElementById('threatKeyword1').value = kw1.name || '';
-                    if (kw1.abilities) {
-                        if (kw1.abilities[0]) document.getElementById('keywordAbility1_1').value = kw1.abilities[0];
-                        if (kw1.abilities[1]) document.getElementById('keywordAbility1_2').value = kw1.abilities[1];
-                        if (kw1.abilities[2]) document.getElementById('keywordAbility1_3').value = kw1.abilities[2];
-                    }
-
-                    if (dungeonState.keywords.length > 1) {
-                        const kw2 = dungeonState.keywords[1];
-                        document.getElementById('threatKeyword2').value = kw2.name || '';
-                        if (kw2.abilities) {
-                            if (kw2.abilities[0]) document.getElementById('keywordAbility2_1').value = kw2.abilities[0];
-                            if (kw2.abilities[1]) document.getElementById('keywordAbility2_2').value = kw2.abilities[1];
-                            if (kw2.abilities[2]) document.getElementById('keywordAbility2_3').value = kw2.abilities[2];
-                        }
-                    }
-                }
-
-                if (Array.isArray(dungeonState.disallowedThreatTypes)) {
-                    setDisallowedThreatTypes(dungeonState.disallowedThreatTypes);
-                } else {
-                    updateThreatFilterSummary(getDisallowedThreatTypes());
-                }
-
-                if (Array.isArray(dungeonState.descriptionThemes)) {
-                    setEnabledDescriptionFilters(dungeonState.descriptionThemes);
-                } else {
-                    setEnabledDescriptionFilters([]);
                 }
             }
         }
@@ -3923,14 +4015,33 @@
                 : `Selected ${count} of ${total} vibe themes.`;
         }
 
+        function buildKeywordAbilitiesFromInputs(ids) {
+            return ids
+                .map((id, index) => {
+                    const name = document.getElementById(id).value.trim();
+                    if (!name) return null;
+                    return {
+                        name,
+                        chance: KEYWORD_ABILITY_CHANCES[index] ?? 0.25
+                    };
+                })
+                .filter(Boolean);
+        }
+
+        function getAbilityEntryName(entry) {
+            if (!entry) return '';
+            if (typeof entry === 'string') return entry;
+            return entry.name || entry.ability || '';
+        }
+
         // ==================== EVENT HANDLERS ====================
         initDiceRoller();
         initRestSystem();
 
         document.getElementById('timePressure').addEventListener('input', (e) => {
-            const value = Math.min(3, Math.max(1, parseInt(e.target.value, 10) || 1));
+            const value = Math.min(2, Math.max(0.5, parseFloat(e.target.value) || 1));
             e.target.value = value;
-            document.getElementById('timePressureValue').textContent = `x${value}`;
+            document.getElementById('timePressureValue').textContent = `x${formatTimePressure(value)}`;
             if (dungeonState) {
                 dungeonState.timePressure = value;
                 saveDungeonState();
@@ -3945,23 +4056,23 @@
             }
             const difficulty = document.getElementById('difficulty').value;
             const totalRooms = parseInt(document.getElementById('dungeonLength').value) || 10;
-            const timePressure = Math.min(3, Math.max(1, parseInt(document.getElementById('timePressure').value, 10) || 1));
+            const timePressure = Math.min(2, Math.max(0.5, parseFloat(document.getElementById('timePressure').value) || 1));
 
             // Get keyword 1 and its abilities
             const keyword1 = document.getElementById('threatKeyword1').value.trim() || "Enemy";
-            const keyword1Abilities = [
-                document.getElementById('keywordAbility1_1').value.trim(),
-                document.getElementById('keywordAbility1_2').value.trim(),
-                document.getElementById('keywordAbility1_3').value.trim()
-            ].filter(a => a);
+            const keyword1Abilities = buildKeywordAbilitiesFromInputs([
+                'keywordAbility1_1',
+                'keywordAbility1_2',
+                'keywordAbility1_3'
+            ]);
 
             // Get keyword 2 and its abilities (optional)
             const keyword2 = document.getElementById('threatKeyword2').value.trim();
-            const keyword2Abilities = [
-                document.getElementById('keywordAbility2_1').value.trim(),
-                document.getElementById('keywordAbility2_2').value.trim(),
-                document.getElementById('keywordAbility2_3').value.trim()
-            ].filter(a => a);
+            const keyword2Abilities = buildKeywordAbilitiesFromInputs([
+                'keywordAbility2_1',
+                'keywordAbility2_2',
+                'keywordAbility2_3'
+            ]);
 
             const disallowedThreatTypes = getDisallowedThreatTypes();
             const descriptionThemes = getEnabledDescriptionFilters();
@@ -3996,15 +4107,16 @@
             updateButtons();
         });
 
-        document.getElementById('exportBtn').addEventListener('click', () => {
+        document.getElementById('saveDungeonBtn').addEventListener('click', () => {
             if (!dungeonState) return;
-            
+
             const exportData = {
-                ...dungeonState,
-                exportedAt: Date.now(),
-                gameData: gameData
+                dungeonState,
+                usedLayouts,
+                gameData,
+                exportedAt: Date.now()
             };
-            
+
             const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -4012,6 +4124,48 @@
             a.download = `dungeon_${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('loadDungeonBtn').addEventListener('click', () => {
+            document.getElementById('loadDungeonFile').click();
+        });
+
+        document.getElementById('loadDungeonFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                const loadedGameData = data.gameData || null;
+                const loadedState = data.dungeonState || (data.rooms ? data : null);
+                const loadedLayouts = data.usedLayouts || { Rooms: [], Halls: [], "Dead Ends": [], "Exits": [] };
+
+                if (!loadedState) {
+                    throw new Error('File does not include a dungeon state.');
+                }
+
+                if (loadedGameData) {
+                    gameData = loadedGameData;
+                    document.getElementById('dataStatus').textContent = `Loaded: ${file.name}`;
+                    document.getElementById('dataStatus').className = 'data-status loaded';
+                    document.getElementById('errorDisplay').classList.add('hidden');
+                    populateAbilityDatalist();
+                    populateThreatTypeList(getDisallowedThreatTypes());
+                    updateThreatFilterSummary(getDisallowedThreatTypes());
+                    populateDescriptionFilterList(getEnabledDescriptionFilters());
+                    updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+                }
+
+                if (!applyDungeonState(loadedState, loadedLayouts)) {
+                    throw new Error('Dungeon state is missing required data.');
+                }
+            } catch (err) {
+                document.getElementById('errorDisplay').textContent = `Error loading dungeon file: ${err.message}`;
+                document.getElementById('errorDisplay').classList.remove('hidden');
+            } finally {
+                e.target.value = '';
+            }
         });
 
         document.getElementById('threatFilterBtn').addEventListener('click', () => {
