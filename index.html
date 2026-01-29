@@ -1026,7 +1026,7 @@
         // ==================== STATE ====================
         let gameData = null;
         let dungeonState = null;
-        let usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
+        let usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [], "Exits": [] };
         const pngCache = {};
         const missingPngPaths = new Set();
         const directionVectors = {
@@ -1344,31 +1344,50 @@
 
         // ==================== LAYOUT SELECTION ====================
         function selectLayout({ isBossRoom, minExits, includeDeadEnds }) {
-            const buckets = isBossRoom
-                ? ["Rooms", "Halls"]
-                : ["Rooms", "Halls", ...(includeDeadEnds ? ["Dead Ends"] : [])];
+            // Boss rooms always use exit layouts
+            if (isBossRoom) {
+                const exitLayouts = gameData.layouts["Exits"] || [];
+                const availableExits = exitLayouts.filter(id => !usedLayouts["Exits"].includes(id));
+                if (availableExits.length > 0) {
+                    const layoutId = pick(availableExits);
+                    usedLayouts["Exits"].push(layoutId);
+                    return { bucket: "Exits", layoutId };
+                }
+                // If all exits used, reset and pick again
+                usedLayouts["Exits"] = [];
+                const layoutId = pick(exitLayouts);
+                usedLayouts["Exits"].push(layoutId);
+                return { bucket: "Exits", layoutId };
+            }
 
-            const bucketWeights = isBossRoom
-                ? { "Rooms": 70, "Halls": 30 }
-                : {
-                    "Rooms": 50,
-                    "Halls": 35,
-                    ...(includeDeadEnds ? { "Dead Ends": 15 } : {})
-                };
+            // For non-boss rooms, include exits with small chance when dead ends are allowed
+            const includeExits = includeDeadEnds && Math.random() < 0.05;
+            const buckets = ["Rooms", "Halls",
+                ...(includeDeadEnds ? ["Dead Ends"] : []),
+                ...(includeExits ? ["Exits"] : [])];
+
+            const bucketWeights = {
+                "Rooms": 50,
+                "Halls": 35,
+                ...(includeDeadEnds ? { "Dead Ends": 12 } : {}),
+                ...(includeExits ? { "Exits": 3 } : {})
+            };
 
             const bucket = weightedPick(bucketWeights);
-            const available = gameData.layouts[bucket].filter(id => {
-                if (usedLayouts[bucket].includes(id)) return false;
+            const available = (gameData.layouts[bucket] || []).filter(id => {
+                if (usedLayouts[bucket] && usedLayouts[bucket].includes(id)) return false;
                 const exits = getExitsForLayout(id);
                 return exits.length >= minExits;
             });
 
             if (available.length === 0) {
+                if (!usedLayouts[bucket]) usedLayouts[bucket] = [];
                 usedLayouts[bucket] = [];
-                return selectLayout({ isBossRoom, minExits });
+                return selectLayout({ isBossRoom, minExits, includeDeadEnds });
             }
 
             const layoutId = pick(available);
+            if (!usedLayouts[bucket]) usedLayouts[bucket] = [];
             usedLayouts[bucket].push(layoutId);
 
             return { bucket, layoutId };
@@ -1982,11 +2001,17 @@
             }
 
             if (!layoutSelection && !isEntrance) {
-                const fallback = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
+                // Fallback: only allow dead ends if there's an alternative path (guaranteed frontier > 0)
+                // Otherwise, require at least one expansion exit to prevent premature dungeon end
+                const fallbackDeadEnds = guaranteedFrontier > 0;
+                const fallbackMinExits = fallbackDeadEnds ? 0 : 1;
+                const fallback = selectLayout({ isBossRoom: false, minExits: fallbackMinExits, includeDeadEnds: fallbackDeadEnds });
+                const fallbackExits = getExitsForLayout(fallback.layoutId);
+                const fallbackMapExits = rotateExits(fallbackExits, rotation);
                 layoutSelection = {
                     ...fallback,
-                    exits: getExitsForLayout(fallback.layoutId),
-                    mapExits: rotateExits(getExitsForLayout(fallback.layoutId), rotation)
+                    exits: fallbackExits,
+                    mapExits: fallbackMapExits
                 };
             }
 
@@ -2500,6 +2525,12 @@
                     return;
                 }
                 syncDoorPair(currentRoom, direction, existingRoom);
+                // Mark door as permanently open after passing through
+                const door = currentRoom.doors[direction];
+                if (door && door.status !== 'Open') {
+                    door.status = 'Open';
+                    door.bypass = null;
+                }
                 dungeonState.currentRoomId = existingRoom.id;
                 renderRoom(existingRoom);
                 renderMap();
@@ -2513,6 +2544,12 @@
             }
 
             const newRoom = generateRoom({ position: nextPos, moveDir: direction, fromRoom: currentRoom });
+            // Mark the door as open since we just passed through it
+            const door = currentRoom.doors[direction];
+            if (door && door.status !== 'Open') {
+                door.status = 'Open';
+                door.bypass = null;
+            }
             dungeonState.currentRoomId = newRoom.id;
             if (newRoom.isBoss) {
                 dungeonState.bossRoomId = newRoom.id;

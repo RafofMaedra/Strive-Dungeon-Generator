@@ -345,7 +345,8 @@
   "layouts": {
     "Rooms": ["A1", "A3", "A4", "E2", "N1", "N2", "NE1", "NE2", "NS2", "S4"],
     "Halls": ["A2", "E1", "E3", "E4", "N3", "N4", "NS1", "S1", "S2", "S3"],
-    "Dead Ends": ["D1", "D2", "D3", "D4"]
+    "Dead Ends": ["D1", "D2", "D3", "D4"],
+    "Exits": ["EX1", "EX2"]
   },
 
   "entranceLayouts": {
@@ -362,6 +363,7 @@
     "S": ["S"],
     "NE": ["N", "E"],
     "NS": ["N", "S"],
-    "D": []
+    "D": [],
+    "EX": []
   }
 }
