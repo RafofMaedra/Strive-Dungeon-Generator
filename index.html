@@ -298,6 +298,91 @@
             font-size: 0.95rem;
         }
 
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            cursor: help;
+            margin-left: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .tooltip-icon:hover {
+            color: var(--accent-gold);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            z-index: 1000;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            width: 280px;
+            max-width: 90vw;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            pointer-events: none;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Position tooltip to the right by default */
+        .tooltip-text {
+            left: calc(100% + 8px);
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* For items near right edge, position left */
+        .tooltip-container.tooltip-left .tooltip-text {
+            left: auto;
+            right: calc(100% + 8px);
+        }
+
+        /* For inline tooltips in loot items */
+        .loot-tooltip {
+            display: inline-flex;
+            align-items: baseline;
+        }
+
+        .loot-tooltip .tooltip-text {
+            bottom: calc(100% + 8px);
+            left: 50%;
+            top: auto;
+            transform: translateX(-50%);
+        }
+
+        .tooltip-ability-name {
+            color: var(--accent-gold);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: minmax(550px, 1.3fr) minmax(520px, 1fr);
@@ -1481,6 +1566,63 @@
             E: 'East',
             S: 'South',
             W: 'West'
+        };
+
+        // Magic item descriptions for tooltips
+        const magicItemDescriptions = {
+            // Common Items
+            "Focus Beads": "Once per day, reduce the threshold of a Mind check by 1.",
+            "Grit Gloves": "Once per day, reduce the threshold of a Body check by 1.",
+            "Grappling Hook Gauntlet": "Retractable grappling hook for rapid ascent/traversal for 1 user.",
+            "Focus Potion": "Consume to immediately regain 3 Focus.",
+            "Healing Potion": "Consume to immediately regain 4 Grit.",
+            "Common Arcane Conduit": "Gain 3 extra Focus usable only to push Mind checks. When emptied, roll 1d6; on a 1 it shatters and you take 1 damage to both Grit and Focus.",
+            "Torch-stone": "Bright light for 2 hours.",
+            "Discouraging Fragrance": "Consume; mundane beasts avoid you unless desperate or commanded.",
+            "Hunter's Toxin": "Apply/consume; for 1 round, reduce a threat's combat Success Threshold by 1 (GM sets a sensible floor).",
+            "Keen-Eye Lens": "Once per day, reduce the threshold of an observational Mind check by 1.",
+            "Soft-Step Wax": "Apply/Consume, for the next hour, reduce the threshold of stealth type checks by 1.",
+            "Smoke Pellet": "Create choking smoke that blocks vision and smell for a short time.",
+            "Quicklime Chalk": "Consume; blow on the quicklime chalk powder: it clings to footprints and fingerprints, potentially revealing what might be hidden, or where one can safely step.",
+            "Climbing Spikes": "Reduce the threshold of climb checks by 1.",
+            "Flash-Glass": "Shatter to create a dazzling, sparkling lightshow that can distract or temporarily blind.",
+            "Field Stitch Kit": "Once per scene, restore 2 Grit to a Touch-range ally (or stabilise a messy injury in the fiction).",
+            "Whisper-Coin": "Flip it to send a faint whisper to a named ally you can see (one short sentence). The coin appears in their hand.",
+            "Rust-Eater Vial": "Pour contents to dissolve a non-magical metal item in seconds (such as a lock/bolt/chain).",
+            // Rare Items
+            "Ring of Featherlight": "You do not trigger pressure plates, and you take no damage from falling.",
+            "Rare Arcane Conduit": "Gain 5 extra Focus usable only to push Mind checks. When emptied, roll 1d6; on a 1 it breaks and you take 2 damage to both Grit and Focus.",
+            "Cloak of Shadows": "Once per scene, turn invisible until you do anything other than speak or move.",
+            "Warding Aegis": "Once per encounter, reduce an instance of damage by 6.",
+            "Venom-strike": "Whenever you score at least 1 success with this weapon, the target is dealt an extra success at the start of next round.",
+            "Venom-strike (Weapon)": "Whenever you score at least 1 success with this weapon, the target is dealt an extra success at the start of next round.",
+            "Potent Focus Potion": "Consume to immediately regain 6 Focus.",
+            "Potent Healing Potion": "Consume to immediately regain 8 Grit.",
+            "Extradimensional Storage Pouch": "Bigger on the inside. And cold.",
+            "Warded Cloak": "Gain 5 temporary Grit and 5 temporary Focus, usable only to absorb damage.",
+            "Arcane Armour": "Reduce each instance of Grit damage taken by 1.",
+            "Wound-Salve": "Consume to remove all Wounds.",
+            "Lantern of True Forms": "While lit, its light pierces through nearby illusions and invisibility, making them appear as dark shadows.",
+            "Blink Charm": "Once per encounter, instantly reposition to anywhere within Short range that you can see.",
+            "Spell-Sunder Bindings": "Once per encounter, cancel a single threat ability for 1 round.",
+            "Oath-Thread Bracelet": "Once per encounter, re-roll a die and take the new result.",
+            "Mindward Circlet": "Once per encounter, reduce an instance of Focus damage by 6.",
+            "Grasping Chain": "Can be used to interact with or snag an object within Short range.",
+            "Siphoning Vambrace": "Once per round, when you succeed in a Forceful or greater potency check, regain 2 Grit or Focus.",
+            // Legendary Items
+            "Legendary Arcane Conduit": "Gain 8 extra Focus usable only to push Mind checks. When emptied, roll 1d6; on a 1 it breaks and you take 4 damage to both Grit and Focus.",
+            "Storm-enchanted Weapon": "Whenever you roll to Fight using this weapon, roll an additional 1d6.",
+            "Legendary Focus Potion": "Consume to immediately regain half your total Focus (rounded up).",
+            "Legendary Healing Potion": "Consume to immediately regain half your total Grit (rounded up).",
+            "Legendary Arcane Armour": "Reduce each instance of Grit damage taken by 2 (can't reduce below 1).",
+            "Crown of the Unbroken": "Once per day, when you would gain a Wound from taking 6 damage, you ignore the Wound (you still take the damage).",
+            "Gatekey": "Once per day, open a doorway between two points within Far range that you can see; it lasts long enough for a small group to pass.",
+            "Blade of Echoes": "Once per check, the first 6 you roll while Fighting counts as 3 successes instead of 2.",
+            "Blade of Echoes (Weapon)": "Once per check, the first 6 you roll while Fighting counts as 3 successes instead of 2.",
+            "Mantle of the Deep Step": "Once per encounter, you may treat yourself as \"at range\" against a melee-only threat for this round (fictional reposition, GM approval).",
+            "Hourglass Locket": "Once per session, reroll an entire check (must be declared immediately after the roll).",
+            "Sigil of Dominion": "Once per encounter, reduce a threat's Success Threshold by 1 for the rest of the encounter.",
+            "Aegis of Iron Vows": "Once per encounter, reduce incoming damage by 2d6 from a single instance."
         };
 
         // ==================== UTILITIES ====================
@@ -3011,10 +3153,14 @@
                 (loot.items || []).forEach(item => {
                     if (item.hiddenLevel === 0) {
                         if (item.category === 'Magic') {
+                            const itemDesc = magicItemDescriptions[item.name];
+                            const tooltipHtml = itemDesc
+                                ? `<span class="tooltip-container loot-tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">${itemDesc}</span></span>`
+                                : '';
                             visibleItems.push(`
                                 <div class="hidden-item">
                                     <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
-                                    <span>${item.name}</span>
+                                    <span>${item.name}</span>${tooltipHtml}
                                 </div>
                             `);
                         } else {
@@ -3095,6 +3241,10 @@
                 Object.entries(magicByRarity).forEach(([rarity, items]) => {
                     items.forEach(item => {
                         const isRevealed = item.hiddenLevel <= revealedLevel;
+                        const itemDesc = magicItemDescriptions[item.name];
+                        const tooltipHtml = itemDesc
+                            ? `<span class="tooltip-container loot-tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">${itemDesc}</span></span>`
+                            : '';
                         hiddenItemsList.push({
                             level: item.hiddenLevel,
                             html: `
@@ -3104,7 +3254,7 @@
                                         <div class="hidden-items">
                                             <div class="hidden-item">
                                                 <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
-                                                <span>${item.name}</span>
+                                                <span>${item.name}</span>${tooltipHtml}
                                             </div>
                                         </div>
                                     </div>
@@ -3614,6 +3764,34 @@
 
                 label.appendChild(checkbox);
                 label.appendChild(text);
+
+                // Add tooltip with ability description
+                const ability = gameData.wordToAbility && gameData.wordToAbility[type];
+                if (ability) {
+                    const tooltipContainer = document.createElement('span');
+                    tooltipContainer.className = 'tooltip-container';
+
+                    const tooltipIcon = document.createElement('span');
+                    tooltipIcon.className = 'tooltip-icon';
+                    tooltipIcon.textContent = '?';
+
+                    const tooltipText = document.createElement('span');
+                    tooltipText.className = 'tooltip-text';
+                    // Parse ability name and description
+                    const colonIndex = ability.indexOf(':');
+                    if (colonIndex > -1) {
+                        const abilityName = ability.substring(0, colonIndex);
+                        const abilityDesc = ability.substring(colonIndex + 1).trim();
+                        tooltipText.innerHTML = `<span class="tooltip-ability-name">${abilityName}</span>${abilityDesc}`;
+                    } else {
+                        tooltipText.textContent = ability;
+                    }
+
+                    tooltipContainer.appendChild(tooltipIcon);
+                    tooltipContainer.appendChild(tooltipText);
+                    label.appendChild(tooltipContainer);
+                }
+
                 list.appendChild(label);
             });
         }
