@@ -298,6 +298,65 @@
             font-size: 0.95rem;
         }
 
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            cursor: help;
+            margin-left: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .tooltip-icon:hover {
+            color: var(--accent-gold);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            z-index: 10000;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            width: 280px;
+            max-width: 90vw;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            pointer-events: none;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-ability-name {
+            color: var(--accent-gold);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: minmax(550px, 1.3fr) minmax(520px, 1fr);
@@ -3011,10 +3070,14 @@
                 (loot.items || []).forEach(item => {
                     if (item.hiddenLevel === 0) {
                         if (item.category === 'Magic') {
+                            const itemDesc = gameData.magicItemDescriptions && gameData.magicItemDescriptions[item.name];
+                            const tooltipHtml = itemDesc
+                                ? `<span class="tooltip-container loot-tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">${itemDesc}</span></span>`
+                                : '';
                             visibleItems.push(`
                                 <div class="hidden-item">
                                     <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
-                                    <span>${item.name}</span>
+                                    <span>${item.name}</span>${tooltipHtml}
                                 </div>
                             `);
                         } else {
@@ -3095,6 +3158,10 @@
                 Object.entries(magicByRarity).forEach(([rarity, items]) => {
                     items.forEach(item => {
                         const isRevealed = item.hiddenLevel <= revealedLevel;
+                        const itemDesc = gameData.magicItemDescriptions && gameData.magicItemDescriptions[item.name];
+                        const tooltipHtml = itemDesc
+                            ? `<span class="tooltip-container loot-tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">${itemDesc}</span></span>`
+                            : '';
                         hiddenItemsList.push({
                             level: item.hiddenLevel,
                             html: `
@@ -3104,7 +3171,7 @@
                                         <div class="hidden-items">
                                             <div class="hidden-item">
                                                 <span class="hidden-tag ${item.rarity.toLowerCase()}">${item.rarity}</span>
-                                                <span>${item.name}</span>
+                                                <span>${item.name}</span>${tooltipHtml}
                                             </div>
                                         </div>
                                     </div>
@@ -3614,6 +3681,34 @@
 
                 label.appendChild(checkbox);
                 label.appendChild(text);
+
+                // Add tooltip with ability description
+                const ability = gameData.wordToAbility && gameData.wordToAbility[type];
+                if (ability) {
+                    const tooltipContainer = document.createElement('span');
+                    tooltipContainer.className = 'tooltip-container';
+
+                    const tooltipIcon = document.createElement('span');
+                    tooltipIcon.className = 'tooltip-icon';
+                    tooltipIcon.textContent = '?';
+
+                    const tooltipText = document.createElement('span');
+                    tooltipText.className = 'tooltip-text';
+                    // Parse ability name and description
+                    const colonIndex = ability.indexOf(':');
+                    if (colonIndex > -1) {
+                        const abilityName = ability.substring(0, colonIndex);
+                        const abilityDesc = ability.substring(colonIndex + 1).trim();
+                        tooltipText.innerHTML = `<span class="tooltip-ability-name">${abilityName}</span>${abilityDesc}`;
+                    } else {
+                        tooltipText.textContent = ability;
+                    }
+
+                    tooltipContainer.appendChild(tooltipIcon);
+                    tooltipContainer.appendChild(tooltipText);
+                    label.appendChild(tooltipContainer);
+                }
+
                 list.appendChild(label);
             });
         }
@@ -3928,6 +4023,57 @@
             updatePngStatus();
             renderMap();
         });
+
+        // ==================== TOOLTIP POSITIONING ====================
+        // Position fixed tooltips dynamically based on icon position
+        document.addEventListener('mouseenter', (e) => {
+            const icon = e.target.closest('.tooltip-icon');
+            if (!icon) return;
+
+            const container = icon.closest('.tooltip-container');
+            if (!container) return;
+
+            const tooltip = container.querySelector('.tooltip-text');
+            if (!tooltip) return;
+
+            const iconRect = icon.getBoundingClientRect();
+            const tooltipWidth = 280;
+            const tooltipHeight = tooltip.offsetHeight || 100;
+            const padding = 8;
+
+            // Try to position to the right of the icon
+            let left = iconRect.right + padding;
+            let top = iconRect.top + (iconRect.height / 2);
+
+            // If tooltip would go off right edge, position to the left
+            if (left + tooltipWidth > window.innerWidth - padding) {
+                left = iconRect.left - tooltipWidth - padding;
+            }
+
+            // If tooltip would go off left edge, center it above
+            if (left < padding) {
+                left = Math.max(padding, iconRect.left + (iconRect.width / 2) - (tooltipWidth / 2));
+                top = iconRect.top - padding;
+                tooltip.style.transform = 'translateY(-100%)';
+            } else {
+                tooltip.style.transform = 'translateY(-50%)';
+            }
+
+            // Keep tooltip within vertical bounds
+            const transformedTop = tooltip.style.transform.includes('-100%')
+                ? top - tooltipHeight
+                : top - (tooltipHeight / 2);
+
+            if (transformedTop < padding) {
+                top = padding + (tooltip.style.transform.includes('-100%') ? tooltipHeight : tooltipHeight / 2);
+            }
+            if (transformedTop + tooltipHeight > window.innerHeight - padding) {
+                top = window.innerHeight - padding - tooltipHeight + (tooltip.style.transform.includes('-100%') ? tooltipHeight : tooltipHeight / 2);
+            }
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        }, true);
 
         // ==================== INIT ====================
         (async () => {
