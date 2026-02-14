@@ -444,33 +444,6 @@
             padding: 1.5rem;
         }
 
-        .room-meta {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-        }
-
-        .meta-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .meta-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-muted);
-        }
-
-        .meta-value {
-            font-size: 0.95rem;
-            color: var(--accent-gold);
-        }
-
         .room-description {
             font-size: 1.15rem;
             line-height: 1.8;
@@ -1445,10 +1418,6 @@
                 <div class="control-group">
                     <label for="dataFile">Import Data File</label>
                     <input type="file" id="dataFile" accept=".json">
-                </div>
-                <div class="control-group">
-                    <label for="pngFolder">Load PNG Folder</label>
-                    <input type="file" id="pngFolder" webkitdirectory directory>
                 </div>
             </div>
 
@@ -2543,9 +2512,50 @@
             }
         }
 
+        function getOwnThreatWeights() {
+            const pressure = getTimePressureMultiplier();
+            return {
+                none: Math.max(8, Math.round(42 - pressure * 10)),
+                few: Math.max(18, Math.round(26 + pressure * 7)),
+                group: Math.max(14, Math.round(20 + pressure * 10)),
+                miniboss: Math.max(6, Math.round(6 + pressure * 6))
+            };
+        }
+
+        function createOwnThreatPrompt(isBossRoom = false) {
+            const weights = getOwnThreatWeights();
+            if (isBossRoom) {
+                weights.miniboss += 20;
+                weights.none = Math.max(2, weights.none - 20);
+            }
+            const result = weightedPick(weights);
+            if (result === 'none') return [];
+
+            const labelByType = {
+                few: 'Threats Present: Few',
+                group: 'Threats Present: Group',
+                miniboss: 'Threats Present: Miniboss'
+            };
+
+            return [{
+                keyword: labelByType[result],
+                type: '',
+                quantity: 1,
+                damage: 0,
+                threshold: 0,
+                defeat: '-',
+                overwhelm: '-',
+                range: '—',
+                abilities: ['Use your own map/adventure notes for this room threat details.'],
+                isBoss: false,
+                isOwnThreatPrompt: true,
+                resolved: false
+            }];
+        }
+
         function generateThreats(isBoss, options = {}) {
             if (dungeonState?.useOwnThreats) {
-                return [];
+                return createOwnThreatPrompt(isBoss);
             }
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
             const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
@@ -2981,6 +2991,23 @@
                 ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
                 : '<div class="ability">—</div>';
 
+            if (threat.isOwnThreatPrompt) {
+                return `
+                <div class="threat-block ${resolvedClass}">
+                    <div class="threat-header">
+                        <span>${threat.keyword}</span>
+                        <label class="resolve-toggle">
+                            <input type="checkbox" class="threat-resolve-toggle" data-threat-index="${index}" ${threat.resolved ? 'checked' : ''}>
+                            Resolved
+                        </label>
+                    </div>
+                    <div class="threat-abilities">
+                        ${abilitiesHtml}
+                    </div>
+                </div>
+            `;
+            }
+
             const resolutionHtml = threat.checkRequirement
                 ? `<div class="threat-stat"><span class="stat-label">Check:</span> ${threat.checkRequirement}</div>`
                 : `<div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>`;
@@ -3067,7 +3094,7 @@
         }
 
         // ==================== ROOM GENERATION ====================
-        function generateRoom({ position, moveDir, fromRoom }) {
+        function generateRoom({ position = null, moveDir = null, fromRoom = null } = {}) {
             const roomIndex = dungeonState.rooms.length + 1;
             const layout = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
             const description = generateDescription();
@@ -3138,24 +3165,22 @@
             const hasGeneratedNextRoom = dungeonState.rooms.some(existing => existing.index === room.index + 1);
             const nextButtonLabel = hasGeneratedNextRoom ? 'Go to Next Room' : 'Generate Next Room';
             const navigationHtml = hasMoreRooms
-                ? `<button id="nextRoomBtn" class="primary">${nextButtonLabel}</button>`
-                : '<div class="no-threats">Final room reached.</div>';
+                ? `<div class="buttons"><button id="nextRoomBtn" class="primary">${nextButtonLabel}</button><button id="rerollRoomBtn">Reroll Room</button></div>`
+                : '<div class="buttons"><div class="no-threats">Final room reached.</div><button id="rerollRoomBtn">Reroll Room</button></div>';
             
             let threatsHtml = '';
-            if (dungeonState.useOwnThreats) {
-                threatsHtml = '<div class="no-threats">Use your own map threats for this room. (This room has threats if your map says so.)</div>';
+            const hasVisibleThreats = room.threats.some(threat => !isHiddenThreat(threat));
+            if (!hasVisibleThreats) {
+                threatsHtml = dungeonState.useOwnThreats
+                    ? '<div class="no-threats">No Threats Present</div>'
+                    : '<div class="no-threats">The room appears empty of immediate threats.</div>';
             } else {
-                const hasVisibleThreats = room.threats.some(threat => !isHiddenThreat(threat));
-                if (!hasVisibleThreats) {
-                    threatsHtml = '<div class="no-threats">The room appears empty of immediate threats.</div>';
-                } else {
-                    threatsHtml = '<div class="threat-list">';
-                    room.threats.forEach((threat, index) => {
-                        if (isHiddenThreat(threat)) return;
-                        threatsHtml += buildThreatBlockHtml(threat, index);
-                    });
-                    threatsHtml += '</div>';
-                }
+                threatsHtml = '<div class="threat-list">';
+                room.threats.forEach((threat, index) => {
+                    if (isHiddenThreat(threat)) return;
+                    threatsHtml += buildThreatBlockHtml(threat, index);
+                });
+                threatsHtml += '</div>';
             }
 
             // Ensure hidden levels are assigned to all loot items
@@ -3409,25 +3434,7 @@
                     ${room.isBoss ? '<span class="room-badge">BOSS ROOM</span>' : ''}
                 </div>
                 <div class="room-body">
-                    <div class="room-meta">
-                        <div class="meta-item">
-                            <span class="meta-label">Layout Type</span>
-                            <span class="meta-value">${room.bucket}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Layout ID</span>
-                            <span class="meta-value">${room.layoutId}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">PNG Path</span>
-                            <span class="meta-value">${room.pngPath}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Progress</span>
-                            <span class="meta-value">${room.index}/${dungeonState.totalRooms}</span>
-                        </div>
-                    </div>
-                    
+
                     <div class="room-description">${room.description}</div>
                     
                     <div class="threats">
@@ -3451,7 +3458,10 @@
             if (nextRoomBtn) {
                 nextRoomBtn.addEventListener('click', goToNextRoom);
             }
-
+            const rerollRoomBtn = document.getElementById('rerollRoomBtn');
+            if (rerollRoomBtn) {
+                rerollRoomBtn.addEventListener('click', rerollCurrentRoom);
+            }
 
             // Handle success checkbox changes
             document.querySelectorAll('.success-checkbox').forEach(checkbox => {
@@ -3615,6 +3625,30 @@
             saveDungeonState();
         }
 
+        function rerollCurrentRoom() {
+            if (!dungeonState) return;
+            const room = getCurrentRoom();
+            if (!room) return;
+
+            const layout = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
+            const description = generateDescription();
+
+            room.bucket = layout.bucket;
+            room.layoutId = layout.layoutId;
+            room.pngPath = `png/${layout.bucket.toLowerCase().replace(' ', '-')}/${layout.layoutId}.png`;
+            room.rotation = randomRotation();
+            room.description = description.text;
+            room.threats = generateThreats(Boolean(room.isBoss));
+            room.loot = generateLoot(room);
+            room.lootRevealThreshold = undefined;
+            room.lootReveal = undefined;
+            room.hiddenReveal = undefined;
+            room.revealedSuccessLevel = 0;
+
+            saveDungeonState();
+            renderRoom(room);
+            renderMap();
+        }
 
         function updateButtons() {
             const hasState = dungeonState !== null;
@@ -4164,18 +4198,6 @@
                 document.getElementById('errorDisplay').classList.remove('hidden');
                 gameData = baseGameData ? JSON.parse(JSON.stringify(baseGameData)) : null;
             }
-        });
-
-        document.getElementById('pngFolder').addEventListener('change', (e) => {
-            const files = Array.from(e.target.files || []);
-            if (files.length === 0) return;
-            files.forEach(file => {
-                const key = normalizePngPath(file.webkitRelativePath || file.name);
-                pngCache[key] = URL.createObjectURL(file);
-                missingPngPaths.delete(key);
-            });
-            updatePngStatus();
-            renderMap();
         });
 
         // ==================== TOOLTIP POSITIONING ====================
