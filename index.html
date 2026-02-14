@@ -1381,6 +1381,21 @@
                     </div>
                     <span class="helper-text">Higher values make wandering interruptions more likely during rests.</span>
                 </div>
+                <div class="control-group">
+                    <label for="trapFrequency">Trap Frequency</label>
+                    <div class="range-input">
+                        <input type="range" id="trapFrequency" min="0" max="2" step="0.25" value="1">
+                        <span id="trapFrequencyValue" class="range-value">x1</span>
+                    </div>
+                    <span class="helper-text">Higher values increase hidden trap appearances.</span>
+                </div>
+                <div class="control-group full-width">
+                    <label>Trap Vibes</label>
+                    <div class="filter-row">
+                        <button type="button" id="trapVibeFilterBtn">Trap Vibes</button>
+                        <span id="trapVibeFilterSummary" class="helper-text">All trap vibes enabled.</span>
+                    </div>
+                </div>
                 <div class="control-group full-width keyword-group">
                     <label>Threat Keyword 1</label>
                     <div class="keyword-row">
@@ -1509,6 +1524,26 @@
         </div>
     </div>
 
+    <div id="trapVibeModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="trapVibeTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="trapVibeTitle">Trap Vibes</div>
+                <button type="button" id="closeTrapVibe">Close</button>
+            </div>
+            <div class="modal-body">
+                <p class="helper-text">Choose trap vibe tags to include in room trap generation.</p>
+                <div class="filter-row modal-actions">
+                    <button type="button" id="selectAllTrapVibes">Select All</button>
+                    <button type="button" id="clearAllTrapVibes">Clear All</button>
+                </div>
+                <div id="trapVibeList" class="threat-type-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="applyTrapVibes">Done</button>
+            </div>
+        </div>
+    </div>
+
     <div id="dangerRevealModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="dangerRevealTitle">
         <div class="modal-card">
             <div class="modal-header">
@@ -1593,6 +1628,11 @@
             }
             const formatted = value.toFixed(2);
             return formatted.replace(/\.?0+$/, '');
+        }
+
+        function getTrapFrequencyMultiplier() {
+            const value = Number(dungeonState?.trapFrequency ?? 1);
+            return Math.min(2, Math.max(0, value));
         }
 
         // ==================== DICE ROLLER ====================
@@ -2517,30 +2557,41 @@
             }
         }
 
-        function generateRoomTrapThreat(profile) {
-            const trapNames = [
-                'Tripwire Trap',
-                'Pressure Plate Trap',
-                'Hidden Snare Trap',
-                'Concealed Dart Trap',
-                'Falling Block Trap'
+        function generateRoomTrapThreat(profile, { trapVibes = [] } = {}) {
+            const fallbackTrapThreats = [
+                { name: 'Tripwire Trap', description: 'Hidden mechanism triggers when the party advances without spotting it first.', tags: ['mechanical'] },
+                { name: 'Pressure Plate Trap', description: 'A pressure plate releases a delayed but dangerous response.', tags: ['mechanical'] },
+                { name: 'Hidden Snare Trap', description: 'Snaring lines tighten around legs and gear.', tags: ['snare'] },
+                { name: 'Concealed Dart Trap', description: 'Tiny slits fire poisoned darts across the room.', tags: ['poison', 'mechanical'] },
+                { name: 'Falling Block Trap', description: 'A loose stone block crashes down from above.', tags: ['hazard', 'collapse'] }
             ];
+            const configuredTraps = Array.isArray(gameData?.roomTrapThreats) && gameData.roomTrapThreats.length > 0
+                ? gameData.roomTrapThreats
+                : fallbackTrapThreats;
+            const selectedVibes = trapVibes.length > 0 ? trapVibes : (dungeonState?.trapVibes || []);
+            const matching = selectedVibes.length === 0
+                ? configuredTraps
+                : configuredTraps.filter(trap => (trap.tags || []).some(tag => selectedVibes.includes(tag)));
+            const trapTemplate = pick(matching.length > 0 ? matching : configuredTraps);
+
             const damage = randInt(profile.damageRange.min, profile.damageRange.max);
             const threshold = Math.max(3, randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max));
+            const trapType = trapTemplate.type || ((trapTemplate.tags || []).includes('hazard') ? 'Hazard' : 'Trap');
 
             return {
-                keyword: pick(trapNames),
-                type: 'Trap',
+                keyword: trapTemplate.name || 'Hidden Trap',
+                type: trapType,
                 quantity: 1,
                 damage,
                 threshold,
                 defeat: null,
                 overwhelm: null,
-                checkRequirement: `Disarm/Bypass Trap at Threshold +${threshold}`,
+                checkRequirement: trapTemplate.check || `Disarm/Bypass Trap at Threshold +${threshold}`,
                 range: '',
-                abilities: ['Hidden mechanism triggers when the party advances without spotting it first.'],
+                abilities: [trapTemplate.description || 'Hidden mechanism triggers when the party advances without spotting it first.'],
+                tags: trapTemplate.tags || [],
                 isBoss: false,
-                isHazard: true,
+                isHazard: trapType === 'Hazard',
                 isGeneratedTrap: true,
                 resolved: false
             };
@@ -2548,8 +2599,13 @@
 
         function maybeAddRoomTrapThreat(threats, profile, { isBossRoom = false } = {}) {
             const pressure = getTimePressureMultiplier();
-            threats.push(generateRoomTrapThreat(profile));
-            const extraTrapChance = Math.min(0.7, ((pressure - 0.5) * 0.2) + (isBossRoom ? 0.2 : 0));
+            const trapFrequency = getTrapFrequencyMultiplier();
+            const baseChance = 0.35 + ((pressure - 0.5) * 0.12) + (isBossRoom ? 0.1 : 0);
+            const chance = Math.min(0.95, Math.max(0, baseChance * trapFrequency));
+            if (Math.random() < chance) {
+                threats.push(generateRoomTrapThreat(profile));
+            }
+            const extraTrapChance = Math.min(0.75, chance * 0.55);
             if (Math.random() < extraTrapChance) {
                 threats.push(generateRoomTrapThreat(profile));
             }
@@ -3718,10 +3774,17 @@
             if (!dungeonState.timePressure) {
                 dungeonState.timePressure = 1;
             }
+            if (typeof dungeonState.trapFrequency !== 'number') {
+                dungeonState.trapFrequency = 1;
+            }
+            if (!Array.isArray(dungeonState.trapVibes)) {
+                dungeonState.trapVibes = [];
+            }
             if (typeof dungeonState.useOwnThreats !== 'boolean') {
                 dungeonState.useOwnThreats = false;
             }
             dungeonState.timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
+            dungeonState.trapFrequency = Math.min(2, Math.max(0, Number(dungeonState.trapFrequency ?? 1)));
 
 
             if (!dungeonState.currentRoomId && dungeonState.rooms.length > 0) {
@@ -3743,6 +3806,9 @@
             const timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
             document.getElementById('timePressure').value = timePressure;
             document.getElementById('timePressureValue').textContent = `x${formatTimePressure(timePressure)}`;
+            const trapFrequency = Math.min(2, Math.max(0, Number(dungeonState.trapFrequency ?? 1)));
+            document.getElementById('trapFrequency').value = trapFrequency;
+            document.getElementById('trapFrequencyValue').textContent = `x${formatTimePressure(trapFrequency)}`;
 
             // Restore keywords and abilities
             if (dungeonState.keywords && dungeonState.keywords.length > 0) {
@@ -3775,6 +3841,12 @@
                 setEnabledDescriptionFilters(dungeonState.descriptionThemes);
             } else {
                 setEnabledDescriptionFilters([]);
+            }
+
+            if (Array.isArray(dungeonState.trapVibes)) {
+                setEnabledTrapVibes(dungeonState.trapVibes);
+            } else {
+                setEnabledTrapVibes([]);
             }
 
             document.getElementById('useOwnThreats').checked = Boolean(dungeonState.useOwnThreats);
@@ -3994,6 +4066,66 @@
                 : `Selected ${count} of ${total} vibe themes.`;
         }
 
+        function getTrapTagOptions() {
+            const roomTrapThreats = Array.isArray(gameData?.roomTrapThreats) ? gameData.roomTrapThreats : [];
+            const tags = new Set();
+            roomTrapThreats.forEach(trap => {
+                (trap.tags || []).forEach(tag => {
+                    if (typeof tag === 'string' && tag.trim()) tags.add(tag.trim());
+                });
+            });
+            return Array.from(tags).sort((a, b) => a.localeCompare(b));
+        }
+
+        function populateTrapVibeList(selectedTags = []) {
+            const list = document.getElementById('trapVibeList');
+            if (!list) return;
+            list.innerHTML = '';
+            const options = getTrapTagOptions();
+            options.forEach(tag => {
+                const label = document.createElement('label');
+                label.className = 'threat-type-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = tag;
+                checkbox.checked = selectedTags.includes(tag);
+                checkbox.addEventListener('change', () => updateTrapVibeSummary(getEnabledTrapVibes()));
+                const text = document.createElement('span');
+                text.textContent = tag;
+                label.appendChild(checkbox);
+                label.appendChild(text);
+                list.appendChild(label);
+            });
+        }
+
+        function getEnabledTrapVibes() {
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            return checkboxes.filter(box => box.checked).map(box => box.value);
+        }
+
+        function setEnabledTrapVibes(tags) {
+            const selected = new Set(tags || []);
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = selected.has(box.value);
+            });
+            updateTrapVibeSummary(tags || []);
+        }
+
+        function updateTrapVibeSummary(tags) {
+            const summary = document.getElementById('trapVibeFilterSummary');
+            if (!summary) return;
+            const total = getTrapTagOptions().length;
+            const count = tags.length;
+            if (total === 0) {
+                summary.textContent = 'No tagged traps in data.';
+                return;
+            }
+            summary.textContent = count === 0
+                ? 'All trap vibes enabled.'
+                : `Selected ${count} of ${total} trap vibes.`;
+        }
+
         function buildKeywordAbilitiesFromInputs(ids) {
             return ids
                 .map((id, index) => {
@@ -4027,6 +4159,16 @@
             }
         });
 
+        document.getElementById('trapFrequency').addEventListener('input', (e) => {
+            const value = Math.min(2, Math.max(0, parseFloat(e.target.value) || 1));
+            e.target.value = value;
+            document.getElementById('trapFrequencyValue').textContent = `x${formatTimePressure(value)}`;
+            if (dungeonState) {
+                dungeonState.trapFrequency = value;
+                saveDungeonState();
+            }
+        });
+
         document.getElementById('startBtn').addEventListener('click', () => {
             if (!gameData) {
                 document.getElementById('errorDisplay').textContent = 'Dungeon data is not loaded yet.';
@@ -4055,6 +4197,8 @@
 
             const disallowedThreatTypes = getDisallowedThreatTypes();
             const descriptionThemes = getEnabledDescriptionFilters();
+            const trapVibes = getEnabledTrapVibes();
+            const trapFrequency = Math.min(2, Math.max(0, parseFloat(document.getElementById('trapFrequency').value) || 1));
             const useOwnThreats = document.getElementById('useOwnThreats').checked;
 
             // Reset state
@@ -4069,6 +4213,8 @@
                 ],
                 disallowedThreatTypes,
                 descriptionThemes,
+                trapVibes,
+                trapFrequency,
                 useOwnThreats,
                 rooms: [],
                 map: {},
@@ -4136,6 +4282,8 @@
                     updateThreatFilterSummary(getDisallowedThreatTypes());
                     populateDescriptionFilterList(getEnabledDescriptionFilters());
                     updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+                    populateTrapVibeList(getEnabledTrapVibes());
+                    updateTrapVibeSummary(getEnabledTrapVibes());
                 }
 
                 if (!applyDungeonState(loadedState, loadedLayouts)) {
@@ -4176,6 +4324,39 @@
                 box.checked = false;
             });
             updateThreatFilterSummary([]);
+        });
+
+        document.getElementById('trapVibeFilterBtn').addEventListener('click', () => {
+            document.getElementById('trapVibeModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeTrapVibe').addEventListener('click', () => {
+            document.getElementById('trapVibeModal').classList.add('hidden');
+        });
+
+        document.getElementById('applyTrapVibes').addEventListener('click', () => {
+            document.getElementById('trapVibeModal').classList.add('hidden');
+            updateTrapVibeSummary(getEnabledTrapVibes());
+            if (dungeonState) {
+                dungeonState.trapVibes = getEnabledTrapVibes();
+                saveDungeonState();
+            }
+        });
+
+        document.getElementById('selectAllTrapVibes').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = true;
+            });
+            updateTrapVibeSummary(getEnabledTrapVibes());
+        });
+
+        document.getElementById('clearAllTrapVibes').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = false;
+            });
+            updateTrapVibeSummary([]);
         });
 
         document.getElementById('descriptionFilterBtn').addEventListener('click', () => {
@@ -4240,6 +4421,8 @@
                 updateThreatFilterSummary(getDisallowedThreatTypes());
                 populateDescriptionFilterList(getEnabledDescriptionFilters());
                 updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+                populateTrapVibeList(getEnabledTrapVibes());
+                updateTrapVibeSummary(getEnabledTrapVibes());
                 
             } catch (err) {
                 document.getElementById('errorDisplay').textContent = `Error loading file: ${err.message}`;
@@ -4308,6 +4491,8 @@
             updateThreatFilterSummary(getDisallowedThreatTypes());
             populateDescriptionFilterList([]);
             updateDescriptionFilterSummary([]);
+            populateTrapVibeList([]);
+            updateTrapVibeSummary([]);
             loadDungeonState();
         })();
     </script>

@@ -18,6 +18,7 @@
       "anchorFeatures": "Major objects/features in rooms. Should start with 'A/An' or 'The' or be plural nouns.",
       "environmentalThreatChance": "Chance (0-1) that a room contains an environmental hazard in addition to normal threats.",
       "environmentalThreats": "List of environmental hazards. Each entry should include a name, description, and optional check (e.g., 'Effective Body'). If no check is provided, defeat/overwhelm tiers are used.",
+      "roomTrapThreats": "Optional list of hidden room trap templates. Each entry can include: name, description, check, tags (array of vibe tags), and optional type ('Trap' or 'Hazard').",
       "pressures": "Environmental dangers or tension-building descriptions. Complete sentences.",
       "mitigations": "Actions players can take to address pressures. Verb phrases that follow 'A successful check could...'.",
       "doorStatuses": "States a door can be in. 'Open' means no check needed; others require bypass checks.",
@@ -761,6 +762,58 @@
     {
       "name": "Grasping Vines",
       "description": "Grasping Vines: Thorny growths lash out to entangle anything that passes."
+    }
+  ],
+  "roomTrapThreats": [
+    {
+      "name": "Tripwire Net",
+      "description": "Tripwire Net: Hidden cord releases a weighted net that tangles ankles and gear.",
+      "check": "Effective",
+      "tags": ["snare", "mechanical"]
+    },
+    {
+      "name": "Poison Needle Latch",
+      "description": "Poison Needle Latch: A lockplate punctures fingers with a venomous spike.",
+      "check": "Competent",
+      "tags": ["poison", "mechanical"]
+    },
+    {
+      "name": "Runeburst Sigil",
+      "description": "Runeburst Sigil: A hidden glyph discharges force when crossed.",
+      "check": "Forceful",
+      "tags": ["magical", "hazard"]
+    },
+    {
+      "name": "False Floor Pit",
+      "description": "False Floor Pit: Stone gives way into a concealed drop.",
+      "check": "Effective",
+      "tags": ["pit", "hazard"]
+    },
+    {
+      "name": "Alchemical Fire Jet",
+      "description": "Alchemical Fire Jet: Concealed nozzles erupt in timed gouts of flame.",
+      "check": "Forceful",
+      "tags": ["fire", "hazard", "mechanical"],
+      "type": "Hazard"
+    },
+    {
+      "name": "Bone Chime Alarm",
+      "description": "Bone Chime Alarm: Disturbance rings a shrill alarm that attracts danger.",
+      "check": "Competent",
+      "tags": ["alarm", "mechanical"]
+    },
+    {
+      "name": "Vine Snare",
+      "description": "Vine Snare: Living tendrils lash out to pin intruders in place.",
+      "check": "Effective",
+      "tags": ["nature", "snare", "hazard"],
+      "type": "Hazard"
+    },
+    {
+      "name": "Shatterglass Cloud",
+      "description": "Shatterglass Cloud: A brittle vial bursts, filling the area with cutting dust.",
+      "check": "Forceful",
+      "tags": ["hazard", "poison"]
     }
   ],
   "pressures": [
