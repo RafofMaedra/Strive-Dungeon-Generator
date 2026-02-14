@@ -368,6 +368,9 @@
             border: 1px solid var(--border);
             border-radius: 4px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .room-list-header {
@@ -385,6 +388,8 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            overflow-y: auto;
+            max-height: 72vh;
         }
 
         .room-list-item {
@@ -3561,19 +3566,18 @@
 
         function renderMap() {
             const roomListPanel = document.getElementById('roomListPanel');
-            const mapEmpty = document.getElementById('mapEmpty');
-
-            if (!roomListPanel || !mapEmpty) return;
-
-            roomListPanel.innerHTML = '';
+            if (!roomListPanel) return;
 
             if (!dungeonState || dungeonState.rooms.length === 0) {
-                roomListPanel.appendChild(mapEmpty);
-                mapEmpty.classList.remove('hidden');
+                roomListPanel.innerHTML = `
+                    <div class="empty-state">
+                        <p>Rooms will appear here as you advance.</p>
+                    </div>
+                `;
                 return;
             }
 
-            mapEmpty.classList.add('hidden');
+            roomListPanel.innerHTML = '';
             const sortedRooms = [...dungeonState.rooms].sort((a, b) => a.index - b.index);
             sortedRooms.forEach(room => {
                 const button = document.createElement('button');
@@ -4247,6 +4251,7 @@
         // ==================== TOOLTIP POSITIONING ====================
         // Position fixed tooltips dynamically based on icon position
         document.addEventListener('mouseenter', (e) => {
+            if (!(e.target instanceof Element)) return;
             const icon = e.target.closest('.tooltip-icon');
             if (!icon) return;
 
