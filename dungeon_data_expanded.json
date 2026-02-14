@@ -578,7 +578,7 @@
     "scraping claws circle out of sight",
     "the soft slap of water suggests movement just beyond light",
     "metal ticks as it cools, then snaps",
-    "a bell tolls once—then silence, as if it never happened",
+    "a bell tolls once\u2014then silence, as if it never happened",
     "whispers coil around your ears, too close and too quiet",
     "wood creaks under strain, as if ready to give",
     "muffled sobbing echoes from a side passage",
@@ -766,54 +766,275 @@
   ],
   "roomTrapThreats": [
     {
-      "name": "Tripwire Net",
-      "description": "Tripwire Net: Hidden cord releases a weighted net that tangles ankles and gear.",
-      "check": "Effective",
-      "tags": ["snare", "mechanical"]
+      "name": "Cracking Ceiling",
+      "description": "Cracking Ceiling: Hairline fractures spread overhead and chunks begin to fall without warning.",
+      "check": "Forceful",
+      "tags": [
+        "structural",
+        "environmental"
+      ],
+      "type": "Hazard"
     },
     {
-      "name": "Poison Needle Latch",
-      "description": "Poison Needle Latch: A lockplate punctures fingers with a venomous spike.",
+      "name": "Loose Tile Shear",
+      "description": "Loose Tile Shear: Shifting floor stones slide underfoot and open a sudden gap.",
+      "check": "Effective",
+      "tags": [
+        "terrain",
+        "environmental"
+      ],
+      "type": "Hazard"
+    },
+    {
+      "name": "Collapsing Ledge",
+      "description": "Collapsing Ledge: A narrow incline gives way, threatening to drop creatures into a lower section.",
+      "check": "Effective",
+      "tags": [
+        "terrain",
+        "structural",
+        "environmental"
+      ],
+      "type": "Hazard"
+    },
+    {
+      "name": "Slick Moss Incline",
+      "description": "Slick Moss Incline: Wet growth turns the slope into a treacherous slide.",
       "check": "Competent",
-      "tags": ["poison", "mechanical"]
+      "tags": [
+        "terrain",
+        "nature",
+        "environmental"
+      ],
+      "type": "Hazard"
     },
     {
-      "name": "Runeburst Sigil",
-      "description": "Runeburst Sigil: A hidden glyph discharges force when crossed.",
+      "name": "Sinkhole Floor",
+      "description": "Sinkhole Floor: Hollow ground breaks beneath weight and drags creatures downward.",
       "check": "Forceful",
-      "tags": ["magical", "hazard"]
+      "tags": [
+        "terrain",
+        "environmental"
+      ],
+      "type": "Hazard"
     },
     {
-      "name": "False Floor Pit",
-      "description": "False Floor Pit: Stone gives way into a concealed drop.",
+      "name": "Razor Rubble Runoff",
+      "description": "Razor Rubble Runoff: A slope of sharp stones shifts and cuts anything crossing it.",
       "check": "Effective",
-      "tags": ["pit", "hazard"]
+      "tags": [
+        "terrain",
+        "structural",
+        "environmental"
+      ],
+      "type": "Hazard"
     },
     {
-      "name": "Alchemical Fire Jet",
-      "description": "Alchemical Fire Jet: Concealed nozzles erupt in timed gouts of flame.",
+      "name": "Tripwire Net",
+      "description": "Tripwire Net: A hidden cord releases a weighted net that tangles ankles and gear.",
+      "check": "Effective",
+      "tags": [
+        "snare",
+        "mechanical"
+      ]
+    },
+    {
+      "name": "Chain Snare Loop",
+      "description": "Chain Snare Loop: A concealed loop cinches tight and yanks prey off balance.",
       "check": "Forceful",
-      "tags": ["fire", "hazard", "mechanical"],
+      "tags": [
+        "snare",
+        "mechanical"
+      ]
+    },
+    {
+      "name": "Barbed Leg Clamp",
+      "description": "Barbed Leg Clamp: Spring-loaded jaws snap shut around a limb.",
+      "check": "Forceful",
+      "tags": [
+        "snare",
+        "mechanical"
+      ]
+    },
+    {
+      "name": "Pendulum Blade Corridor",
+      "description": "Pendulum Blade Corridor: Heavy blades swing in alternating arcs through the passage.",
+      "check": "Effective",
+      "tags": [
+        "mechanical",
+        "blades"
+      ]
+    },
+    {
+      "name": "Wall Dart Lattice",
+      "description": "Wall Dart Lattice: Pressure triggers a crossfire of darts from hidden slits.",
+      "check": "Competent",
+      "tags": [
+        "mechanical",
+        "poison"
+      ]
+    },
+    {
+      "name": "Needle Lockplate",
+      "description": "Needle Lockplate: Tampering with the mechanism releases a venom-coated needle.",
+      "check": "Competent",
+      "tags": [
+        "mechanical",
+        "poison"
+      ]
+    },
+    {
+      "name": "Scythe Track",
+      "description": "Scythe Track: A floor plate releases a sweeping scythe from a wall recess.",
+      "check": "Forceful",
+      "tags": [
+        "mechanical",
+        "blades"
+      ]
+    },
+    {
+      "name": "Caustic Spray Burst",
+      "description": "Caustic Spray Burst: Pressurized vials rupture and fill the area with burning mist.",
+      "check": "Forceful",
+      "tags": [
+        "alchemical",
+        "poison"
+      ],
+      "type": "Hazard"
+    },
+    {
+      "name": "Flashpowder Blind",
+      "description": "Flashpowder Blind: A sudden flare and smoke cloud disorients everyone nearby.",
+      "check": "Competent",
+      "tags": [
+        "alchemical",
+        "alarm"
+      ]
+    },
+    {
+      "name": "Smoke Choke Vent",
+      "description": "Smoke Choke Vent: Hidden vents flood the room with thick choking fumes.",
+      "check": "Forceful",
+      "tags": [
+        "alchemical",
+        "environmental"
+      ],
       "type": "Hazard"
     },
     {
       "name": "Bone Chime Alarm",
       "description": "Bone Chime Alarm: Disturbance rings a shrill alarm that attracts danger.",
       "check": "Competent",
-      "tags": ["alarm", "mechanical"]
+      "tags": [
+        "alarm",
+        "mechanical"
+      ]
     },
     {
-      "name": "Vine Snare",
-      "description": "Vine Snare: Living tendrils lash out to pin intruders in place.",
+      "name": "Counterweight Bellfall",
+      "description": "Counterweight Bellfall: Tampering triggers a crashing cascade and loud bell peal.",
       "check": "Effective",
-      "tags": ["nature", "snare", "hazard"],
+      "tags": [
+        "alarm",
+        "structural"
+      ]
+    },
+    {
+      "name": "Runeburst Sigil",
+      "description": "Runeburst Sigil: A hidden glyph discharges force when crossed.",
+      "check": "Forceful",
+      "tags": [
+        "arcane",
+        "glyph"
+      ]
+    },
+    {
+      "name": "Hexstep Wardline",
+      "description": "Hexstep Wardline: Crossing an invisible boundary releases a backlash of hostile magic.",
+      "check": "Effective",
+      "tags": [
+        "arcane",
+        "ward"
+      ]
+    },
+    {
+      "name": "Binding Glyph Circle",
+      "description": "Binding Glyph Circle: Arcane markings flare and restrain creatures caught within.",
+      "check": "Forceful",
+      "tags": [
+        "arcane",
+        "glyph",
+        "snare"
+      ]
+    },
+    {
+      "name": "Soul Lantern Drain",
+      "description": "Soul Lantern Drain: Pale light leeches strength until the source is disrupted.",
+      "check": "Forceful",
+      "tags": [
+        "arcane",
+        "environmental"
+      ],
       "type": "Hazard"
     },
     {
-      "name": "Shatterglass Cloud",
-      "description": "Shatterglass Cloud: A brittle vial bursts, filling the area with cutting dust.",
+      "name": "Vine Lash Thicket",
+      "description": "Vine Lash Thicket: Living tendrils whip out to restrain and drag intruders.",
+      "check": "Effective",
+      "tags": [
+        "nature",
+        "snare"
+      ],
+      "type": "Hazard"
+    },
+    {
+      "name": "Root Snare Bed",
+      "description": "Root Snare Bed: Buried roots erupt and knot around boots and ankles.",
+      "check": "Effective",
+      "tags": [
+        "nature",
+        "snare"
+      ]
+    },
+    {
+      "name": "Spore Burst Fungus",
+      "description": "Spore Burst Fungus: Disturbed caps erupt in clouds that sting lungs and eyes.",
+      "check": "Competent",
+      "tags": [
+        "nature",
+        "poison"
+      ],
+      "type": "Hazard"
+    },
+    {
+      "name": "Thorn Whip Canopy",
+      "description": "Thorn Whip Canopy: Hooked vines snap down from above and tear at exposed skin.",
       "check": "Forceful",
-      "tags": ["hazard", "poison"]
+      "tags": [
+        "nature",
+        "blades"
+      ]
+    },
+    {
+      "name": "Briar Pit",
+      "description": "Briar Pit: A concealed depression lined with thorned growth traps the unwary.",
+      "check": "Effective",
+      "tags": [
+        "nature",
+        "terrain",
+        "snare"
+      ],
+      "type": "Hazard"
+    },
+    {
+      "name": "Rotten Log Drop",
+      "description": "Rotten Log Drop: A decayed support collapses into a splintering fall zone.",
+      "check": "Forceful",
+      "tags": [
+        "nature",
+        "structural",
+        "environmental"
+      ],
+      "type": "Hazard"
     }
   ],
   "pressures": [
@@ -841,7 +1062,7 @@
     "A brittle ceiling beam creaks with each vibration.",
     "Static prickles over your skin as if a storm were trapped indoors.",
     "A swarm of biting insects stirs when your light passes over them.",
-    "The room’s echo carries too far, inviting attention.",
+    "The room\u2019s echo carries too far, inviting attention.",
     "A low fog conceals hazards at ankle height.",
     "Heat builds near the centre, as if the stone is cooking.",
     "A charm of warding hums, resisting passage beyond a line.",
@@ -851,7 +1072,7 @@
     "The floor is littered with caltrop-like shards.",
     "A hidden vent exhales scalding air in timed bursts.",
     "The smell of gas grows stronger the deeper you go.",
-    "The room’s geometry feels wrong, disorienting distance and direction.",
+    "The room\u2019s geometry feels wrong, disorienting distance and direction.",
     "A distant alarm tone begins to repeat, growing louder."
   ],
   "mitigations": [
@@ -1148,7 +1369,7 @@
     "Frosttouched": "Ice Immunity: This threat ignores successes dealt with ice.",
     "Stormtouched": "Lightning Immunity: This threat ignores successes dealt with lightning.",
     "Venomfang": "Potent Poison: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1d6 Grit until they succeed an Effective Body check (Threshold 4) or receive treatment.",
-    "Blightspore": "Foul 2: At the start of your turn, while in Short range, make a Competent Mind check against this threat’s Success Threshold; on failure, lose 1 Focus.",
+    "Blightspore": "Foul 2: At the start of your turn, while in Short range, make a Competent Mind check against this threat\u2019s Success Threshold; on failure, lose 1 Focus.",
     "Ritualist": "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
     "Wordcaster": "Power-words: Instead of dealing damage, this threat speaks a Word at a target in Short range. The target makes an Effective Mind check against this threat's Success Threshold; on failure they suffer a Forceful-tier effect appropriate to the Word (GM call) until the end of their next turn.",
     "Reassembler": "Reassembling: Unless this threat's remains are burned and scattered, it shortly reassembles, all successes removed.",
@@ -1213,7 +1434,7 @@
     "Besiege: Instead of dealing damage, this threat forces open a gate or doorway.",
     "Bound: If conjured, the conjurer can command the threat at no focus cost, can use the threat's senses as if they are its own, and can communicate by taking command of it's mouth, even at beyond distance. If the threat is defeated, its conjurer takes 1 damage to their focus. A conjurer can only be bound to one threat at a time.",
     "Conjurer: Instead of dealing damage, this threat can summon an elemental to fight at its side.",
-    "Cowardly: If at least 1 success has been assigned against this threat this round, it attempts to flee instead of dealing damage—unless an allied leader or at least 3 other allies are in Short range.",
+    "Cowardly: If at least 1 success has been assigned against this threat this round, it attempts to flee instead of dealing damage\u2014unless an allied leader or at least 3 other allies are in Short range.",
     "Crew: This Threat deals double successes to other Threats. When the defeat tier is reached, this threat splits into several lesser threats at the end of the round.",
     "Crush: A creature Restrained by this threat (can't move away) loses 2d6 Grit at the start of its turn.",
     "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn't Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
@@ -1276,19 +1497,19 @@
     "Volley: This threat deals half of its damage (rounded up) to 2 targets in Short range.",
     "Water Immunity: This threat ignores successes dealt with water.",
     "Water Vulnerability: Attacking this threat with water grants an additional success.",
-    "Ambusher: Unless spotted beforehand by an Effective observational check against this threat’s Success Threshold, characters are Surprised when it initiates combat.",
-    "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn’t Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
-    "Escape Artist: At the end of each round, if this threat isn’t Overwhelmed and isn’t restrained (pinned, trapped, magically bound, etc.), it escapes.",
-    "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat’s Success Threshold; on failure, you can’t Push your rolls this turn.",
+    "Ambusher: Unless spotted beforehand by an Effective observational check against this threat\u2019s Success Threshold, characters are Surprised when it initiates combat.",
+    "Dark Incantation: Instead of dealing damage, this threat advances a dark ritual. If it isn\u2019t Overwhelmed within 3 rounds, the ritual completes and triggers a Devastating/Apocalyptic effect.",
+    "Escape Artist: At the end of each round, if this threat isn\u2019t Overwhelmed and isn\u2019t restrained (pinned, trapped, magically bound, etc.), it escapes.",
+    "Fearsome Presence: At the start of your turn, if within Short range, make an Effective potency Mind check against this threat\u2019s Success Threshold; on failure, you can\u2019t Push your rolls this turn.",
     "Flaming Breath: Unless surprised, this threat opens the combat by dealing 2d6 damage against all creatures in Short range, unless they succeed on a relevant check at Effective potency.",
     "Flaming Breath: Unless surprised, this threat opens the combat by dealing 3d6 damage against all creatures in Short range, unless they succeed on a relevant check at Forceful potency.",
-    "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat’s Success Threshold; on failure, lose 1 Focus.",
-    "Foul 2: At the start of your turn, while in Short range, make a Competent Mind check against this threat’s Success Threshold; on failure, lose 1 Focus.",
+    "Foul: At the start of combat, each PC in Short range makes a Competent Mind check against this threat\u2019s Success Threshold; on failure, lose 1 Focus.",
+    "Foul 2: At the start of your turn, while in Short range, make a Competent Mind check against this threat\u2019s Success Threshold; on failure, lose 1 Focus.",
     "Grappler 2: Instead of dealing damage, this threat attempts to Restrain its target(s). Each target makes a Forceful Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
     "Grappler All: Instead of dealing damage, this threat attempts to Restrain every PC in Touch range. Each target makes an Effective Body check against this threat's Success Threshold; on failure they are Restrained (can't move away) until they succeed on an Effective Body check against this threat's Success Threshold at the start of their turn.",
-    "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat’s Success Threshold; on failure, you’re Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
+    "Hypnotic: At the start of your turn in Short range, make an Effective Mind check against this threat\u2019s Success Threshold; on failure, you\u2019re Stunned until the end of your turn. Once you succeed, you are immune to this ability for the rest of the scene.",
     "Poisonous 1: If a player takes damage from this threat, they are Poisoned. At the end of their turn, they lose 1 Grit until they succeed a Competent Body check (Threshold 4) or receive treatment.",
-    "Regeneration Numerical: At the end of each round, remove accumulated successes equal to this threat’s Success Threshold.",
+    "Regeneration Numerical: At the end of each round, remove accumulated successes equal to this threat\u2019s Success Threshold.",
     "Second Stage Strive: When this threat would be defeated, its second stage is revealed, and each player regains a Strive Die.",
     "Teleport Short Range: At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Short range.",
     "Teleport Beyond: At the end of each round, if this threat isn't Overwhelmed and isn't restrained/anchored, it teleports away up to Beyond range."
@@ -1308,7 +1529,7 @@
           "Common Arcane Conduit",
           "Torch-stone",
           "Discouraging Fragrance",
-          "Hunter’s Toxin",
+          "Hunter\u2019s Toxin",
           "Keen-Eye Lens",
           "Soft-Step Wax",
           "Smoke Pellet",
@@ -1417,7 +1638,7 @@
         "Faded battle pennant",
         "Ivory comb with sigil",
         "Glass vial of glittering sand",
-        "Child’s tin whistle",
+        "Child\u2019s tin whistle",
         "Miniature stone idol",
         "Copper coin with a hole",
         "Threadbare ribbon of office",
