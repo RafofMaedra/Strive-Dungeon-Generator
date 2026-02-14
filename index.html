@@ -2512,6 +2512,44 @@
             }
         }
 
+        function generateRoomTrapThreat(profile) {
+            const trapNames = [
+                'Tripwire Trap',
+                'Pressure Plate Trap',
+                'Hidden Snare Trap',
+                'Concealed Dart Trap',
+                'Falling Block Trap'
+            ];
+            const damage = randInt(profile.damageRange.min, profile.damageRange.max);
+            const threshold = Math.max(3, randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max));
+
+            return {
+                keyword: pick(trapNames),
+                type: 'Trap',
+                quantity: 1,
+                damage,
+                threshold,
+                defeat: null,
+                overwhelm: null,
+                checkRequirement: `Disarm/Bypass Trap at Threshold +${threshold}`,
+                range: '',
+                abilities: ['Hidden mechanism triggers when the party advances without spotting it first.'],
+                isBoss: false,
+                isHazard: true,
+                isGeneratedTrap: true,
+                resolved: false
+            };
+        }
+
+        function maybeAddRoomTrapThreat(threats, profile, { isBossRoom = false } = {}) {
+            const pressure = getTimePressureMultiplier();
+            threats.push(generateRoomTrapThreat(profile));
+            const extraTrapChance = Math.min(0.7, ((pressure - 0.5) * 0.2) + (isBossRoom ? 0.2 : 0));
+            if (Math.random() < extraTrapChance) {
+                threats.push(generateRoomTrapThreat(profile));
+            }
+        }
+
         function getOwnThreatWeights() {
             const pressure = getTimePressureMultiplier();
             return {
@@ -2554,10 +2592,12 @@
         }
 
         function generateThreats(isBoss, options = {}) {
-            if (dungeonState?.useOwnThreats) {
-                return createOwnThreatPrompt(isBoss);
-            }
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
+            if (dungeonState?.useOwnThreats) {
+                const prompts = createOwnThreatPrompt(isBoss);
+                maybeAddRoomTrapThreat(prompts, profile, { isBossRoom: isBoss });
+                return prompts;
+            }
             const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
             const disallowedTypes = new Set(dungeonState.disallowedThreatTypes || []);
             const excludedTypes = new Set(options.excludedTypes || []);
@@ -2570,6 +2610,7 @@
                 if (allowEnvironmental) {
                     maybeAddEnvironmentalThreat(threats, profile);
                 }
+                maybeAddRoomTrapThreat(threats, profile, { isBossRoom: isBoss });
                 return threats;
             }
 
@@ -2581,6 +2622,7 @@
                 if (allowEnvironmental) {
                     maybeAddEnvironmentalThreat(bossThreats, profile);
                 }
+                maybeAddRoomTrapThreat(bossThreats, profile, { isBossRoom: true });
                 return bossThreats;
             }
 
@@ -2593,6 +2635,7 @@
                 if (allowEnvironmental) {
                     maybeAddEnvironmentalThreat(threats, profile);
                 }
+                maybeAddRoomTrapThreat(threats, profile, { isBossRoom: isBoss });
                 return threats;
             }
 
@@ -2670,6 +2713,7 @@
             if (allowEnvironmental) {
                 maybeAddEnvironmentalThreat(threats, profile);
             }
+            maybeAddRoomTrapThreat(threats, profile, { isBossRoom: isBoss });
             return threats;
         }
 
