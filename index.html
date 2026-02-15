@@ -363,6 +363,45 @@
             gap: 2rem;
         }
 
+        .room-list-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .room-list-header {
+            background: linear-gradient(90deg, var(--accent-gold-dim), transparent);
+            padding: 1rem 1.5rem;
+            font-family: var(--font-display);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+        }
+
+        .room-list-body {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow-y: auto;
+            max-height: 72vh;
+        }
+
+        .room-list-item {
+            width: 100%;
+            text-align: left;
+        }
+
+        .room-list-item.current {
+            border-color: var(--accent-gold);
+            background: rgba(201, 162, 39, 0.08);
+        }
+
         @media (max-width: 900px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -408,33 +447,6 @@
 
         .room-body {
             padding: 1.5rem;
-        }
-
-        .room-meta {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-        }
-
-        .meta-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .meta-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-muted);
-        }
-
-        .meta-value {
-            font-size: 0.95rem;
-            color: var(--accent-gold);
         }
 
         .room-description {
@@ -1369,6 +1381,21 @@
                     </div>
                     <span class="helper-text">Higher values make wandering interruptions more likely during rests.</span>
                 </div>
+                <div class="control-group">
+                    <label for="trapFrequency">Trap Frequency</label>
+                    <div class="range-input">
+                        <input type="range" id="trapFrequency" min="0" max="2" step="0.25" value="1">
+                        <span id="trapFrequencyValue" class="range-value">x1</span>
+                    </div>
+                    <span class="helper-text">Higher values increase hidden trap appearances.</span>
+                </div>
+                <div class="control-group full-width">
+                    <label>Trap Vibes</label>
+                    <div class="filter-row">
+                        <button type="button" id="trapVibeFilterBtn">Trap Vibes</button>
+                        <span id="trapVibeFilterSummary" class="helper-text">All trap vibes enabled.</span>
+                    </div>
+                </div>
                 <div class="control-group full-width keyword-group">
                     <label>Threat Keyword 1</label>
                     <div class="keyword-row">
@@ -1402,13 +1429,15 @@
                         <span id="descriptionFilterSummary" class="helper-text">No vibe themes selected.</span>
                     </div>
                 </div>
+                <div class="control-group full-width">
+                    <label class="threat-type-item" for="useOwnThreats">
+                        <input type="checkbox" id="useOwnThreats">
+                        Use Own Threats (show reminder prompts instead of generated monster encounters)
+                    </label>
+                </div>
                 <div class="control-group">
                     <label for="dataFile">Import Data File</label>
                     <input type="file" id="dataFile" accept=".json">
-                </div>
-                <div class="control-group">
-                    <label for="pngFolder">Load PNG Folder</label>
-                    <input type="file" id="pngFolder" webkitdirectory directory>
                 </div>
             </div>
 
@@ -1444,15 +1473,11 @@
                 <div id="roomContent" class="hidden"></div>
             </div>
 
-            <div class="map-panel">
-                <div class="map-header">Dungeon Map</div>
-                <div class="map-body">
+            <div class="room-list-panel">
+                <div class="room-list-header">Dungeon Rooms</div>
+                <div class="room-list-body" id="roomListPanel">
                     <div id="mapEmpty" class="empty-state">
-                        <p>Rooms will reveal themselves here as you explore.</p>
-                    </div>
-                    <div id="pngStatus" class="data-status default hidden"></div>
-                    <div id="mapGrid" class="map-grid hidden">
-                        <div id="mapRooms" class="map-rooms"></div>
+                        <p>Rooms will appear here as you advance.</p>
                     </div>
                 </div>
             </div>
@@ -1495,6 +1520,26 @@
             </div>
             <div class="modal-footer">
                 <button type="button" id="applyDescriptionFilter">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="trapVibeModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="trapVibeTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title" id="trapVibeTitle">Trap Vibes</div>
+                <button type="button" id="closeTrapVibe">Close</button>
+            </div>
+            <div class="modal-body">
+                <p class="helper-text">Choose trap vibe tags to include in room trap generation.</p>
+                <div class="filter-row modal-actions">
+                    <button type="button" id="selectAllTrapVibes">Select All</button>
+                    <button type="button" id="clearAllTrapVibes">Clear All</button>
+                </div>
+                <div id="trapVibeList" class="threat-type-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="applyTrapVibes">Done</button>
             </div>
         </div>
     </div>
@@ -1583,6 +1628,11 @@
             }
             const formatted = value.toFixed(2);
             return formatted.replace(/\.?0+$/, '');
+        }
+
+        function getTrapFrequencyMultiplier() {
+            const value = Number(dungeonState?.trapFrequency ?? 1);
+            return Math.min(2, Math.max(0, value));
         }
 
         // ==================== DICE ROLLER ====================
@@ -1838,6 +1888,9 @@
         }
 
         function renderWanderingThreats(threats) {
+            if (dungeonState?.useOwnThreats) {
+                return '<div class="no-threats">Use your own wandering threats from your map/adventure notes.</div>';
+            }
             if (!threats || threats.length === 0) {
                 return '<div class="no-threats">No wandering threats appeared.</div>';
             }
@@ -2504,8 +2557,108 @@
             }
         }
 
+        function generateRoomTrapThreat(profile, { trapVibes = [] } = {}) {
+            const fallbackTrapThreats = [
+                { name: 'Tripwire Trap', description: 'Hidden mechanism triggers when the party advances without spotting it first.', tags: ['mechanical'] },
+                { name: 'Pressure Plate Trap', description: 'A pressure plate releases a delayed but dangerous response.', tags: ['mechanical'] },
+                { name: 'Hidden Snare Trap', description: 'Snaring lines tighten around legs and gear.', tags: ['snare'] },
+                { name: 'Concealed Dart Trap', description: 'Tiny slits fire poisoned darts across the room.', tags: ['poison', 'mechanical'] },
+                { name: 'Falling Block Trap', description: 'A loose stone block crashes down from above.', tags: ['hazard', 'collapse'] }
+            ];
+            const configuredTraps = Array.isArray(gameData?.roomTrapThreats) && gameData.roomTrapThreats.length > 0
+                ? gameData.roomTrapThreats
+                : fallbackTrapThreats;
+            const selectedVibes = trapVibes.length > 0 ? trapVibes : (dungeonState?.trapVibes || []);
+            const matching = selectedVibes.length === 0
+                ? configuredTraps
+                : configuredTraps.filter(trap => (trap.tags || []).some(tag => selectedVibes.includes(tag)));
+            const trapTemplate = pick(matching.length > 0 ? matching : configuredTraps);
+
+            const damage = randInt(profile.damageRange.min, profile.damageRange.max);
+            const threshold = Math.max(3, randInt(profile.baseThresholdRange.min, profile.baseThresholdRange.max));
+            const trapType = trapTemplate.type || ((trapTemplate.tags || []).includes('hazard') ? 'Hazard' : 'Trap');
+
+            return {
+                keyword: trapTemplate.name || 'Hidden Trap',
+                type: trapType,
+                quantity: 1,
+                damage,
+                threshold,
+                defeat: null,
+                overwhelm: null,
+                checkRequirement: trapTemplate.check || `Disarm/Bypass Trap at Threshold +${threshold}`,
+                range: '',
+                abilities: [trapTemplate.description || 'Hidden mechanism triggers when the party advances without spotting it first.'],
+                tags: trapTemplate.tags || [],
+                isBoss: false,
+                isHazard: trapType === 'Hazard',
+                isGeneratedTrap: true,
+                resolved: false
+            };
+        }
+
+        function maybeAddRoomTrapThreat(threats, profile, { isBossRoom = false } = {}) {
+            const pressure = getTimePressureMultiplier();
+            const trapFrequency = getTrapFrequencyMultiplier();
+            const baseChance = 0.35 + ((pressure - 0.5) * 0.12) + (isBossRoom ? 0.1 : 0);
+            const chance = Math.min(0.95, Math.max(0, baseChance * trapFrequency));
+            if (Math.random() < chance) {
+                threats.push(generateRoomTrapThreat(profile));
+            }
+            const extraTrapChance = Math.min(0.75, chance * 0.55);
+            if (Math.random() < extraTrapChance) {
+                threats.push(generateRoomTrapThreat(profile));
+            }
+        }
+
+        function getOwnThreatWeights() {
+            const pressure = getTimePressureMultiplier();
+            return {
+                none: Math.max(8, Math.round(42 - pressure * 10)),
+                few: Math.max(18, Math.round(26 + pressure * 7)),
+                group: Math.max(14, Math.round(20 + pressure * 10)),
+                miniboss: Math.max(6, Math.round(6 + pressure * 6))
+            };
+        }
+
+        function createOwnThreatPrompt(isBossRoom = false) {
+            const weights = getOwnThreatWeights();
+            if (isBossRoom) {
+                weights.miniboss += 20;
+                weights.none = Math.max(2, weights.none - 20);
+            }
+            const result = weightedPick(weights);
+            if (result === 'none') return [];
+
+            const labelByType = {
+                few: 'Threats Present: Few',
+                group: 'Threats Present: Group',
+                miniboss: 'Threats Present: Miniboss'
+            };
+
+            return [{
+                keyword: labelByType[result],
+                type: '',
+                quantity: 1,
+                damage: 0,
+                threshold: 0,
+                defeat: '-',
+                overwhelm: '-',
+                range: '—',
+                abilities: ['Use your own map/adventure notes for this room threat details.'],
+                isBoss: false,
+                isOwnThreatPrompt: true,
+                resolved: false
+            }];
+        }
+
         function generateThreats(isBoss, options = {}) {
             const profile = gameData.difficultyProfiles[dungeonState.difficulty];
+            if (dungeonState?.useOwnThreats) {
+                const prompts = createOwnThreatPrompt(isBoss);
+                maybeAddRoomTrapThreat(prompts, profile, { isBossRoom: isBoss });
+                return prompts;
+            }
             const keywords = dungeonState.keywords || [{ name: "Enemy", abilities: [] }];
             const disallowedTypes = new Set(dungeonState.disallowedThreatTypes || []);
             const excludedTypes = new Set(options.excludedTypes || []);
@@ -2518,6 +2671,7 @@
                 if (allowEnvironmental) {
                     maybeAddEnvironmentalThreat(threats, profile);
                 }
+                maybeAddRoomTrapThreat(threats, profile, { isBossRoom: isBoss });
                 return threats;
             }
 
@@ -2529,6 +2683,7 @@
                 if (allowEnvironmental) {
                     maybeAddEnvironmentalThreat(bossThreats, profile);
                 }
+                maybeAddRoomTrapThreat(bossThreats, profile, { isBossRoom: true });
                 return bossThreats;
             }
 
@@ -2541,6 +2696,7 @@
                 if (allowEnvironmental) {
                     maybeAddEnvironmentalThreat(threats, profile);
                 }
+                maybeAddRoomTrapThreat(threats, profile, { isBossRoom: isBoss });
                 return threats;
             }
 
@@ -2618,6 +2774,7 @@
             if (allowEnvironmental) {
                 maybeAddEnvironmentalThreat(threats, profile);
             }
+            maybeAddRoomTrapThreat(threats, profile, { isBossRoom: isBoss });
             return threats;
         }
 
@@ -2939,6 +3096,23 @@
                 ? threat.abilities.map(a => `<div class="ability">• <span class="ability-name">${a}</span></div>`).join('')
                 : '<div class="ability">—</div>';
 
+            if (threat.isOwnThreatPrompt) {
+                return `
+                <div class="threat-block ${resolvedClass}">
+                    <div class="threat-header">
+                        <span>${threat.keyword}</span>
+                        <label class="resolve-toggle">
+                            <input type="checkbox" class="threat-resolve-toggle" data-threat-index="${index}" ${threat.resolved ? 'checked' : ''}>
+                            Resolved
+                        </label>
+                    </div>
+                    <div class="threat-abilities">
+                        ${abilitiesHtml}
+                    </div>
+                </div>
+            `;
+            }
+
             const resolutionHtml = threat.checkRequirement
                 ? `<div class="threat-stat"><span class="stat-label">Check:</span> ${threat.checkRequirement}</div>`
                 : `<div class="threat-stat"><span class="stat-label">Defeat/Overwhelm:</span> ${threat.defeat}/${threat.overwhelm}</div>`;
@@ -3025,113 +3199,24 @@
         }
 
         // ==================== ROOM GENERATION ====================
-        function generateRoom({ position, moveDir, fromRoom }) {
+        function generateRoom({ position = null, moveDir = null, fromRoom = null } = {}) {
             const roomIndex = dungeonState.rooms.length + 1;
-            const profile = gameData.difficultyProfiles[dungeonState.difficulty];
-            const isEntrance = roomIndex === 1;
-            const rotation = isEntrance
-                ? randomRotation()
-                : (moveDir ? getRotationForMove(moveDir) : 0);
-            const remainingAfter = dungeonState.totalRooms - (dungeonState.rooms.length + 1);
-            const frontierBefore = getFrontierCount();
-            const usedExit = fromRoom && moveDir ? 1 : 0;
-            const guaranteedFrontier = frontierBefore - usedExit;
-            const minExits = isEntrance
-                ? 1
-                : (remainingAfter > 0 && guaranteedFrontier === 0 ? 1 : 0);
-            const includeDeadEnds = !isEntrance && remainingAfter > 0 && guaranteedFrontier > 0;
-            const neighborConstraints = getNeighborExitConstraints(position);
-
-            let layoutSelection = null;
-            let attempts = 0;
-            while (!layoutSelection && attempts < 20) {
-                if (isEntrance) {
-                    const entranceIds = Object.keys(gameData.entranceLayouts || {});
-                    const entranceId = pick(entranceIds);
-                    const exits = gameData.entranceLayouts[entranceId] || [];
-                    const mapExits = rotateExits(exits, rotation);
-                    const availableExits = getAvailableExpansionDirections(position, mapExits);
-                    if (remainingAfter === 0 || availableExits.length > 0) {
-                        layoutSelection = {
-                            bucket: "Entrance",
-                            layoutId: entranceId,
-                            exits,
-                            mapExits
-                        };
-                    }
-                } else {
-                    const candidate = selectLayout({ isBossRoom: false, minExits, includeDeadEnds });
-                    const exits = getExitsForLayout(candidate.layoutId);
-                    const mapExits = rotateExits(exits, rotation);
-                    if (!layoutMatchesConstraints(mapExits, neighborConstraints)) {
-                        attempts += 1;
-                        continue;
-                    }
-                    const availableExits = getAvailableExpansionDirections(position, mapExits);
-                    const frontierAfter = guaranteedFrontier + availableExits.length;
-                    if (remainingAfter === 0 || frontierAfter > 0) {
-                        layoutSelection = { ...candidate, exits, mapExits };
-                    }
-                }
-                attempts += 1;
-            }
-
-            if (!layoutSelection && !isEntrance) {
-                // Fallback: only allow dead ends if there's an alternative path (guaranteed frontier > 0)
-                // Otherwise, require at least one expansion exit to prevent premature dungeon end
-                const fallbackDeadEnds = guaranteedFrontier > 0;
-                const fallbackMinExits = fallbackDeadEnds ? 0 : 1;
-                const fallback = selectLayout({ isBossRoom: false, minExits: fallbackMinExits, includeDeadEnds: fallbackDeadEnds });
-                const fallbackExits = getExitsForLayout(fallback.layoutId);
-                const fallbackMapExits = rotateExits(fallbackExits, rotation);
-                layoutSelection = {
-                    ...fallback,
-                    exits: fallbackExits,
-                    mapExits: fallbackMapExits
-                };
-            }
-
-            if (!layoutSelection && isEntrance) {
-                const entranceIds = Object.keys(gameData.entranceLayouts || {});
-                const entranceId = entranceIds[0] || "ENT_E";
-                const exits = gameData.entranceLayouts[entranceId] || [];
-                layoutSelection = {
-                    bucket: "Entrance",
-                    layoutId: entranceId,
-                    exits,
-                    mapExits: rotateExits(exits, rotation)
-                };
-            }
-
-            layoutSelection.mapExits = applyExitConstraints(layoutSelection.mapExits, neighborConstraints);
+            const layout = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
             const description = generateDescription();
-            const doors = {};
-            layoutSelection.mapExits.forEach(exit => {
-                doors[exit] = generateDoor(profile);
-            });
-            if (fromRoom && moveDir) {
-                const entryDir = getOppositeDirection(moveDir);
-                if (!fromRoom.doors) {
-                    fromRoom.doors = {};
-                }
-                const linkedDoor = fromRoom.doors[moveDir] || { status: 'Open', bypass: null };
-                fromRoom.doors[moveDir] = linkedDoor;
-                doors[entryDir] = linkedDoor;
-            }
 
             const room = {
                 id: `room_${Date.now()}_${roomIndex}`,
                 index: roomIndex,
                 isBoss: roomIndex === dungeonState.totalRooms,
-                bucket: layoutSelection.bucket,
-                layoutId: layoutSelection.layoutId,
-                pngPath: `png/${layoutSelection.bucket.toLowerCase().replace(' ', '-')}/${layoutSelection.layoutId}.png`,
-                exits: layoutSelection.mapExits,
-                baseExits: layoutSelection.exits,
-                doors,
-                rotation,
-                position,
-                entryDir: moveDir ? getOppositeDirection(moveDir) : null,
+                bucket: layout.bucket,
+                layoutId: layout.layoutId,
+                pngPath: `png/${layout.bucket.toLowerCase().replace(' ', '-')}/${layout.layoutId}.png`,
+                exits: [],
+                baseExits: [],
+                doors: {},
+                rotation: randomRotation(),
+                position: { x: roomIndex - 1, y: 0 },
+                entryDir: null,
                 description: description.text,
                 threats: generateThreats(roomIndex === dungeonState.totalRooms),
                 loot: null,
@@ -3139,14 +3224,16 @@
             };
 
             room.loot = generateLoot(room);
-
             dungeonState.rooms.push(room);
-            dungeonState.map[coordKey(position.x, position.y)] = room.id;
-            linkAdjacentDoors(room);
+            dungeonState.currentRoomId = room.id;
+            if (room.isBoss) {
+                dungeonState.bossRoomId = room.id;
+            }
             saveDungeonState();
 
             return room;
         }
+
 
         function assignBossRoom() {
             if (!dungeonState || dungeonState.rooms.length === 0) return;
@@ -3178,63 +3265,20 @@
             if (lootUpdated) {
                 saveDungeonState();
             }
-            
-            const displayExits = [...room.exits];
-            if (room.entryDir && !displayExits.includes(room.entryDir)) {
-                displayExits.push(room.entryDir);
-            }
-            getLinkedNeighborDirections(room).forEach(dir => {
-                if (!displayExits.includes(dir)) {
-                    displayExits.push(dir);
-                }
-            });
 
-            let exitsHtml = '';
-            if (displayExits.length === 0) {
-                exitsHtml = '<div class="no-threats">No exits — Dead End. Retrace your steps.</div>';
-            } else {
-                exitsHtml = '<div class="exit-list">';
-                displayExits.forEach(exit => {
-                    const baseDoor = room.doors[exit] || { status: 'Open' };
-                    const door = baseDoor;
-                    const isTrapped = door.status === 'Trapped';
-                    const displayStatus = isTrapped ? 'Open' : door.status;
-                    const statusClass = displayStatus === 'Open' ? 'open' : 'blocked';
-                    let bypassHtml = '';
-                    if (door.bypass && !isTrapped) {
-                        bypassHtml = `<div class="bypass-info">
-                            Bypass: <span class="potency-${door.bypass.potency.toLowerCase()}">${door.bypass.potency}</span>
-                            check to ${door.bypass.verb}, Threshold +${door.bypass.threshold}
-                        </div>`;
-                    }
-                    const vec = directionVectors[exit];
-                    const targetPos = { x: room.position.x + vec.x, y: room.position.y + vec.y };
-                    const targetRoom = getRoomByPosition(targetPos);
-                    const oppositeDir = getOppositeDirection(exit);
-                    const canLink = targetRoom
-                        ? roomHasExit(room, exit) && roomHasExit(targetRoom, oppositeDir)
-                        : true;
-                    const canCreate = (!!targetRoom && canLink) || (!targetRoom && dungeonState.rooms.length < dungeonState.totalRooms);
-                    const isReturn = Boolean(targetRoom);
-                    const buttonLabel = isReturn ? 'Return' : 'Go this way';
-                    exitsHtml += `
-                        <div class="exit-item">
-                            <span class="exit-direction">${directionLabels[exit]}</span>
-                            <span class="exit-status ${statusClass}">${displayStatus}</span>
-                            <div class="exit-actions">
-                                <button class="exit-action" data-dir="${exit}" data-return="${isReturn}" ${canCreate ? '' : 'disabled'}>${buttonLabel}</button>
-                            </div>
-                            ${bypassHtml}
-                        </div>
-                    `;
-                });
-                exitsHtml += '</div>';
-            }
+            const hasMoreRooms = room.index < dungeonState.totalRooms;
+            const hasGeneratedNextRoom = dungeonState.rooms.some(existing => existing.index === room.index + 1);
+            const nextButtonLabel = hasGeneratedNextRoom ? 'Go to Next Room' : 'Generate Next Room';
+            const navigationHtml = hasMoreRooms
+                ? `<div class="buttons"><button id="nextRoomBtn" class="primary">${nextButtonLabel}</button><button id="rerollRoomBtn">Reroll Room</button></div>`
+                : '<div class="buttons"><div class="no-threats">Final room reached.</div><button id="rerollRoomBtn">Reroll Room</button></div>';
             
             let threatsHtml = '';
             const hasVisibleThreats = room.threats.some(threat => !isHiddenThreat(threat));
             if (!hasVisibleThreats) {
-                threatsHtml = '<div class="no-threats">The room appears empty of immediate threats.</div>';
+                threatsHtml = dungeonState.useOwnThreats
+                    ? '<div class="no-threats">No Threats Present</div>'
+                    : '<div class="no-threats">The room appears empty of immediate threats.</div>';
             } else {
                 threatsHtml = '<div class="threat-list">';
                 room.threats.forEach((threat, index) => {
@@ -3495,29 +3539,7 @@
                     ${room.isBoss ? '<span class="room-badge">BOSS ROOM</span>' : ''}
                 </div>
                 <div class="room-body">
-                    <div class="room-meta">
-                        <div class="meta-item">
-                            <span class="meta-label">Layout Type</span>
-                            <span class="meta-value">${room.bucket}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Layout ID</span>
-                            <span class="meta-value">${room.layoutId}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">PNG Path</span>
-                            <span class="meta-value">${room.pngPath}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Grid Position</span>
-                            <span class="meta-value">(${room.position.x}, ${room.position.y})</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Exits</span>
-                            <span class="meta-value">${room.exits.length > 0 ? room.exits.join(', ') : 'None'}</span>
-                        </div>
-                    </div>
-                    
+
                     <div class="room-description">${room.description}</div>
                     
                     <div class="threats">
@@ -3526,8 +3548,8 @@
                     </div>
 
                     <div class="exits">
-                        <div class="section-title">Exits & Doors</div>
-                        ${exitsHtml}
+                        <div class="section-title">Navigation</div>
+                        ${navigationHtml}
                     </div>
                     
                     <div class="hidden-section">
@@ -3537,13 +3559,14 @@
                 </div>
             `;
             
-            document.querySelectorAll('.exit-action').forEach(button => {
-                button.addEventListener('click', () => {
-                    const direction = button.dataset.dir;
-                    const isReturn = button.dataset.return === 'true';
-                    handleExitMove(direction, { isReturn });
-                });
-            });
+            const nextRoomBtn = document.getElementById('nextRoomBtn');
+            if (nextRoomBtn) {
+                nextRoomBtn.addEventListener('click', goToNextRoom);
+            }
+            const rerollRoomBtn = document.getElementById('rerollRoomBtn');
+            if (rerollRoomBtn) {
+                rerollRoomBtn.addEventListener('click', rerollCurrentRoom);
+            }
 
             // Handle success checkbox changes
             document.querySelectorAll('.success-checkbox').forEach(checkbox => {
@@ -3598,70 +3621,32 @@
         }
 
         function renderMap() {
-            const mapGrid = document.getElementById('mapGrid');
-            const mapRooms = document.getElementById('mapRooms');
-            const mapEmpty = document.getElementById('mapEmpty');
+            const roomListPanel = document.getElementById('roomListPanel');
+            if (!roomListPanel) return;
 
             if (!dungeonState || dungeonState.rooms.length === 0) {
-                mapGrid.classList.add('hidden');
-                mapEmpty.classList.remove('hidden');
+                roomListPanel.innerHTML = `
+                    <div class="empty-state">
+                        <p>Rooms will appear here as you advance.</p>
+                    </div>
+                `;
                 return;
             }
 
-            mapGrid.classList.remove('hidden');
-            mapEmpty.classList.add('hidden');
-
-            const positions = dungeonState.rooms.map(room => room.position);
-            const minX = Math.min(...positions.map(pos => pos.x));
-            const maxX = Math.max(...positions.map(pos => pos.x));
-            const minY = Math.min(...positions.map(pos => pos.y));
-            const maxY = Math.max(...positions.map(pos => pos.y));
-
-            const roomSize = 140;
-            const padding = 70;
-            const width = (maxX - minX + 1) * roomSize + padding * 2;
-            const height = (maxY - minY + 1) * roomSize + padding * 2;
-
-            mapGrid.style.setProperty('--room-size', `${roomSize}px`);
-            mapGrid.style.width = `${Math.max(width, 240)}px`;
-            mapGrid.style.height = `${Math.max(height, 240)}px`;
-            mapRooms.style.width = `${Math.max(width, 240)}px`;
-            mapRooms.style.height = `${Math.max(height, 240)}px`;
-
-            mapRooms.innerHTML = '';
-            dungeonState.rooms.forEach(room => {
-                const offsetX = (room.position.x - minX) * roomSize + padding;
-                const offsetY = (room.position.y - minY) * roomSize + padding;
-                const roomDiv = document.createElement('div');
+            roomListPanel.innerHTML = '';
+            const sortedRooms = [...dungeonState.rooms].sort((a, b) => a.index - b.index);
+            sortedRooms.forEach(room => {
+                const button = document.createElement('button');
                 const isCurrent = room.id === dungeonState.currentRoomId;
-                const isStart = room.position.x === 0 && room.position.y === 0;
-                const isBoss = room.id === dungeonState.bossRoomId;
-
-                roomDiv.className = `map-room${isCurrent ? ' current' : ''}${isStart ? ' start' : ''}${isBoss ? ' boss' : ''}`;
-                roomDiv.style.left = `${offsetX}px`;
-                roomDiv.style.top = `${offsetY}px`;
-
-                const img = document.createElement('img');
-                img.src = getPngSrc(room.pngPath);
-                img.alt = `Room ${room.index}`;
-                img.style.transform = `rotate(${room.rotation}deg)`;
-                img.addEventListener('error', () => {
-                    const normalized = normalizePngPath(room.pngPath);
-                    if (!missingPngPaths.has(normalized)) {
-                        missingPngPaths.add(normalized);
-                        updatePngStatus();
-                    }
-                });
-
-                const label = document.createElement('div');
-                label.className = 'map-room-label';
-                label.innerHTML = `${room.isBoss ? '👑 ' : ''}<span>Room ${room.index}</span>`;
-
-                roomDiv.appendChild(img);
-                roomDiv.appendChild(label);
-                mapRooms.appendChild(roomDiv);
+                button.type = 'button';
+                button.className = `room-list-item${isCurrent ? ' current' : ''}`;
+                button.dataset.roomIndex = String(room.index);
+                button.textContent = `${room.isBoss ? '👑 ' : ''}Room ${room.index}`;
+                button.addEventListener('click', () => jumpToRoom(room.index));
+                roomListPanel.appendChild(button);
             });
         }
+
 
         function getHiddenDangers(room, { onlyUnrevealed = false } = {}) {
             const dangers = [];
@@ -3676,25 +3661,6 @@
                     label,
                     requirement,
                     html: buildThreatBlockHtml(threat, index)
-                });
-            });
-
-            Object.entries(room.doors || {}).forEach(([direction, door]) => {
-                if (door.status !== 'Trapped') return;
-                const hiddenId = `door-trap-${direction}`;
-                const threshold = door.bypass?.threshold ?? getLootRevealThreshold(room);
-                const requirement = getHiddenRequirement(room, hiddenId, { threshold, successes: 1 });
-                if (onlyUnrevealed && requirement.revealed) return;
-                dangers.push({
-                    id: hiddenId,
-                    label: 'Trap',
-                    requirement,
-                    html: buildDoorTrapHtml({
-                        id: hiddenId,
-                        direction: directionLabels[direction] || direction,
-                        door,
-                        requirement
-                    })
                 });
             });
 
@@ -3716,38 +3682,25 @@
             attachResolutionHandlers(room, modal);
         }
 
-        function handleExitMove(direction, { isReturn = false } = {}) {
+        function goToNextRoom() {
             if (!dungeonState) return;
             const currentRoom = getCurrentRoom();
             if (!currentRoom) return;
-            if (!isReturn) {
-                const hiddenDangers = getHiddenDangers(currentRoom, { onlyUnrevealed: true });
-                if (hiddenDangers.length > 0) {
-                    hiddenDangers.forEach(danger => {
-                        danger.requirement.revealed = true;
-                    });
-                    saveDungeonState();
-                    renderRoom(currentRoom);
-                    showDangerRevealModal(currentRoom, hiddenDangers);
-                    return;
-                }
-            }
-            const vec = directionVectors[direction];
-            const nextPos = { x: currentRoom.position.x + vec.x, y: currentRoom.position.y + vec.y };
-            const existingRoom = getRoomByPosition(nextPos);
 
+            const hiddenDangers = getHiddenDangers(currentRoom, { onlyUnrevealed: true });
+            if (hiddenDangers.length > 0) {
+                hiddenDangers.forEach(danger => {
+                    danger.requirement.revealed = true;
+                });
+                saveDungeonState();
+                renderRoom(currentRoom);
+                showDangerRevealModal(currentRoom, hiddenDangers);
+                return;
+            }
+
+            const nextIndex = currentRoom.index + 1;
+            const existingRoom = dungeonState.rooms.find(room => room.index === nextIndex);
             if (existingRoom) {
-                const oppositeDir = getOppositeDirection(direction);
-                if (!roomHasExit(currentRoom, direction) || !roomHasExit(existingRoom, oppositeDir)) {
-                    return;
-                }
-                syncDoorPair(currentRoom, direction, existingRoom);
-                // Mark door as permanently open after passing through
-                const door = currentRoom.doors[direction];
-                if (door && door.status !== 'Open') {
-                    door.status = 'Open';
-                    door.bypass = null;
-                }
                 dungeonState.currentRoomId = existingRoom.id;
                 renderRoom(existingRoom);
                 renderMap();
@@ -3760,21 +3713,45 @@
                 return;
             }
 
-            const newRoom = generateRoom({ position: nextPos, moveDir: direction, fromRoom: currentRoom });
-            // Mark the door as open since we just passed through it
-            const door = currentRoom.doors[direction];
-            if (door && door.status !== 'Open') {
-                door.status = 'Open';
-                door.bypass = null;
-            }
-            dungeonState.currentRoomId = newRoom.id;
-            if (newRoom.isBoss) {
-                dungeonState.bossRoomId = newRoom.id;
-            }
-
+            const newRoom = generateRoom({ position: { x: nextIndex - 1, y: 0 }, moveDir: null, fromRoom: currentRoom });
             renderRoom(newRoom);
             renderMap();
             updateButtons();
+        }
+
+        function jumpToRoom(roomIndex) {
+            if (!dungeonState) return;
+            const target = dungeonState.rooms.find(room => room.index === roomIndex);
+            if (!target) return;
+            dungeonState.currentRoomId = target.id;
+            renderRoom(target);
+            renderMap();
+            saveDungeonState();
+        }
+
+        function rerollCurrentRoom() {
+            if (!dungeonState) return;
+            const room = getCurrentRoom();
+            if (!room) return;
+
+            const layout = selectLayout({ isBossRoom: false, minExits: 0, includeDeadEnds: true });
+            const description = generateDescription();
+
+            room.bucket = layout.bucket;
+            room.layoutId = layout.layoutId;
+            room.pngPath = `png/${layout.bucket.toLowerCase().replace(' ', '-')}/${layout.layoutId}.png`;
+            room.rotation = randomRotation();
+            room.description = description.text;
+            room.threats = generateThreats(Boolean(room.isBoss));
+            room.loot = generateLoot(room);
+            room.lootRevealThreshold = undefined;
+            room.lootReveal = undefined;
+            room.hiddenReveal = undefined;
+            room.revealedSuccessLevel = 0;
+
+            saveDungeonState();
+            renderRoom(room);
+            renderMap();
         }
 
         function updateButtons() {
@@ -3797,13 +3774,18 @@
             if (!dungeonState.timePressure) {
                 dungeonState.timePressure = 1;
             }
-            dungeonState.timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
-
-            if (!dungeonState.map || dungeonState.rooms.some(room => !room.position)) {
-                dungeonState = null;
-                usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [], "Exits": [] };
-                return false;
+            if (typeof dungeonState.trapFrequency !== 'number') {
+                dungeonState.trapFrequency = 1;
             }
+            if (!Array.isArray(dungeonState.trapVibes)) {
+                dungeonState.trapVibes = [];
+            }
+            if (typeof dungeonState.useOwnThreats !== 'boolean') {
+                dungeonState.useOwnThreats = false;
+            }
+            dungeonState.timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
+            dungeonState.trapFrequency = Math.min(2, Math.max(0, Number(dungeonState.trapFrequency ?? 1)));
+
 
             if (!dungeonState.currentRoomId && dungeonState.rooms.length > 0) {
                 dungeonState.currentRoomId = dungeonState.rooms[dungeonState.rooms.length - 1].id;
@@ -3824,6 +3806,9 @@
             const timePressure = Math.min(2, Math.max(0.5, Number(dungeonState.timePressure ?? 1)));
             document.getElementById('timePressure').value = timePressure;
             document.getElementById('timePressureValue').textContent = `x${formatTimePressure(timePressure)}`;
+            const trapFrequency = Math.min(2, Math.max(0, Number(dungeonState.trapFrequency ?? 1)));
+            document.getElementById('trapFrequency').value = trapFrequency;
+            document.getElementById('trapFrequencyValue').textContent = `x${formatTimePressure(trapFrequency)}`;
 
             // Restore keywords and abilities
             if (dungeonState.keywords && dungeonState.keywords.length > 0) {
@@ -3857,6 +3842,14 @@
             } else {
                 setEnabledDescriptionFilters([]);
             }
+
+            if (Array.isArray(dungeonState.trapVibes)) {
+                setEnabledTrapVibes(dungeonState.trapVibes);
+            } else {
+                setEnabledTrapVibes([]);
+            }
+
+            document.getElementById('useOwnThreats').checked = Boolean(dungeonState.useOwnThreats);
 
             saveDungeonState();
             return true;
@@ -4073,6 +4066,66 @@
                 : `Selected ${count} of ${total} vibe themes.`;
         }
 
+        function getTrapTagOptions() {
+            const roomTrapThreats = Array.isArray(gameData?.roomTrapThreats) ? gameData.roomTrapThreats : [];
+            const tags = new Set();
+            roomTrapThreats.forEach(trap => {
+                (trap.tags || []).forEach(tag => {
+                    if (typeof tag === 'string' && tag.trim()) tags.add(tag.trim());
+                });
+            });
+            return Array.from(tags).sort((a, b) => a.localeCompare(b));
+        }
+
+        function populateTrapVibeList(selectedTags = []) {
+            const list = document.getElementById('trapVibeList');
+            if (!list) return;
+            list.innerHTML = '';
+            const options = getTrapTagOptions();
+            options.forEach(tag => {
+                const label = document.createElement('label');
+                label.className = 'threat-type-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = tag;
+                checkbox.checked = selectedTags.includes(tag);
+                checkbox.addEventListener('change', () => updateTrapVibeSummary(getEnabledTrapVibes()));
+                const text = document.createElement('span');
+                text.textContent = tag;
+                label.appendChild(checkbox);
+                label.appendChild(text);
+                list.appendChild(label);
+            });
+        }
+
+        function getEnabledTrapVibes() {
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            return checkboxes.filter(box => box.checked).map(box => box.value);
+        }
+
+        function setEnabledTrapVibes(tags) {
+            const selected = new Set(tags || []);
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = selected.has(box.value);
+            });
+            updateTrapVibeSummary(tags || []);
+        }
+
+        function updateTrapVibeSummary(tags) {
+            const summary = document.getElementById('trapVibeFilterSummary');
+            if (!summary) return;
+            const total = getTrapTagOptions().length;
+            const count = tags.length;
+            if (total === 0) {
+                summary.textContent = 'No tagged traps in data.';
+                return;
+            }
+            summary.textContent = count === 0
+                ? 'All trap vibes enabled.'
+                : `Selected ${count} of ${total} trap vibes.`;
+        }
+
         function buildKeywordAbilitiesFromInputs(ids) {
             return ids
                 .map((id, index) => {
@@ -4106,6 +4159,16 @@
             }
         });
 
+        document.getElementById('trapFrequency').addEventListener('input', (e) => {
+            const value = Math.min(2, Math.max(0, parseFloat(e.target.value) || 1));
+            e.target.value = value;
+            document.getElementById('trapFrequencyValue').textContent = `x${formatTimePressure(value)}`;
+            if (dungeonState) {
+                dungeonState.trapFrequency = value;
+                saveDungeonState();
+            }
+        });
+
         document.getElementById('startBtn').addEventListener('click', () => {
             if (!gameData) {
                 document.getElementById('errorDisplay').textContent = 'Dungeon data is not loaded yet.';
@@ -4134,6 +4197,9 @@
 
             const disallowedThreatTypes = getDisallowedThreatTypes();
             const descriptionThemes = getEnabledDescriptionFilters();
+            const trapVibes = getEnabledTrapVibes();
+            const trapFrequency = Math.min(2, Math.max(0, parseFloat(document.getElementById('trapFrequency').value) || 1));
+            const useOwnThreats = document.getElementById('useOwnThreats').checked;
 
             // Reset state
             usedLayouts = { Rooms: [], Halls: [], "Dead Ends": [] };
@@ -4147,6 +4213,9 @@
                 ],
                 disallowedThreatTypes,
                 descriptionThemes,
+                trapVibes,
+                trapFrequency,
+                useOwnThreats,
                 rooms: [],
                 map: {},
                 currentRoomId: null,
@@ -4213,6 +4282,8 @@
                     updateThreatFilterSummary(getDisallowedThreatTypes());
                     populateDescriptionFilterList(getEnabledDescriptionFilters());
                     updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+                    populateTrapVibeList(getEnabledTrapVibes());
+                    updateTrapVibeSummary(getEnabledTrapVibes());
                 }
 
                 if (!applyDungeonState(loadedState, loadedLayouts)) {
@@ -4253,6 +4324,39 @@
                 box.checked = false;
             });
             updateThreatFilterSummary([]);
+        });
+
+        document.getElementById('trapVibeFilterBtn').addEventListener('click', () => {
+            document.getElementById('trapVibeModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeTrapVibe').addEventListener('click', () => {
+            document.getElementById('trapVibeModal').classList.add('hidden');
+        });
+
+        document.getElementById('applyTrapVibes').addEventListener('click', () => {
+            document.getElementById('trapVibeModal').classList.add('hidden');
+            updateTrapVibeSummary(getEnabledTrapVibes());
+            if (dungeonState) {
+                dungeonState.trapVibes = getEnabledTrapVibes();
+                saveDungeonState();
+            }
+        });
+
+        document.getElementById('selectAllTrapVibes').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = true;
+            });
+            updateTrapVibeSummary(getEnabledTrapVibes());
+        });
+
+        document.getElementById('clearAllTrapVibes').addEventListener('click', () => {
+            const checkboxes = Array.from(document.querySelectorAll('#trapVibeList input[type="checkbox"]'));
+            checkboxes.forEach(box => {
+                box.checked = false;
+            });
+            updateTrapVibeSummary([]);
         });
 
         document.getElementById('descriptionFilterBtn').addEventListener('click', () => {
@@ -4317,6 +4421,8 @@
                 updateThreatFilterSummary(getDisallowedThreatTypes());
                 populateDescriptionFilterList(getEnabledDescriptionFilters());
                 updateDescriptionFilterSummary(getEnabledDescriptionFilters());
+                populateTrapVibeList(getEnabledTrapVibes());
+                updateTrapVibeSummary(getEnabledTrapVibes());
                 
             } catch (err) {
                 document.getElementById('errorDisplay').textContent = `Error loading file: ${err.message}`;
@@ -4325,21 +4431,10 @@
             }
         });
 
-        document.getElementById('pngFolder').addEventListener('change', (e) => {
-            const files = Array.from(e.target.files || []);
-            if (files.length === 0) return;
-            files.forEach(file => {
-                const key = normalizePngPath(file.webkitRelativePath || file.name);
-                pngCache[key] = URL.createObjectURL(file);
-                missingPngPaths.delete(key);
-            });
-            updatePngStatus();
-            renderMap();
-        });
-
         // ==================== TOOLTIP POSITIONING ====================
         // Position fixed tooltips dynamically based on icon position
         document.addEventListener('mouseenter', (e) => {
+            if (!(e.target instanceof Element)) return;
             const icon = e.target.closest('.tooltip-icon');
             if (!icon) return;
 
@@ -4396,6 +4491,8 @@
             updateThreatFilterSummary(getDisallowedThreatTypes());
             populateDescriptionFilterList([]);
             updateDescriptionFilterSummary([]);
+            populateTrapVibeList([]);
+            updateTrapVibeSummary([]);
             loadDungeonState();
         })();
     </script>
